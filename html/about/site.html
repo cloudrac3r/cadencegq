@@ -1,0 +1,54 @@
+<!-- TEMPLATE pre -->
+<title>Website info</title>
+<script type="text/javascript">
+    getServerInfo(info => {
+        q("#dependencies").innerText = info.dependencies.join(", ");
+        q("#dependencies").classList.remove("dim");
+        q("#requests").innerText = info.requests;
+        q("#requests").classList.remove("dim");
+        q("#version").innerText = info.nodeVersion;
+    });
+</script>
+<style>
+    .bold {
+        font-weight: bold;
+        color: #fff;
+    }
+    .white {
+        color: #fff;
+    }
+    .dim {
+        color: #999;
+        font-weight: normal;
+    }
+</style>
+<!-- TEMPLATE header -->
+<h1>Website info</h1>
+<p>
+    Coded entirely from scratch in HTML5, CSS and JavaScript. No WYSIWYG editors. No templates.
+    And no client-side frameworks: no Angular, no React and no jQuery.
+</p>
+<p>
+    Served to you by <a href="https://nodejs.org/">node.js</a> <span id="version"></span> (just HTTP, not Express),<br>
+    storing data in <a href="https://sqlite.org/index.html">SQLite</a>,<br>
+    with HTTPS certificates from <a href="https://letsencrypt.org/">Let's Encrypt</a>,<br>
+    available on a domain from Freenom,<br>
+    delivered from a VPS by <a href="https://www.vultr.com/">Vultr</a>,<br>
+    running <a href="https://www.ubuntu.com/">Ubuntu</a> as its operating system.
+</p>
+<p>
+    Font: <a href="http://www.atipofoundry.com/fonts/bariol">Bariol</a> by <a href="http://www.atipofoundry.com/">atipo foundry</a><br>
+    Colours: read the css or use the web inspector or a colour picker
+</p>
+<p>
+    Server NPM dependencies: <span class="white dim" id="dependencies">(loading...)</span><br>
+    Resources served since 2018-06-24: <span class="bold dim" id="requests">(loading...)</span>
+</p>
+<p>
+    Shoutouts to <a href="https://discordapp.com/">Discord</a>, <a href="https://ddg.gg/">DuckDuckGo</a>,
+    <a href="https://stackoverflow.com/">StackOverflow</a>, <a href="https://github.com/">GitHub</a>,
+    <a href="http://es6-features.org/#Constants">ES6</a>, <a href="https://en.wikipedia.org/wiki/Compose_key">Compose</a>,
+    and anyone who puts JavaScript in really silly places.
+</p>
+<p>Super special shoutouts to free software for making this possible. :heart:</p>
+<!-- TEMPLATE end -->

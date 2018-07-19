@@ -1,0 +1,31 @@
+<!-- TEMPLATE pre -->
+<title>New image</title>
+<script type="text/javascript">
+    function bodyLoad() {
+        let file = q("#file");
+        let progress = q("#progress");
+        file.value = "";
+        file.disabled = false;
+        file.onchange = function() {
+            if (!file.files.length) return;
+            file.disabled = true;
+            submitImage(file.files[0], undefined, imageID => {
+                if (imageID) {
+                    progress.innerHTML = `Success! <a href="/api/images/${imageID}">View your new image</a>`;
+                    progress.classList.add("successDisplay");
+                } else {
+                    progress.innerHTML = "Failed to submit image";
+                    progress.classList.add("errorDisplay");
+                    file.disabled = false;
+                }
+            });
+            progress.innerHTML = "Uploading...";
+        }
+    }
+</script>
+<!-- TEMPLATE header -->
+<div>
+    <input type="file" id="file" accept=".png,.jpg,.jpeg,image/*">
+</div>
+<div id="progress"></div>
+<!-- TEMPLATE end -->

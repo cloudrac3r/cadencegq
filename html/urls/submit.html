@@ -1,0 +1,50 @@
+<!-- TEMPLATE pre -->
+<title>New link</title>
+<script type="text/javascript">
+    function submit() {
+        q("#submit").disabled = true;
+        let content = q("#content").value;
+        let username = q("#username").value || undefined;
+        let token = localStorage.getItem("token") || undefined;
+        let progress = q("#progress");
+        progress.innerHTML = "Posting...";
+        submitURL(content, {username, token}, hash => {
+            if (hash) {
+                progress.innerHTML = `Success! <a href="/api/urls/${hash}">Here's your new link</a>`;
+                progress.classList.add("successDisplay");
+            } else {
+                progress.innerHTML = "Failed to submit link";
+                progress.classList.add("errorDisplay");
+                q("#submit").disabled = false;
+            }
+        });
+    }
+    function bodyLoad() {
+        clear();
+    }
+    getLoginDetails(login => {
+        if (login) {
+            q("#username").style.display = "none";
+            q("#usernamePostNote").innerText = "Posting as "+login.username+".";
+            q("#usernamePostNote").style.display = "block";
+        }
+    });
+</script>
+<style>
+    #usernamePostNote {
+        display: none;
+        font-size: 80%;
+        margin: 4px;
+        color: #bbb;
+    }
+</style>
+<!-- TEMPLATE header -->
+<div>
+    <input id="content" placeholder="Paste a link here" style="width: 700px">
+</div>
+<div>
+    <input id="username" placeholder="Display name (optional)" style="width: 280px"><button id="submit" onclick="submit()">Submit</button>
+    <span id="usernamePostNote"></span>
+</div>
+<div id="progress"></div>
+<!-- TEMPLATE end -->

@@ -1,0 +1,43 @@
+<!-- TEMPLATE pre -->
+<title>Edit paste</title>
+<script type="text/javascript">
+    let pasteID;
+    function bodyLoad() {
+        pasteID = window.location.href.match(/pastes\/(\d+)\/edit$/);
+        if (pasteID) {
+            pasteID = pasteID[1];
+            loadPaste(pasteID, (author, content, creationTime) => {
+                q("#content").value = content;
+                q("#content").disabled = false;
+            });
+        } else {
+            //window.location.replace("/pastes/list");
+        }
+    }
+    function submit() {
+        q("#submit").disabled = true;
+        let content = q("#content").value;
+        let token = localStorage.getItem("token") || undefined;
+        let progress = q("#progress");
+        progress.innerHTML = "Uploading...";
+        editPaste(pasteID, content, token, success => {
+            if (success) {
+                progress.innerHTML = `Success! <a href="/pastes/${pasteID}">View your edits</a>`;
+                progress.classList.add("successDisplay");
+            } else {
+                progress.innerHTML = "Failed to edit paste";
+                progress.classList.add("errorDisplay");
+                q("#submit").disabled = false;
+            }
+        });
+    }
+</script>
+<!-- TEMPLATE header -->
+<div>
+    <textarea id="content" disabled style="width: 700px; height: 300px">Loading...</textarea>
+</div>
+<div>
+    <button id="submit" onclick="submit()">Submit</button>
+</div>
+<div id="progress"></div>
+<!-- TEMPLATE end -->

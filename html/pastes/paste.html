@@ -1,0 +1,49 @@
+<!-- TEMPLATE pre -->
+<title>View paste</title>
+<script type="text/javascript">
+    let pasteID;
+    function bodyLoad() {
+        pasteID = window.location.href.match(/pastes\/(\d+)$/);
+        if (pasteID) {
+            pasteID = pasteID[1];
+            loadPaste(pasteID, (author, content, creationTime) => {
+                q("#content").innerText = content;
+                q("#details").innerText = "Created by "+author+" on "+new Date(creationTime).toLocaleString();
+                getLoginDetails(login => {
+                    if (login.username == author) q("#editButton").style.display = "initial";
+                });
+            });
+        } else {
+            window.location.replace("/pastes/list");
+        }
+    }
+    function copy() {
+        let textarea = document.createElement("textarea");
+        textarea.textContent = q("#content").innerText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand("copy");
+            fadeElement(q("#copyStatus"), 1000, 1000);
+        } catch (e) {}
+        document.body.removeChild(textarea);
+    }
+    function edit() {
+        window.location = "/pastes/"+pasteID+"/edit";
+    }
+    function raw() {
+        if (pasteID) window.location = "/api/pastes/"+pasteID+"/raw";
+    }
+</script>
+<style>
+    #editButton {
+        display: none;
+    }
+</style>
+<!-- TEMPLATE header -->
+<div>
+    <button onclick="copy()">Copy</button><button onclick="raw()">Raw</button><button id="editButton" onclick="edit()">Edit</button><span id="copyStatus" style="opacity: 0">Copied!</span><br>
+    <pre id="content">Loading...</pre>
+</div>
+<span id="details"></span>
+<!-- TEMPLATE end -->

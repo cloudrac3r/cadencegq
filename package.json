@@ -1,0 +1,21 @@
+{
+  "name": "cadence.gq",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "cloudrac3r",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "mime": "^2.3.1",
+    "mmmagic": "^0.5.0",
+    "prettier-bytes": "^1.0.4",
+    "request-promise": "^4.2.2",
+    "simple-git": "^1.96.0",
+    "sqlite": "^2.9.2",
+    "youtube-search": "^1.1.1",
+    "ytdl-core": "^0.20.4"
+  }
+}

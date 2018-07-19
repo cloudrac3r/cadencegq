@@ -1,0 +1,59 @@
+<!-- TEMPLATE pre -->
+<title>Cadence's stuff</title>
+<script type="text/javascript">
+    function bodyLoad() {
+        getLoginDetails(login => {
+            if (login) {
+                q("#username").innerText = login.username;
+                q("#detailsDiv").style.display = "block";
+            } else {
+                q("#loginDiv").style.display = "block";
+            }
+        });
+    }
+    function neatLogin() {
+        login(q("#usernameInput").value, q("#passwordInput").value, token => {
+            window.location.reload();
+        });
+    }
+    function neatLogout() {
+        logout(() => {
+            window.location.reload();
+        });
+    }
+    function neatCreate() {
+        createAccount(q("#usernameInput").value, q("#passwordInput").value, success => {
+            if (success) {
+                login(q("#usernameInput").value, q("#passwordInput").value, token => {
+                    window.location.reload();
+                });
+            } else {
+                let failed = q("#failed");
+                failed.style.display = "block";
+            }
+        });
+    }
+</script>
+<style>
+    input {
+        width: 280px;
+        display: block;
+    }
+    #failed {
+        display: none;
+    }
+</style>
+<!-- TEMPLATE header -->
+<h1>Account</h1>
+<div id="loginDiv" style="display: none">
+    <h2>You are not logged in.</h2>
+    <input id="usernameInput" placeholder="Username">
+    <input id="passwordInput" placeholder="Password" type="password">
+    <button id="login" onclick="neatLogin()">Log in</button><button id="login" onclick="neatCreate()">Create account</button>
+    <span id="failed" class="errorDisplay">Failed to create account</span>
+</div>
+<div id="detailsDiv" style="display: none">
+    <h2>You are logged in as <span id="username"></span></h2>
+    <button id="logout" onclick="neatLogout()">Log out</button>
+</div>
+<!-- TEMPLATE end -->

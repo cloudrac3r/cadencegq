@@ -1,0 +1,50 @@
+<!-- TEMPLATE pre -->
+<title>New paste</title>
+<script type="text/javascript">
+    function submit() {
+        q("#submit").disabled = true;
+        let content = q("#content").value;
+        let username = q("#username").value || undefined;
+        let token = localStorage.getItem("token") || undefined;
+        let progress = q("#progress");
+        progress.innerHTML = "Uploading...";
+        submitPaste(content, {username, token}, pasteID => {
+            if (pasteID) {
+                progress.innerHTML = `Success! <a href="/pastes/${pasteID}">View your new paste</a>`;
+                progress.classList.add("successDisplay");
+            } else {
+                progress.innerHTML = "Failed to submit paste";
+                progress.classList.add("errorDisplay");
+                q("#submit").disabled = false;
+            }
+        });
+    }
+    function bodyLoad() {
+        clear();
+    }
+    getLoginDetails(login => {
+        if (login) {
+            q("#username").style.display = "none";
+            q("#usernamePostNote").innerText = "Posting as "+login.username+".";
+            q("#usernamePostNote").style.display = "block";
+        }
+    });
+</script>
+<style>
+    #usernamePostNote {
+        display: none;
+        font-size: 80%;
+        margin: 4px;
+        color: #bbb;
+    }
+</style>
+<!-- TEMPLATE header -->
+<div>
+    <textarea id="content" style="width: 700px; height: 300px"></textarea>
+</div>
+<div>
+    <input id="username" placeholder="Display name (optional)" style="width: 280px"><button id="submit" onclick="submit()">Submit</button>
+    <span id="usernamePostNote"></span>
+</div>
+<div id="progress"></div>
+<!-- TEMPLATE end -->

@@ -1,0 +1,52 @@
+<!-- TEMPLATE pre -->
+<title>Latest links</title>
+<script type="text/javascript">
+    function bodyLoad() {
+        loadURLList({}, result => {
+            let columns = [
+                {name: "hash", align: "left", inject: true, transform: d => `<a href="javascript:copyURL('${d}')">${d}</a>`},
+                {name: "author", align: "left"},
+                {name: "creationTime", align: "left", transform: d => new Date(d).toLocaleString()},
+                {name: "target", align: "left", css: "overflow: hidden; max-width: 700px", inject: true, transform: d => {
+                    let a = document.createElement("a");
+                    a.href = d;
+                    a.innerText = d.slice(0,200).replace("\n", " ").replace(/ +/g, " ");
+                    return a.outerHTML;
+                }}
+            ];
+            let output = dataToTable(columns, result);
+            output.forEach(tr => {
+                q("#tbody").appendChild(tr);
+            });
+        });
+    }
+    function copyURL(url) {
+        let textarea = document.createElement("textarea");
+        textarea.textContent = `https://${window.location.host}/api/urls/${url}`;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand("copy");
+            fadeElement(q("#copyStatus"), 1000, 1000);
+        } catch (e) {}
+        document.body.removeChild(textarea);
+    }
+</script>
+<!-- TEMPLATE header -->
+<div>
+    <table border style="white-space: nowrap">
+        <thead>
+            <tr>
+                <td>Click to copy</td>
+                <td>Author</td>
+                <td>Created on</td>
+                <td>Target</td>
+            </tr>
+        </thead>
+        <tbody id="tbody">
+        </tbody>
+    </table>
+    <p id="copyStatus" style="opacity: 0">Copied!</p>
+</div>
+<span id="username"></span>
+<!-- TEMPLATE end -->

@@ -1,0 +1,205 @@
+<!-- TEMPLATE pre -->
+<title>API documentation</title>
+<style>
+    pre {
+        display: block;
+        width: initial;
+        color: #9cf;
+    }
+    .white {
+        color: #ddd;
+    }
+    .curly {
+        color: #ff5c1f;
+    }
+    .url {
+        color: #ffb733;
+    }
+</style>
+<!-- TEMPLATE header -->
+<h1>API documentation</h1>
+<h2>Formatting</h2>
+<pre>
+- POST /api/fake/{fakeID}/info
+    ^ This is the method and endpoint. Anything in curly braces { } should be substituted for a value.
+      Values should not include the curly braces.
+      Example: /api/fake/ab472c/info
+
+    ? something : integer
+    ? somethingElse : integer?
+    ^ These are query string parameters, indicated by a ? character.
+      The first word is the parameter name and the second word is the data type.
+      If the data type ends with a ?, that parameter is optional.
+
+    B something : JSON
+        B content : string
+    ^ This is the POST body, indicated by a B character.
+      Often the body will be a JSON object. This object should be converted to a string for sending.
+      The second line shows the contents of the JSON object.
+
+    R Array/JSON
+        R fakeID : integer
+    ^ This is the return value, indicated by a R character.
+      The notation "Array/JSON" indicates an array containing JSON objects.
+      Similarly, "Array/integer" would indicate an array of integers.
+</pre>
+<h2>Pastes</h2>
+<pre>
+- GET /api/pastes/{pasteID}
+    R JSON
+        R pasteID : integer
+        R author : string
+        R content : string
+        R creationTime : integer
+        R expiryTime : integer/null
+
+    Get paste details and content from a pasteID.
+
+- GET /api/pastes/raw/{pasteID}
+    R content : string
+
+    Get raw paste content as plaintext from a pasteID.
+
+- POST /api/pastes
+    B JSON
+        B username : string?
+        B content : string
+
+    R JSON
+        R pasteID : integer
+
+    Upload a new paste. Username, if not provided, will be set to "(anonymous)".
+
+- GET /api/pastes
+    ? start : integer?
+    ? end : integer?
+    ? limit : integer?
+    ? preview : integer?
+
+    R Array/JSON
+        R pasteID : integer
+        R author : string
+        R content : string?
+        R creationTime : integer
+        R expiryTime : integer/null
+
+    Get a list of existing pastes.
+    If neither start nor end are provided:
+        Return as many pastes as possible, sorted by newest to oldest.
+    Otherwise:
+        Return as many pastes as possible whose IDs are >= start and <= end.
+        If one of start or end is missing, the maximum bound is assumed.
+    If limit is provided and is less than the API's internal max, do not return more than that many results.
+    Otherwise, return up to the API's internal max.
+    If preview is provided and is less than 0, do not return the content of any pastes.
+    Otherwise, if preview is less than 1000, return up to that many characters of content from every paste.
+    Otherwise, return up to 1000 characters of content from every paste.
+</pre>
+<h2>Images</h2>
+<pre>
+- GET /api/images/{imageID}
+    R image : binary
+
+    Get an image. Content-Type header will be set.
+
+- GET /api/images/{imageID}/details
+    R JSON
+        R imageID : string
+        R extension : string
+        R author : string
+        R creationTime : integer
+        R expiryTime : integer?
+
+    Get information about an image.
+
+- POST /api/images
+    ? author : string?
+    B content : binary
+
+    R JSON
+        R imageID : string
+
+    Upload an image.
+</pre>
+<h2>URLs/Links</h2>
+<pre>
+- GET /api/urls/{hash}
+    R 301 redirect
+
+    Go to a shortened URL.
+
+- GET /api/urls/{hash}/details
+    R JSON
+        R hash : string
+        R author : string?
+        R target : string
+        R creationTime : integer
+        R expiryTime : integer?
+
+    Get information about an existing shortened URL.
+
+- POST /api/urls
+    B JSON
+        B username : string?
+        B target : string
+
+    R JSON
+        R hash : string
+
+    Shorten a URL.
+
+- GET /api/urls
+    ? limit : integer
+
+    R Array/JSON
+        R hash : string
+        R author : string?
+        R target : string
+        R creationTime : integer
+        R expiryTime : integer?
+
+    Return a list of existing shortened URLs and their details.
+    If limit is provided and is less than the API's internal max, do not return more than that many results.
+    Otherwise, return up to the API's internal max.
+</pre>
+<h2>Error codes</h2>
+<pre>
+- 1
+    Missing content ID
+- 2
+    Bad content ID
+- 3
+    Malformed JSON
+- 4
+    Missing content
+- 5
+    Bad content
+- 6
+    Content too large (HTTP 413)
+- 7
+    Duplicate action cannot be performed (HTTP 409)
+- 8
+    Invalid authentication details (HTTP 401)
+- 9
+    Username in use
+</pre>
+<script>
+document.querySelectorAll("pre").forEach(pre => {
+    [
+        [new RegExp("^(\\s*- [A-Z]+ /api/.*)$", "gm"), "url"],
+        [new RegExp("/api/.*(\\{.*?\\})", "g"), "curly"],
+        [new RegExp("^\\s+([BR?] .*)$", "gm"), "white"]
+    ].forEach(r => {
+        let match;
+        while (match = r[0].exec(pre.innerHTML)) {
+            console.log(match);
+            let insert = '<span class="'+r[1]+'">'+match[1]+'</span>';
+            pre.innerHTML = pre.innerHTML.slice(0, match.index+match[0].length-match[1].length)
+                +insert
+                +pre.innerHTML.slice(match.index+match[0].length);
+            r[0].lastIndex = r[0].lastIndex + insert.length - match[1].length;
+        }
+    });
+});
+</script>
+<!-- TEMPLATE end -->
