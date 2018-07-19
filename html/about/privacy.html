@@ -14,8 +14,13 @@ may be stored permanently. This data will not be intentionally shared with anyon
 <p>This website uses the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API">Web Storage API</a>
 to store an account token in your web browser to keep you logged in to the website between visits.<br>
 If you wish to remove Web Storage data, your browser should provide controls.</p>
-<p>This website does not store visitor IP addresses and does not use
-cookies, fingerprinting, analytics, advertisements, or tracking of any form.</p>
+<p>When you request any resource from this website (for example, a page, a font, an image, or an API endpoint)
+the requested URL (without ?= query string parameters) is stored in the site's database
+and its hit count is incremented by one. The database table only stores the number of hits each resource has received.
+No information about individual requests is stored.
+You can see the first few rows of this database table here: <a href="/api/hits">/api/hits</a></p>
+<p>This website does not store visitor user-agent strings or IP addresses and does not use
+cookies, fingerprinting, advertisements, or tracking of any form.</p>
 <h2>Removal of information</h2>
 <p>This website may provide controls to allow you to remove some or all of your data from the website.
 If you wish to request the manual removal of your data or someone else's data from the website,
