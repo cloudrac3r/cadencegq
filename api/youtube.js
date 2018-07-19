@@ -63,13 +63,14 @@ module.exports = ({db}) => {
             route: "/api/youtube/search", methods: ["GET"], code: ({params}) => {
                 return new Promise(resolve => {
                     if (!params || !params.q) return resolve([400, "Missing ?q parameter"]);
-                    let maxResults = +params.maxResults || 15;
-                    yts(params.q, {
-                        maxResults: maxResults,
+                    let searchObject = {
+                        maxResults: +params.maxResults || 20,
                         key: auth.yt_api_key,
                         type: "video",
-                        videoDimension: "2d",
-                    }, (err, search) => {
+                        videoDimension: "2d"
+                    };
+                    if (params.order) searchObject.order = params.order;
+                    yts(params.q, searchObject, (err, search) => {
                         if (err) {
                             resolve([500, "YouTube API error. This should not happen. Contact Cadence as soon as possible."]);
                             console.log("YouTube API error!");

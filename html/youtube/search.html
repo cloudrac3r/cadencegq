@@ -20,11 +20,12 @@
 
     let url = new URL(window.location.href);
     let searchTerms = url.searchParams.get("q");
-    let maxResults = +url.searchParams.get("maxResults") || 15;
+    let maxResults = +url.searchParams.get("maxResults") || 20;
+    let order = url.searchParams.get("order") || "relevance";
     function bodyLoad() {
         if (window.location.href.includes("search")) {
             if (searchTerms) {
-                request(`/api/youtube/search?q=${encodeURIComponent(searchTerms)}&maxResults=${maxResults}`, result => {
+                request(`/api/youtube/search?q=${encodeURIComponent(searchTerms)}&maxResults=${maxResults}&order=${order}`, result => {
                     if (result.status == 200) {
                         let data = JSON.parse(result.responseText);
                         // Set search results
@@ -75,7 +76,7 @@
         }
     }
     function search() {
-        window.location.assign("/cloudtube/search?q="+encodeURIComponent(q("#search").value));
+        window.location.assign("/cloudtube/search?q="+encodeURIComponent(q("#search").value)+"&order="+q("select").selectedOptions[0].value);
     }
     function keypress(event) {
         if (event.keyCode == 13) search();
@@ -85,14 +86,22 @@
 <!-- TEMPLATE loading -->
 <div id="mainSearchContainer">
     <div id="searchContainer">
-        <input type="text" id="search" placeholder="Search for something?" onkeypress="keypress(event)"><button id="searchButton" onclick="search()">Search</button>
+        <input type="text" id="search" placeholder="Search for something?" onkeypress="keypress(event)">
+        <select>
+            <option value="relevance">Relevance</option>
+            <option value="date">Most recent</option>
+            <option value="rating">Rating</option>
+            <option value="viewCount">Views</option>
+            <option value="title">Title</option>
+        </select>
+        <button id="searchButton" onclick="search()">Search</button>
     </div>
     <div id="searchResultsContainer"></div>
 </div>
 <div id="searchItemStorage" style="display:none;">
     <a href="#" class="searchItem">
         <div>
-            <img src="https://i.ytimg.com/vi/r-2LsE4Ci5c/default.jpg">
+            <img>
         </div>
         <div>
             <span>Placeholder name</span>
