@@ -7,7 +7,6 @@ const path = require("path");
 const mime = require("mime");
 const sqlite = require("sqlite");
 const cf = require("./util/common.js");
-const lang = require("./util/lang.js");
 
 const hostname = "cadence.gq";
 const httpPort = 8080;
