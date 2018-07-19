@@ -37,7 +37,8 @@
             q("audio").src = allFormats.filter(f => !f.resolution).sort((a, b) => (b.audioBitrate - a.audioBitrate))[0].url;
             q("audio").preload = "auto";
         } else {
-            q("audio").src = null;
+            q("audio").removeAttribute("src");
+            q("audio").pause();
         }
         for (let option of qs.children) {
             option.removeAttribute("selected");
@@ -73,10 +74,11 @@
     }
 
     function playbackIntervention(event) {
-        if (false) return; // console.log("×", event.target.tagName.toLowerCase(), event.type);
+        //console.log("×", event.target.tagName.toLowerCase(), event.type);
         //console.log(event.target.tagName.toLowerCase(), event.type);
         let video = q("video");
         let audio = q("audio");
+        if (!audio.src) return;
         let target = event.target;
         let other = (event.target.tagName == "VIDEO" ? audio : video);
         switch (event.type) {
