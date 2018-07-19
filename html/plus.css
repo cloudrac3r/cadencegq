@@ -94,7 +94,6 @@ body {
 }
 
 textarea, input, button, pre, select {
-    font-family: Bariol,sans-serif;
     border: 1px solid grey;
     padding: 8px;
     background-color: rgba(225, 220, 255, 0.05);

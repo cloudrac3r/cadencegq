@@ -2,6 +2,10 @@ a, a:visited {
     color: inherit;
 }
 
+textarea, input, button, pre, select {
+    font-family: Bariol,sans-serif;
+}
+
 #mainContainer {
     display: none;
 }
