@@ -168,17 +168,16 @@
                 let percentRating = data.avg_rating/5*100;
                 q("#videoRatingBar").style.background = `linear-gradient(to right, #208819 ${percentRating}%, #ccc ${percentRating}%)`;
                 // Set related videos
-                for (let i = 0; i < data.related_videos.length; i++) {
-                    let rv = data.related_videos[i];
-                    if (rv.title && rv.author && rv.iurlmq) {
-                        let ne = q("#relatedVideosStorage").children[0].cloneNode(true);
-                        ne.children[1].children[0].innerText = rv.title;
-                        ne.children[1].children[1].innerText = rv.author;
-                        ne.children[0].children[0].src = rv.iurlmq;
-                        document.styleSheets[1].insertRule(`.relatedVideo:nth-child(${i+2}) > div:first-child::before { content: "${prettySeconds(rv.length_seconds)}"; }`);
-                        ne.href = rv.id;
-                        q("#relatedVideosContainer").appendChild(ne);
-                    }
+                let relatedVideos = data.related_videos.filter(rv => rv.title && rv.author && rv.length_seconds);
+                for (let i = 0; i < relatedVideos.length; i++) {
+                    let rv = relatedVideos[i];
+                    let ne = q("#relatedVideosStorage").children[0].cloneNode(true);
+                    ne.children[1].children[0].innerText = rv.title;
+                    ne.children[1].children[1].innerText = rv.author;
+                    ne.children[0].children[0].src = rv.iurlmq;
+                    document.styleSheets[1].insertRule(`.relatedVideo:nth-child(${i+2}) > div:first-child::before { content: "${prettySeconds(rv.length_seconds)}"; }`);
+                    ne.href = rv.id;
+                    q("#relatedVideosContainer").appendChild(ne);
                 }
                 // Hide loading block
                 q("#loading").style.display = "none";
@@ -224,7 +223,7 @@
 <div id="relatedVideosStorage" style="display:none;">
     <a href="#" class="relatedVideo">
         <div>
-            <img src="https://i.ytimg.com/vi/r-2LsE4Ci5c/default.jpg">
+            <img>
         </div>
         <div>
             <span>Placeholder name</span>
