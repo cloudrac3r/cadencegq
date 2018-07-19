@@ -23,7 +23,6 @@ textarea, input, button, pre, select {
 .videoContainer video {
     margin-left: auto;
     margin-right: auto;
-    height: 100%;
     width: 100%;
 }
 /*.videoContainer {
@@ -195,9 +194,6 @@ textarea, input, button, pre, select {
 
 input, button {
     font-size: 16px;
-}
-#searchContainer input, #searchContainer button {
-    font-size: 18px;
 }
 
 #loading {
