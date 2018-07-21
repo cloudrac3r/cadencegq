@@ -23,6 +23,8 @@
     let videoID;
     let formats;
     let allFormats;
+    let bestAudioURL;
+    let checkingAudioURLs;
     let lastCurrentTime = 0;
 
     function chooseFormat(index) {
@@ -32,14 +34,39 @@
         let qs = q("#qualitySelect");
        // console.log("saving last time: "+video.currentTime);
         lastCurrentTime = video.currentTime;
-        video.src = format.url;
         if (!format.audioEncoding) {
-            q("audio").src = allFormats.filter(f => !f.resolution).sort((a, b) => (b.audioBitrate - a.audioBitrate))[0].url;
-            q("audio").preload = "auto";
+            if (bestAudioURL) {
+                q("audio").src = bestAudioURL;
+            } else if (!checkingAudioURLs) { // So apprently sometimes Vivaldi on Linux doesn't load the audio length properly so I pick one that works
+                checkingAudioURLs = true;
+                Promise.all(allFormats.filter(f => !f.resolution).sort((a, b) => (b.audioBitrate - a.audioBitrate)).map(f => {
+                    return new Promise(resolve => {
+                        let audio = document.createElement("audio");
+                        audio.src = f.url;
+                        audio.addEventListener("loadeddata", () => {
+                            console.log(f.audioBitrate, f.audioEncoding, audio.duration);
+                            resolve({f, audio});
+                        });
+                    });
+                })).then(results => {
+                    let lengths = [];
+                    for (let r of results) {
+                        if (!lengths.find(l => Math.abs(l-r.audio.duration) < 1)) lengths.push(r.audio.duration);
+                    }
+                    let bestLength = lengths.sort((a, b) => (b - a))[0];
+                    let best = results
+                        .filter(r => Math.abs(bestLength-r.audio.duration) < 1)
+                        .sort((a, b) => (b.f.audioBitrate - a.f.audioBitrate))[0];
+                    bestAudioURL = best.f.url;
+                    checkingAudioURLs = false;
+                    q("audio").src = bestAudioURL;
+                });
+            }
         } else {
             q("audio").removeAttribute("src");
             q("audio").pause();
         }
+        video.src = format.url;
         for (let option of qs.children) {
             option.removeAttribute("selected");
         }
@@ -74,58 +101,64 @@
     }
 
     function playbackIntervention(event) {
-        //console.log("×", event.target.tagName.toLowerCase(), event.type);
-        //console.log(event.target.tagName.toLowerCase(), event.type);
+        console.log(event.target.tagName.toLowerCase(), event.type);
         let video = q("video");
         let audio = q("audio");
-        if (!audio.src) return;
-        let target = event.target;
-        let other = (event.target.tagName == "VIDEO" ? audio : video);
-        switch (event.type) {
-        case "canplaythrough":
-            target.waitingTimeout.clear();
-            if (video.ready && audio.ready) return; // console.log("ignoring canplaythrough; already ready");
-            target.ready = true;
-            if (video.ready && audio.ready) {
-                video.play();
-                //console.log("both ready");
-            }
-            break;
-        case "durationchange":
-            target.ready = false;
-            break;
-        case "pause":
-        case "playing":
-        case "play":
-            inProgress = true;
-            other.currentTime = target.currentTime;
-            if (event.type.startsWith("play")) other.play();
-            else other.pause();
-            break;
-        case "ratechange":
-            other.rate = target.rate;
-            break;
-        case "stalled":
-        case "waiting":
-            if (target.waitingTimeout.isActive) {
-                target.waitingTimeout.triggerNow();
-            } else if (other.waitingTimeout.isActive) {
-                other.waitingTimeout.triggerNow();
-            } else {
+        if (audio.src) {
+            let target = event.target;
+            let other = (event.target.tagName == "VIDEO" ? audio : video);
+            switch (event.type) {
+            case "canplaythrough":
                 target.waitingTimeout.clear();
-                target.waitingTimeout = new BetterTimeout(() => {
-                    target.ready = false;
-                    target.pause();
-                }, 1000);
+                if (video.ready && audio.ready) return; // console.log("ignoring canplaythrough; already ready");
+                target.ready = true;
+                if (video.ready && audio.ready) {
+                    video.play();
+                    console.log("both ready");
+                }
+                break;
+            case "durationchange":
+                target.ready = false;
+                break;
+            case "seeked":
+                target.ready = false;
+                target.pause();
+                break;
+            case "pause":
+            case "playing":
+            case "play":
+                inProgress = true;
+                other.currentTime = target.currentTime;
+                if (event.type.startsWith("play")) other.play();
+                else other.pause();
+                break;
+            case "ratechange":
+                other.rate = target.rate;
+                break;
+            case "stalled":
+            case "waiting":
+                if (target.waitingTimeout.isActive) {
+                    target.waitingTimeout.triggerNow();
+                } else if (other.waitingTimeout.isActive) {
+                    other.waitingTimeout.triggerNow();
+                } else {
+                    target.waitingTimeout.clear();
+                    target.waitingTimeout = new BetterTimeout(() => {
+                        target.ready = false;
+                        target.pause();
+                    }, 1000);
+                }
+                break;
             }
-            break;
+        } else {
+            if (event.type == "canplaythrough") video.play();
         }
     }
 
     function bodyLoad() {
         let video = q("video");
         let audio = q("audio");
-        for (let eventName of ["pause", "play"]) {
+        for (let eventName of ["pause", "play", "seeked"]) {
             video.addEventListener(eventName, playbackIntervention);
         }
         for (let eventName of ["canplaythrough", "waiting", "stalled"]) {
@@ -150,7 +183,7 @@
                     option.innerText = f.label;
                     q("#qualitySelect").appendChild(option);
                 }
-                chooseFormat(0);
+                chooseFormat(formats.findIndex(f => f.container == "mp4") || 0);
                 // Stop loading animation
                 for (let block of document.querySelectorAll(".loadingBlock"))
                     block.style["animation-play-state"] = "paused";
@@ -194,7 +227,7 @@
 <div id="mainContainer">
     <div style="flex: 1;">
         <div class="videoContainer">
-            <video controls ondurationchange="loadLastTime()"></video>
+            <video controls preload="auto" ondurationchange="loadLastTime()"></video>
         </div>
         <div class="videoInfoBox">
             <div>
@@ -207,7 +240,7 @@
                 <span id="videoRatingBar"></span>
             </div>
         </div>
-        <audio></audio>
+        <audio preload="auto"></audio>
         <div id="belowButtonContainer">
             <button onclick='window.location.assign("search")'><img src="/fonts/search.svg" style="position: relative; top: 2px; margin-right: 8px;">Search</button>
             <select id="qualitySelect" oninput="chooseFormat(event.target.selectedIndex)"></select>
