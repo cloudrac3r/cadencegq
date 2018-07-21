@@ -145,6 +145,8 @@ textarea, input, button, pre, select {
 .searchItem img {
     margin-right: 15px;
     height: 150px;
+    position: relative;
+    z-index: -1;
 }
 .searchItem > div:first-child {
     position: relative;

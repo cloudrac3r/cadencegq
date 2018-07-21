@@ -54,6 +54,8 @@ body {
 }
 #header div .headerButton {
     display: block;
+    position: relative;
+    z-index: 1;
 }
 #header .headerButton {
     padding: 6px 7px;
