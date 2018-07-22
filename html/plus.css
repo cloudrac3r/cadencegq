@@ -95,7 +95,7 @@ body {
     margin-right: 10px;
 }
 
-textarea, input, button, pre, select {
+textarea, input:not([type=range]), button, pre, select {
     border: 1px solid grey;
     padding: 8px;
     background-color: rgba(225, 220, 255, 0.05);

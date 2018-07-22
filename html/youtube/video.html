@@ -155,6 +155,19 @@
         }
     }
 
+    function adjustSpeedSlider() {
+        let speedSlider = q("#speedSlider");
+        q("video").playbackRate = speedSlider.value/1000;
+        q("audio").playbackRate = speedSlider.value/1000;
+        q("#speedLabel").innerText = Math.floor(speedSlider.value/10)+"%";
+    }
+
+    function resetSpeed() {
+        let speedSlider = q("#speedSlider");
+        speedSlider.value = 1000;
+        adjustSpeedSlider();
+    }
+
     function bodyLoad() {
         let video = q("video");
         let audio = q("audio");
@@ -241,11 +254,14 @@
             </div>
         </div>
         <audio preload="auto"></audio>
-        <div id="belowButtonContainer">
+        <div class="belowButtonContainer">
             <button onclick='window.location.assign("search")'><img src="/fonts/search.svg" style="position: relative; top: 2px; margin-right: 8px;">Search</button>
             <select id="qualitySelect" oninput="chooseFormat(event.target.selectedIndex)"></select>
             <button onclick='window.location.assign("https://youtu.be/"+videoID)'>Watch on YouTube</button>
             <button onclick='window.location.assign("https://hooktube.com/"+videoID)'>Watch on HookTube</button>
+        </div>
+        <div class="belowButtonContainer" id="speedSliderContainer">
+            Adjust speed <span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" list="speeds" id="speedSlider" min="100" max="5000" value="1000" step="1" oninput="adjustSpeedSlider()"></span>
         </div>
         <div id="videoDescription">
             Placeholder description
