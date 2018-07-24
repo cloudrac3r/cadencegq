@@ -24,9 +24,10 @@ module.exports = ({db, extra}) => {
         {
             route: "/api/images/([a-f0-9]{6})/details", methods: ["GET"], code: async ({fill}) => {
                 let imageID = fill[0];
-                let image = db.get("SELECT * FROM Images WHERE imageID = ?", imageID);
-                if (!image) return [400, 1];
-                else return [400, dbr];
+                let dbr = await db.get("SELECT * FROM Images WHERE imageID = ?", imageID);
+                if (!dbr) return [400, 1];
+                delete dbr.author;
+                return [200, dbr];
             }
         },
         {
