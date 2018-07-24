@@ -45,7 +45,7 @@ module.exports = ({db, extra}) => {
                 let token = extra.hash(extra.salt());
                 let expires = Date.now()+30*24*60*60*1000;
                 await db.run("INSERT INTO AccountTokens VALUES ((SELECT userID FROM Accounts WHERE username = ?), ?, ?)", [username, token, expires]);
-                return [201, {token}];
+                return [201, {token, expires}];
             }
         },
         {
