@@ -252,6 +252,7 @@ function serverRequest(req, res) {
 
 async function addHit(url) {
     if (!encrypt) return;
+    if (url.includes("account")) return;
     pendingHitUpdates[url] = pendingHitUpdates[url] ? pendingHitUpdates[url]+1 : 1;
     if (Date.now()-lastHitsUpdate < hitUpdateMin || !hitUpdatesAllowed || !sqlite.driver.open) return;
     const db = sqlite;
