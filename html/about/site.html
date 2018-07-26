@@ -13,6 +13,12 @@
         q("#requests").innerText = commas;
         q("#requests").classList.remove("dim");
         q("#version").innerText = info.nodeVersion;
+        let date = new Date(info.latestCommitTime);
+        let dateString = date.toDateString()+" "+date.toTimeString().split(":").slice(0, 2).join(":");
+        q("#commitInfo").classList.remove("dim");
+        q("#commitInfo").innerHTML =
+            `Latest commit was at ${dateString}: `+
+            `<a href="https://github.com/cloudrac3r/cadencegq/commit/${info.latestCommit}">${info.latestCommit}</a>`;
     });
 </script>
 <style>
@@ -32,6 +38,7 @@
     And no client-side frameworks: no Angular, no React and no jQuery.
 </p>
 <p><a href="https://github.com/cloudrac3r/cadencegq">Source code on GitHub.</a></p>
+<p><span class="dim" id="commitInfo">(loading...)</span></p>
 <p>
     Served to you by <a href="https://nodejs.org/">node.js</a> <span id="version"></span> (just HTTP, not Express),<br>
     storing data in <a href="https://sqlite.org/index.html">SQLite</a>,<br>

@@ -1,15 +1,27 @@
 const cf = require("../util/common.js");
+const simpleGit = require("simple-git")("/home/cloud/Code/pastebin");
 
 module.exports = ({db}) => {
     return [
         {
-            route: "/api/stats", methods: ["GET"], code: async () => {
+            route: "/api/stats", methods: ["GET"], code: () => new Promise(resolve => {
                 let output = {};
                 output.dependencies = Object.keys(require("../package.json").dependencies);
                 output.nodeVersion = process.version;
-                output.requests = (await db.get("SELECT SUM(hits) AS hits FROM Hits")).hits;
-                return [200, output];
-            }
+                Promise.all([
+                    db.get("SELECT SUM(hits) AS hits FROM Hits"),
+                    new Promise(resolve => {
+                        simpleGit.log({"--no-decorate": null}, (err, log) => {
+                            resolve(log.all[0]);
+                        });
+                    })
+                ]).then(([hitsRow, gitLog]) => {
+                    output.requests = hitsRow.hits;
+                    output.latestCommit = gitLog.hash.slice(0, 7);
+                    output.latestCommitTime = new Date(gitLog.date).getTime();
+                    resolve([200, output]);
+                });
+            })
         },
         {
             route: "/api/hits", methods: ["GET"], code: async () => {
