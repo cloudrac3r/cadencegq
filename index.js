@@ -190,7 +190,7 @@ function serverRequest(req, res) {
             // If THAT fails, try reading the html directory for a matching file
             let filename = path.join(__dirname, "html", reqPath);
             fs.stat(filename, (err, stats) => {
-                if (err) {
+                if (err || stats.isDirectory()) {
                     cf.log("Couldn't handle request for "+reqPath, "warning");
                     res.writeHead(404, Object.assign({"Content-Type": "text/plain"}, globalHeaders));
                     res.write("404 Not Found");
