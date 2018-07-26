@@ -4,7 +4,13 @@
     getServerInfo(info => {
         q("#dependencies").innerText = info.dependencies.join(", ");
         q("#dependencies").classList.remove("dim");
-        q("#requests").innerText = info.requests;
+        info.requests = ""+info.requests;
+        let commas = info.requests;
+        for (let i = 1; i < info.requests.length/3; i++) {
+            let invi = commas.length - i*3 - i + 1;
+            commas = commas.slice(0, invi) + "," + commas.slice(invi);
+        }
+        q("#requests").innerText = commas;
         q("#requests").classList.remove("dim");
         q("#version").innerText = info.nodeVersion;
     });
@@ -12,10 +18,7 @@
 <style>
     .bold {
         font-weight: bold;
-        color: #fff;
-    }
-    .white {
-        color: #fff;
+        color: #f2f2f2;
     }
     .dim {
         color: #999;
@@ -41,7 +44,7 @@
     Colours: read the css or use the web inspector or a colour picker
 </p>
 <p>
-    Server NPM dependencies: <span class="white dim" id="dependencies">(loading...)</span><br>
+    Server NPM dependencies: <span class="dim" id="dependencies">(loading...)</span><br>
     Resources served since 2018-06-24: <span class="bold dim" id="requests">(loading...)</span>
 </p>
 <p>
