@@ -247,7 +247,26 @@ function createAccount(username, password, callback) {
     }, {username, password});
 }
 
+function makeInfoBoxesWork() {
+    if (!localStorage.getItem("ibdismiss")) localStorage.setItem("ibdismiss", "");
+    for (let box of document.querySelectorAll(".infoBox")) {
+        let dismissed = localStorage.getItem("ibdismiss");
+        if (!dismissed.includes(box.getAttribute("ibid"))) {
+            let closeButton = document.createElement("img");
+            closeButton.src = "/fonts/cross.svg";
+            closeButton.onclick = function() {
+                box.parentElement.removeChild(box);
+                localStorage.setItem("ibdismiss", localStorage.getItem("ibdismiss")+box.getAttribute("ibid")+",");
+            }
+            box.children[0].appendChild(closeButton);
+            box.style.display = "block";
+        }
+    }
+}
+
 function postLoad() {
+    makeHeadersWork();
+    makeInfoBoxesWork();
     try { bodyLoad() } catch (e) {};
     getLoginDetails(login => {
         let accountStatus = q("#accountState");
@@ -257,5 +276,4 @@ function postLoad() {
             accountStatus.innerText = "Log in";
         }
     });
-    makeHeadersWork();
 }

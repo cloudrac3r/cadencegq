@@ -95,7 +95,7 @@ body {
     margin-right: 10px;
 }
 
-textarea, input:not([type=range]), button, pre, select {
+textarea, input:not([type=range]), button, pre, select, .infoBox {
     border: 1px solid grey;
     padding: 8px;
     background-color: rgba(225, 220, 255, 0.05);
@@ -186,4 +186,20 @@ select:-moz-focusring {
 option {
     background-color: #3e4148;
     color: #ddd;
+}
+
+.infoBox {
+    margin: 20px 0px;
+    display: none;
+}
+.infoBox div {
+    display: flex;
+}
+.infoBox div span {
+    flex: 1;
+}
+.infoBox div img {
+    padding: 6px;
+    margin-left: 6px;
+    cursor: pointer;
 }
