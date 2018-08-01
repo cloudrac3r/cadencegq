@@ -111,6 +111,7 @@ function serverRequest(req, res) {
         let rr = new RegExp("^"+h.route+"$");
         let match = reqPath.match(rr);
         if (match && h.methods.includes(req.method)) {
+            cf.log("Using routeHandler "+h.route+" to respond to "+reqPath, "spam");
             new Promise(resolve => {
                 let fill = match.slice(1);
                 if (req.method == "POST" || req.method == "PATCH") {
@@ -139,7 +140,6 @@ function serverRequest(req, res) {
                 if (typeof(result.content) == "object" && ["Object", "Array"].includes(result.content.constructor.name)) result.content = JSON.stringify(result.content);
                 if (!result.headers) result.headers = {};
                 headers["Content-Length"] = Buffer.byteLength(result.content);
-                cf.log("Using routeHandler "+h.route+" to respond to "+reqPath, "spam");
                 res.writeHead(result.statusCode, Object.assign({"Content-Type": result.contentType}, headers, result.headers, globalHeaders));
                 res.write(result.content);
                 res.end();
