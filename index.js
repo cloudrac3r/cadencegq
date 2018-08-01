@@ -62,7 +62,7 @@ let routeHandlers = [];
 sqlite.open("db/main.db").then(db => {
     const extra = require("./util/extra.js")({db});
     webHandlers.forEach(h => {
-        routeHandlers.push(...require(path.join(__dirname, h))({db, extra}));
+        routeHandlers.push(...require(path.join(__dirname, h))({db, extra, resolveTemplates}));
     });
     cf.log("Loaded API modules", "info");
 });
@@ -90,6 +90,26 @@ function toRange(data, req) {
     else if (range.match(/^-\d/)) result = data.slice(0, range.split("-")[1]);
     else result = data;
     return {result, headers, statusCode};
+}
+
+async function resolveTemplates(page) {
+    let promises = [];
+    let template;
+    let regex = /<!-- TEMPLATE (\S+?) -->/g;
+    while (template = regex.exec(page)) {
+        let templateName = template[1];
+        promises.push(new Promise(resolve => {
+            fs.readFile(path.join(__dirname, "templates", templateName+".html"), {encoding: "utf8"}, (err, content) => {
+                if (err) resolve(undefined);
+                else resolve({template: templateName, content: content});
+            });
+        }));
+    }
+    let results = await Promise.all(promises);
+    results.filter(r => r).forEach(result => {
+        page = page.replace("<!-- TEMPLATE "+result.template+" -->", result.content);
+    });
+    return page;
 }
 
 function serverRequest(req, res) {
@@ -156,22 +176,7 @@ function serverRequest(req, res) {
             if (match) {
                 fs.readFile(path.join(__dirname, "html", h.local), {encoding: "utf8"}, (err, page) => {
                     if (err) throw err;
-                    let promises = [];
-                    let template;
-                    let regex = /<!-- TEMPLATE (\S+?) -->/g;
-                    while (template = regex.exec(page)) {
-                        let templateName = template[1];
-                        promises.push(new Promise(resolve => {
-                            fs.readFile(path.join(__dirname, "templates", templateName+".html"), {encoding: "utf8"}, (err, content) => {
-                                if (err) resolve(undefined);
-                                else resolve({template: templateName, content: content});
-                            });
-                        }));
-                    }
-                    Promise.all(promises).then(results => {
-                        results.filter(r => r).forEach(result => {
-                            page = page.replace("<!-- TEMPLATE "+result.template+" -->", result.content);
-                        });
+                    resolveTemplates(page).then(page => {
                         headers["Content-Length"] = Buffer.byteLength(page);
                         cf.log("Using pageHandler "+h.web+" ("+h.local+") to respond to "+reqPath, "spam");
                         res.writeHead(200, Object.assign({"Content-Type": mimeType(h.local)}, headers, globalHeaders));
