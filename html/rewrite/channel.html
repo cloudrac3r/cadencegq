@@ -1,0 +1,64 @@
+<!-- TEMPLATE pre -->
+<link rel="stylesheet" type="text/css" href="/rewrite/youtube.css">
+<title>CloudTube</title>
+<!-- metaOGTags -->
+<script type="text/javascript">
+    function prettySeconds(seconds) {
+        let minutes = Math.floor(seconds / 60);
+        seconds = seconds % 60;
+        let hours = Math.floor(minutes / 60);
+        minutes = minutes % 60;
+        let output = [];
+        if (hours) {
+            output.push(hours);
+            output.push(minutes.toString().padStart(2, "0"));
+        } else {
+            output.push(minutes);
+        }
+        output.push(seconds.toString().padStart(2, "0"));
+        return output.join(":");
+    }
+
+    let url = new URL(window.location.href);
+    let searchTerms = url.searchParams.get("q");
+    let maxResults = +url.searchParams.get("maxResults") || 20;
+    let order = url.searchParams.get("order") || "relevance";
+    function bodyLoad() {
+        let [channelInfo, channelVideos] = "<!-- channelInfo -->";
+        // Set search results
+        for (let i = 0; i < channelVideos.length; i++) {
+            let video = channelVideos[i];
+            let ne = q("#searchItemStorage").children[0].cloneNode(true);
+            ne.children[1].children[0].innerText = video.title;
+            ne.children[1].children[1].innerText = channelInfo.author;
+            ne.children[1].children[2].innerHTML = video.descriptionHtml;
+            ne.children[0].children[0].src = video.videoThumbnails.medium.url;
+            document.styleSheets[1].insertRule(`.searchItem:nth-child(${i+1}) > div:first-child::before { content: "${prettySeconds(video.lengthSeconds)}"; }`);
+            ne.href = "/rewrite/video/"+video.videoId;
+            q("#searchResultsContainer").appendChild(ne);
+        }
+    }
+    function search() {
+        window.location.assign("/cloudtube/search?q="+encodeURIComponent(q("#search").value)+"&order="+q("select").selectedOptions[0].value);
+    }
+    function keypress(event) {
+        if (event.keyCode == 13) search();
+    }
+</script>
+<!-- TEMPLATE header -->
+<div id="mainSearchContainer">
+    <div id="searchResultsContainer"></div>
+</div>
+<div id="searchItemStorage" style="display:none;">
+    <a href="#" class="searchItem">
+        <div>
+            <img>
+        </div>
+        <div>
+            <span>Placeholder name</span>
+            <span>Placeholder author</span>
+            <span>Placeholder description</span>
+        </div>
+    </a>
+</div>
+<!-- TEMPLATE end -->

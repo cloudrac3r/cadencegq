@@ -44,11 +44,7 @@ const pageHandlers = [
     {web: "/about/api", local: "about/apidocs.html"},
     {web: "/about/contact", local: "about/contact.html"},
     {web: "/about/site", local: "about/site.html"},
-    {web: "/examples", local: "examples/examples.html"},
-    {web: "/cloudtube", local: "youtube/search.html"},
-    {web: "/cloudtube/search", local: "youtube/search.html"},
-    {web: "/cloudtube/channel/\\S+", local: "youtube/search.html"},
-    {web: "/cloudtube/[\\w-]+", local: "youtube/video.html"}
+    {web: "/examples", local: "examples/examples.html"}
 ];
 const cacheControl = [
     "ttf", "png", "jpg", "svg"

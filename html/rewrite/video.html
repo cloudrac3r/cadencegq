@@ -1,0 +1,274 @@
+<!-- TEMPLATE pre -->
+<link rel="stylesheet" type="text/css" href="/rewrite/youtube.css">
+<title>CloudTube</title>
+<!-- metaOGTags -->
+<script type="text/javascript">
+    const usefulFormats = ["38", "37", "22", "18", "46", "45", "44", "43", "5", "6", "34", "35", "298", "302"];
+
+    function prettySeconds(seconds) {
+        let minutes = Math.floor(seconds / 60);
+        seconds = seconds % 60;
+        let hours = Math.floor(minutes / 60);
+        minutes = minutes % 60;
+        let output = [];
+        if (hours) {
+            output.push(hours);
+            output.push(minutes.toString().padStart(2, "0"));
+        } else {
+            output.push(minutes);
+        }
+        output.push(seconds.toString().padStart(2, "0"));
+        return output.join(":");
+    }
+
+    let formats;
+    let allFormats;
+    let bestAudioURL;
+    let checkingAudioURLs;
+    let lastCurrentTime = 0;
+
+    function chooseFormat(index) {
+        let format = formats[index];
+        let video = q("video");
+        video.preload = "auto";
+        let qs = q("#qualitySelect");
+       // console.log("saving last time: "+video.currentTime);
+        lastCurrentTime = video.currentTime;
+        if (format.index) {
+            if (bestAudioURL) {
+                q("audio").src = bestAudioURL;
+            } else if (!checkingAudioURLs) { // So apprently sometimes Vivaldi on Linux doesn't load the audio length properly so I pick one that works
+                checkingAudioURLs = true;
+                Promise.all(allFormats.filter(f => f.type.includes("audio")).map(f => {
+                    return new Promise(resolve => {
+                        let audio = document.createElement("audio");
+                        audio.src = f.url;
+                        audio.addEventListener("loadeddata", () => {
+                            console.log(f.bitrate, f.type, audio.duration);
+                            resolve({f, audio});
+                        });
+                    });
+                })).then(results => {
+                    let lengths = [];
+                    for (let r of results) {
+                        if (!lengths.find(l => Math.abs(l-r.audio.duration) < 1)) lengths.push(r.audio.duration);
+                    }
+                    let bestLength = lengths.sort((a, b) => (b - a))[0];
+                    let best = results
+                        .filter(r => Math.abs(bestLength-r.audio.duration) < 1)
+                        .sort((a, b) => (b.f.bitrate - a.f.bitrate))[0];
+                    bestAudioURL = best.f.url;
+                    checkingAudioURLs = false;
+                    q("audio").src = bestAudioURL;
+                });
+            }
+        } else {
+            q("audio").removeAttribute("src");
+            q("audio").pause();
+        }
+        video.src = format.url;
+        for (let option of qs.children) {
+            option.removeAttribute("selected");
+        }
+        qs.children[index].setAttribute("selected", "");
+    }
+
+    function loadLastTime() {
+        //console.log("loading last time: "+lastCurrentTime);
+        q("video").currentTime = lastCurrentTime;
+    }
+
+    class BetterTimeout {
+        constructor(callback, delay) {
+            this.callback = callback;
+            this.delay = delay;
+            if (this.callback) {
+                this.isActive = true;
+                this.timeout = setTimeout(this.callback, this.delay);
+            } else {
+                this.isActive = false;
+                this.timeout = null;
+            }
+        }
+        triggerNow() {
+            this.clear();
+            this.callback();
+        }
+        clear() {
+            this.isActive = false;
+            clearTimeout(this.timeout);
+        }
+    }
+
+    function playbackIntervention(event) {
+        console.log(event.target.tagName.toLowerCase(), event.type);
+        let video = q("video");
+        let audio = q("audio");
+        if (audio.src) {
+            let target = event.target;
+            let other = (event.target.tagName == "VIDEO" ? audio : video);
+            switch (event.type) {
+            case "canplaythrough":
+                target.waitingTimeout.clear();
+                if (video.ready && audio.ready) return; // console.log("ignoring canplaythrough; already ready");
+                target.ready = true;
+                if (video.ready && audio.ready) {
+                    video.play();
+                    console.log("both ready");
+                }
+                break;
+            case "durationchange":
+                target.ready = false;
+                break;
+            case "seeked":
+                target.ready = false;
+                target.pause();
+                break;
+            case "pause":
+            case "playing":
+            case "play":
+                inProgress = true;
+                other.currentTime = target.currentTime;
+                if (event.type.startsWith("play")) other.play();
+                else other.pause();
+                break;
+            case "ratechange":
+                other.rate = target.rate;
+                break;
+            case "stalled":
+            case "waiting":
+                if (target.waitingTimeout.isActive) {
+                    target.waitingTimeout.triggerNow();
+                } else if (other.waitingTimeout.isActive) {
+                    other.waitingTimeout.triggerNow();
+                } else {
+                    target.waitingTimeout.clear();
+                    target.waitingTimeout = new BetterTimeout(() => {
+                        target.ready = false;
+                        target.pause();
+                    }, 1000);
+                }
+                break;
+            }
+        } else {
+            if (event.type == "canplaythrough") video.play();
+        }
+    }
+
+    function adjustSpeedSlider() {
+        let speedSlider = q("#speedSlider");
+        q("video").playbackRate = speedSlider.value/1000;
+        q("audio").playbackRate = speedSlider.value/1000;
+        q("#speedLabel").innerText = Math.floor(speedSlider.value/10)+"%";
+    }
+
+    function resetSpeed() {
+        let speedSlider = q("#speedSlider");
+        speedSlider.value = 1000;
+        adjustSpeedSlider();
+    }
+
+    function bodyLoad() {
+        let video = q("video");
+        let audio = q("audio");
+        for (let eventName of ["pause", "play", "seeked"]) {
+            video.addEventListener(eventName, playbackIntervention);
+        }
+        for (let eventName of ["canplaythrough", "waiting", "stalled"]) {
+            video.addEventListener(eventName, playbackIntervention);
+            audio.addEventListener(eventName, playbackIntervention);
+        }
+        video.waitingTimeout = new BetterTimeout();
+        audio.waitingTimeout = new BetterTimeout();
+        let data = "<!-- videoInfo -->";
+        let videoID = data.videoId;
+        // Load video
+        //formats = allFormats.filter(f => usefulFormats.includes(f.itag)/* && f.audioEncoding*/);
+        allFormats = data.formatStreams.concat(data.adaptiveFormats);
+        formats = allFormats.filter(f => f.type.includes("video"));
+        for (let i = 0; i < formats.length; i++) {
+            let f = formats[i];
+            f.label = (f.quality_label || f.resolution) + " " + f.container + (f.index ? " ꜝ" : "") ;
+            let option = document.createElement("option");
+            option.setAttribute("value", i);
+            option.innerText = f.label;
+            q("#qualitySelect").appendChild(option);
+        }
+        chooseFormat(formats.findIndex(f => f.container == "mp4") || 0);
+        // Set video elements
+        q("#videoTitle").innerText = data.title;
+        q("#videoAuthor").innerText = "Uploaded by "+data.author;
+        q("#videoAuthor").href = "/rewrite/channel/"+data.authorId;
+        q("#videoDescription").innerHTML = data.descriptionHtml;
+        data.viewCount = data.viewCount.toString();
+        let commaViewCount = data.viewCount;
+        for (let i = 1; i < data.viewCount.length/3; i++) {
+            let invi = commaViewCount.length - i*3 - i + 1;
+            commaViewCount = commaViewCount.slice(0, invi) + "," + commaViewCount.slice(invi);
+        }
+        q("#videoViews").innerText = commaViewCount+" views";
+        let pubdate = new Date(data.published*1000).toDateString().split(" ");
+        q("#videoUploaded").innerText = "Uploaded "+(+pubdate[2])+" "+pubdate[1]+" "+pubdate[3];
+        let percentRating = data.rating/5*100;
+        q("#videoRatingBar").style.background = `linear-gradient(to right, #208819 ${percentRating}%, #ccc ${percentRating}%)`;
+        // Set related videos
+        let relatedVideos = data.recommendedVideos.filter(rv => rv.title && rv.author && rv.videoId && rv.lengthSeconds);
+        for (let i = 0; i < relatedVideos.length; i++) {
+            let rv = relatedVideos[i];
+            let ne = q("#relatedVideosStorage").children[0].cloneNode(true);
+            ne.children[1].children[0].innerText = rv.title;
+            ne.children[1].children[1].innerText = rv.author;
+            ne.children[0].children[0].src = rv.videoThumbnails.medium.url;
+            document.styleSheets[1].insertRule(`.relatedVideo:nth-child(${i+2}) > div:first-child::before { content: "${prettySeconds(rv.lengthSeconds)}"; }`);
+            ne.href = rv.videoId;
+            q("#relatedVideosContainer").appendChild(ne);
+        }
+    }
+</script>
+<!-- TEMPLATE header -->
+<div id="mainContainer">
+    <div style="flex: 1;">
+        <div class="videoContainer">
+            <video controls preload="auto" ondurationchange="loadLastTime()"></video>
+        </div>
+        <div class="videoInfoBox">
+            <div>
+                <span id="videoTitle">Placeholder title</span>
+                <a id="videoAuthor">Placeholder author</a>
+            </div>
+            <div id="videoRightContainer">
+                <div id="videoUploaded">Placeholder upload date</div>
+                <div id="videoViews">Placeholder views</div>
+                <span id="videoRatingBar"></span>
+            </div>
+        </div>
+        <audio preload="auto"></audio>
+        <div class="belowButtonContainer">
+            <button onclick='window.location.assign("search")'><img src="/fonts/search.svg" style="position: relative; top: 2px; margin-right: 8px;">Search</button>
+            <select id="qualitySelect" oninput="chooseFormat(event.target.selectedIndex)"></select>
+            <button onclick='window.location.assign("https://youtu.be/"+videoID)'>Watch on YouTube</button>
+            <button onclick='window.location.assign("https://hooktube.com/"+videoID)'>Watch on HookTube</button>
+        </div>
+        <div class="belowButtonContainer" id="speedSliderContainer">
+            Adjust speed <span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" list="speeds" id="speedSlider" min="100" max="5000" value="1000" step="1" oninput="adjustSpeedSlider()"></span>
+        </div>
+        <div id="videoDescription">
+            Placeholder description
+        </div>
+    </div>
+    <div id="relatedVideosContainer">
+        <div>Related videos</div>
+    </div>
+</div>
+<div id="relatedVideosStorage" style="display:none;">
+    <a href="#" class="relatedVideo">
+        <div>
+            <img>
+        </div>
+        <div>
+            <span>Placeholder name</span>
+            <span>Placeholder author</span>
+        </div>
+    </a>
+</div>
+<!-- TEMPLATE end -->

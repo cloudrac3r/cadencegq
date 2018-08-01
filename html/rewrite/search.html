@@ -1,0 +1,113 @@
+<!-- TEMPLATE pre -->
+<link rel="stylesheet" type="text/css" href="/youtube/youtube.css">
+<title>CloudTube</title>
+<script type="text/javascript">
+    function prettySeconds(seconds) {
+        let minutes = Math.floor(seconds / 60);
+        seconds = seconds % 60;
+        let hours = Math.floor(minutes / 60);
+        minutes = minutes % 60;
+        let output = [];
+        if (hours) {
+            output.push(hours);
+            output.push(minutes.toString().padStart(2, "0"));
+        } else {
+            output.push(minutes);
+        }
+        output.push(seconds.toString().padStart(2, "0"));
+        return output.join(":");
+    }
+
+    let url = new URL(window.location.href);
+    let searchTerms = url.searchParams.get("q");
+    let maxResults = +url.searchParams.get("maxResults") || 20;
+    let order = url.searchParams.get("order") || "relevance";
+    function bodyLoad() {
+        if (window.location.href.includes("search")) {
+            if (searchTerms) {
+                request(`/api/youtube/search?q=${encodeURIComponent(searchTerms)}&maxResults=${maxResults}&order=${order}`, result => {
+                    if (result.status == 200) {
+                        let data = JSON.parse(result.responseText);
+                        // Set search results
+                        for (let i = 0; i < data.length; i++) {
+                            let video = data[i];
+                            let ne = q("#searchItemStorage").children[0].cloneNode(true);
+                            ne.children[1].children[0].innerText = video.title;
+                            ne.children[1].children[1].innerText = video.channelTitle;
+                            ne.children[1].children[2].innerText = video.description;
+                            ne.children[0].children[0].src = video.thumbnails.medium.url;
+                            document.styleSheets[1].insertRule(`.searchItem:nth-child(${i+1}) > div:first-child::before { content: "${video.duration}"; }`);
+                            ne.href = video.id;
+                            q("#searchResultsContainer").appendChild(ne);
+                        }
+                        // Set search bar
+                        q("#search").value = decodeURIComponent(searchTerms);
+                        // Hide loading block
+                        q("#loading").style.display = "none";
+                        q("#mainSearchContainer").style.display = "flex";
+                    } else {
+                    }
+                });
+            } else {
+                q("#loading").style.display = "none";
+                q("#searchResultsContainer").style.display = "none";
+                q("#mainSearchContainer").style.display = "flex";
+            }
+        } else {
+            q("#searchContainer").style.display = "none";
+            request(`/api/youtube/channel/${encodeURIComponent(window.location.pathname.split("/")[3])}`, result => {
+                let data = JSON.parse(result.responseText);
+                // Set search results
+                for (let i = 0; i < data.length; i++) {
+                    let video = data[i];
+                    let ne = q("#searchItemStorage").children[0].cloneNode(true);
+                    ne.children[1].children[0].innerText = video.snippet.title;
+                    ne.children[1].children[1].innerText = video.snippet.channelTitle;
+                    ne.children[1].children[2].innerText = video.snippet.description;
+                    ne.children[0].children[0].src = video.snippet.thumbnails.medium.url;
+                    document.styleSheets[1].insertRule(`.searchItem:nth-child(${i+1}) > div:first-child::before { content: "${video.duration}"; }`);
+                    ne.href = "/cloudtube/"+video.id;
+                    q("#searchResultsContainer").appendChild(ne);
+                }
+                // Hide loading block
+                q("#loading").style.display = "none";
+                q("#mainSearchContainer").style.display = "flex";
+            });
+        }
+    }
+    function search() {
+        window.location.assign("/cloudtube/search?q="+encodeURIComponent(q("#search").value)+"&order="+q("select").selectedOptions[0].value);
+    }
+    function keypress(event) {
+        if (event.keyCode == 13) search();
+    }
+</script>
+<!-- TEMPLATE header -->
+<!-- TEMPLATE loading -->
+<div id="mainSearchContainer">
+    <div id="searchContainer">
+        <input type="text" id="search" placeholder="Search for something?" onkeypress="keypress(event)">
+        <select>
+            <option value="relevance">Relevance</option>
+            <option value="date">Most recent</option>
+            <option value="rating">Rating</option>
+            <option value="viewCount">Views</option>
+            <option value="title">Title</option>
+        </select>
+        <button id="searchButton" onclick="search()">Search</button>
+    </div>
+    <div id="searchResultsContainer"></div>
+</div>
+<div id="searchItemStorage" style="display:none;">
+    <a href="#" class="searchItem">
+        <div>
+            <img>
+        </div>
+        <div>
+            <span>Placeholder name</span>
+            <span>Placeholder author</span>
+            <span>Placeholder description</span>
+        </div>
+    </a>
+</div>
+<!-- TEMPLATE end -->
