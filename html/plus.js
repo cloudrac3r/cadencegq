@@ -264,8 +264,12 @@ function makeInfoBoxesWork() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-    makeHeadersWork();
+if (document.readyState == "loading") {
+    document.addEventListener("DOMContentLoaded", postLoad);
+} else {
+    postLoad();
+}
+function postLoad() {
     makeInfoBoxesWork();
     try { bodyLoad() } catch (e) {};
     getLoginDetails(login => {
@@ -276,4 +280,4 @@ document.addEventListener("DOMContentLoaded", function() {
             accountStatus.innerText = "Log in";
         }
     });
-});
+}

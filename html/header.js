@@ -1,3 +1,9 @@
+if (document.readyState == "loading") {
+    document.addEventListener("DOMContentLoaded", makeHeadersWork);
+} else {
+    makeHeadersWork();
+}
+
 function makeHeadersWork() {
     let dropdowns = [...document.querySelectorAll("#header > .headerArrow")];
     function dropdownToDiv(element) {
