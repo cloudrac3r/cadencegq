@@ -71,6 +71,54 @@ module.exports = ({db, resolveTemplates}) => {
             })
         },
         {
+            route: "/rewrite/search", methods: ["GET"], code: ({req, params}) => new Promise(resolve => {
+                fs.readFile("html/rewrite/search.html", {encoding: "utf8"}, (err, page) => {
+                    if (err) throw err;
+                    resolveTemplates(page).then(page => {
+                        if (params.q) { // search terms were entered
+                            let order = "relevance"; // waiting on support from invidious api
+                            rp(`https://invidio.us/api/v1/search?q=${params.q}`).then(body => {
+                                try {
+                                    // json.parse?
+                                    page = page.replace('"<!-- searchResults -->"', body);
+                                    page = page.replace("<title></title>", `<title>${params.q} — CloudTube search</title>`);
+                                    let metaOGTags =
+                                        `<meta property="og:title" content="${params.q} — CloudTube search" />\n`+
+                                        `<meta property="og:type" content="video.movie" />\n`+
+                                        `<meta property="og:url" content="https://cadence.gq${req.path}" />\n`+
+                                        `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
+                                    page = page.replace("<!-- metaOGTags -->", metaOGTags);
+                                    resolve({
+                                        statusCode: 200,
+                                        contentType: "text/html",
+                                        content: page
+                                    });
+                                } catch (e) {
+                                    resolve([400, "Error parsing data from Invidious"]);
+                                }
+                            }).catch(err => {
+                                resolve([500, "Error requesting data from Invidious"]);
+                            });
+                        } else { // no search terms
+                            page = page.replace("<!-- searchResults -->", "");
+                            page = page.replace("<title></title>", `<title>CloudTube search</title>`);
+                            let metaOGTags =
+                                `<meta property="og:title" content="CloudTube search" />\n`+
+                                `<meta property="og:type" content="video.movie" />\n`+
+                                `<meta property="og:url" content="https://cadence.gq${req.path}" />\n`+
+                                `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
+                            page = page.replace("<!-- metaOGTags -->", metaOGTags);
+                            resolve({
+                                statusCode: 200,
+                                contentType: "text/html",
+                                content: page
+                            });
+                        }
+                    });
+                });
+            })
+        },
+        {
             route: "/api/youtube/video/([\\w-]+)", methods: ["GET"], code: ({fill}) => {
                 return new Promise(resolve => {
                     ytdl.getInfo(fill[0]).then(info => {
