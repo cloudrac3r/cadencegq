@@ -19,13 +19,8 @@
         return output.join(":");
     }
 
-    let url = new URL(window.location.href);
-    let searchTerms = url.searchParams.get("q");
-    let maxResults = +url.searchParams.get("maxResults") || 20;
-    let order = url.searchParams.get("order") || "relevance";
     function bodyLoad() {
         let [channelInfo, channelVideos] = "<!-- channelInfo -->";
-        // Set search results
         for (let i = 0; i < channelVideos.length; i++) {
             let video = channelVideos[i];
             let ne = q("#searchItemStorage").children[0].cloneNode(true);
