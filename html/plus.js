@@ -264,7 +264,7 @@ function makeInfoBoxesWork() {
     }
 }
 
-function postLoad() {
+document.addEventListener("DOMContentLoaded", function() {
     makeHeadersWork();
     makeInfoBoxesWork();
     try { bodyLoad() } catch (e) {};
@@ -276,4 +276,4 @@ function postLoad() {
             accountStatus.innerText = "Log in";
         }
     });
-}
+});

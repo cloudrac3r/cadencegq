@@ -44,7 +44,8 @@ const pageHandlers = [
     {web: "/about/api", local: "about/apidocs.html"},
     {web: "/about/contact", local: "about/contact.html"},
     {web: "/about/site", local: "about/site.html"},
-    {web: "/examples", local: "examples/examples.html"}
+    {web: "/examples", local: "examples/examples.html"},
+    {web: "/about/javascript", local: "about/javascript.html"}
 ];
 const cacheControl = [
     "ttf", "png", "jpg", "svg"
