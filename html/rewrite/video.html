@@ -1,6 +1,6 @@
 <!-- TEMPLATE pre -->
 <link rel="stylesheet" type="text/css" href="/rewrite/youtube.css">
-<title>CloudTube</title>
+<title></title>
 <!-- metaOGTags -->
 <script type="text/javascript">
     function prettySeconds(seconds) {
@@ -164,6 +164,10 @@
         let speedSlider = q("#speedSlider");
         speedSlider.value = 1000;
         adjustSpeedSlider();
+    }
+
+    function seekTo(seconds) {
+        q("video").currentTime = seconds;
     }
 
     function bodyLoad() {

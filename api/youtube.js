@@ -7,18 +7,20 @@ const fs = require("fs");
 module.exports = ({db, resolveTemplates}) => {
     return [
         {
-            route: "/rewrite/video/([\\w-]+)", methods: ["GET"], code: ({reqPath, fill}) => new Promise(resolve => {
+            route: "/rewrite/video/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
                 rp(`https://invidio.us/api/v1/videos/${fill[0]}`).then(body => {
                     try {
                         let data = JSON.parse(body);
                         fs.readFile("html/rewrite/video.html", {encoding: "utf8"}, (err, page) => {
                             resolveTemplates(page).then(page => {
                                 page = page.replace('"<!-- videoInfo -->"', body);
+                                page = page.replace("<title></title>", `<title>${data.title} — CloudTube</title>`);
+                                while (page.includes("yt.www.watch.player.seekTo")) page = page.replace("yt.www.watch.player.seekTo", "seekTo");
                                 let metaOGTags =
                                     `<meta property="og:title" content="${data.title.replace('"', "'")} — CloudTube video" />\n`+
                                     `<meta property="og:type" content="video.movie" />\n`+
                                     `<meta property="og:image" content="${data.videoThumbnails.medium.url}" />\n`+
-                                    `<meta property="og:url" content="https://cadence.gq${reqPath}" />\n`+
+                                    `<meta property="og:url" content="https://cadence.gq${req.path}" />\n`+
                                     `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                                 page = page.replace("<!-- metaOGTags -->", metaOGTags);
                                 resolve({
@@ -37,7 +39,7 @@ module.exports = ({db, resolveTemplates}) => {
             })
         },
         {
-            route: "/rewrite/channel/([\\w-]+)", methods: ["GET"], code: ({reqPath, fill}) => new Promise(resolve => {
+            route: "/rewrite/channel/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
                 Promise.all([
                     rp(`https://invidio.us/api/v1/channels/${fill[0]}`),
                     rp(`https://invidio.us/api/v1/channels/${fill[0]}/videos`)
@@ -48,11 +50,12 @@ module.exports = ({db, resolveTemplates}) => {
                         fs.readFile("html/rewrite/channel.html", {encoding: "utf8"}, (err, page) => {
                             resolveTemplates(page).then(page => {
                                 page = page.replace('"<!-- channelInfo -->"', JSON.stringify([channelInfo, channelVideos]));
+                                page = page.replace("<title></title>", `<title>${channelInfo.author} — CloudTube</title>`);
                                 let metaOGTags =
                                     `<meta property="og:title" content="${channelInfo.author.replace('"', "'")} — CloudTube channel" />\n`+
                                     `<meta property="og:type" content="video.movie" />\n`+
                                     `<meta property="og:image" content="${channelInfo.authorBanners[0].url}" />\n`+
-                                    `<meta property="og:url" content="https://cadence.gq${reqPath}" />\n`+
+                                    `<meta property="og:url" content="https://cadence.gq${req.path}" />\n`+
                                     `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                                 page = page.replace("<!-- metaOGTags -->", metaOGTags);
                                 resolve({
