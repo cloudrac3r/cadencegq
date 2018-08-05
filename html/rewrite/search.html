@@ -20,31 +20,34 @@
 
     let url = new URL(window.location.href);
     let searchTerms = url.searchParams.get("q");
-    let order = url.searchParams.get("order") || "relevance";
+    let sort_by = url.searchParams.get("sort_by") || "relevance";
     function bodyLoad() {
         if (searchTerms) {
             let data = "<!-- searchResults -->";
             // Set search results
-            for (let i = 0; i < data.length; i++) {
-                let video = data[i];
-                let ne = q("#searchItemStorage").children[0].cloneNode(true);
-                ne.children[1].children[0].innerText = video.title;
-                ne.children[1].children[1].innerText = video.author;
-                ne.children[1].children[2].innerHTML = video.descriptionHtml;
-                ne.children[0].children[0].src = video.videoThumbnails.medium.url;
-                document.styleSheets[1].insertRule(`.searchItem:nth-child(${i+1}) > div:first-child::before { content: "${prettySeconds(video.lengthSeconds)}"; }`);
-                ne.href = "/rewrite/video/"+video.videoId;
-                q("#searchResultsContainer").appendChild(ne);
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+                    let video = data[i];
+                    let ne = q("#searchItemStorage").children[0].cloneNode(true);
+                    ne.children[1].children[0].innerText = video.title;
+                    ne.children[1].children[1].innerText = video.author;
+                    ne.children[1].children[2].innerHTML = video.descriptionHtml;
+                    ne.children[0].children[0].src = video.videoThumbnails.medium.url;
+                    document.styleSheets[1].insertRule(`.searchItem:nth-child(${i+1}) > div:first-child::before { content: "${prettySeconds(video.lengthSeconds)}"; }`);
+                    ne.href = "/rewrite/video/"+video.videoId;
+                    q("#searchResultsContainer").appendChild(ne);
+                }
+            } else {
+                q("#searchResultsContainer").innerHTML = `<p style="text-align: center">No results.</p>`;
             }
             // Set search bar
             q("#search").value = decodeURIComponent(searchTerms);
-        } else {
-            q("#searchResultsContainer").style.display = "none";
-            q("#mainSearchContainer").style.display = "flex";
+            let sortSelect = q("select");
+            sortSelect.selectedIndex = [...sortSelect.options].findIndex(o => o.value == sort_by) || 0;
         }
     }
     function search() {
-        window.location.assign("/rewrite/search?q="+encodeURIComponent(q("#search").value)/*+"&order="+q("select").selectedOptions[0].value*/);
+        window.location.assign("/rewrite/search?q="+encodeURIComponent(q("#search").value)+"&sort_by="+q("select").selectedOptions[0].value);
     }
     function keypress(event) {
         if (event.keyCode == 13) search();
@@ -54,13 +57,12 @@
 <div id="mainSearchContainer">
     <div id="searchContainer">
         <input type="text" id="search" placeholder="Search for something?" onkeypress="keypress(event)">
-        <!-- <select>
+        <select>
             <option value="relevance">Relevance</option>
-            <option value="date">Most recent</option>
+            <option value="upload_date">Upload date</option>
             <option value="rating">Rating</option>
-            <option value="viewCount">Views</option>
-            <option value="title">Title</option>
-        </select> -->
+            <option value="view_count">Views</option>
+        </select>
         <button id="searchButton" onclick="search()">Search</button>
     </div>
     <div id="searchResultsContainer"></div>

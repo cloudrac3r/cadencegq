@@ -79,8 +79,8 @@ module.exports = ({db, resolveTemplates}) => {
                     if (err) throw err;
                     resolveTemplates(page).then(page => {
                         if (params.q) { // search terms were entered
-                            let order = "relevance"; // waiting on support from invidious api
-                            rp(`https://invidio.us/api/v1/search?q=${params.q}`).then(body => {
+                            let sort_by = params.sort_by || "relevance";
+                            rp(`https://invidio.us/api/v1/search?q=${params.q}&sort_by=${sort_by}`).then(body => {
                                 try {
                                     // json.parse?
                                     page = page.replace('"<!-- searchResults -->"', body);
