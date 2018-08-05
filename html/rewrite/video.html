@@ -180,6 +180,12 @@
             video.addEventListener(eventName, playbackIntervention);
             audio.addEventListener(eventName, playbackIntervention);
         }
+        q("#speedSliderContainer").children[0].addEventListener("mousewheel", event => {
+            let offset = 50 * Math.sign(event.deltaY) * Math.sign(-event.shiftKey + 0.5);
+            q("#speedSlider").value = q("#speedSlider").value - offset;
+            adjustSpeedSlider();
+            event.preventDefault();
+        });
         video.waitingTimeout = new BetterTimeout();
         audio.waitingTimeout = new BetterTimeout();
         let data = "<!-- videoInfo -->";
