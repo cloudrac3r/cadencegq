@@ -19,7 +19,7 @@ module.exports = ({db, resolveTemplates}) => {
                                 let metaOGTags =
                                     `<meta property="og:title" content="${data.title.replace('"', "'")} — CloudTube video" />\n`+
                                     `<meta property="og:type" content="video.movie" />\n`+
-                                    `<meta property="og:image" content="${data.videoThumbnails.medium.url}" />\n`+
+                                    `<meta property="og:image" content="${data.videoThumbnails.find(f => f.quality == "medium").url}" />\n`+
                                     `<meta property="og:url" content="https://cadence.gq${req.path}" />\n`+
                                     `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                                 page = page.replace("<!-- metaOGTags -->", metaOGTags);

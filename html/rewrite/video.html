@@ -226,7 +226,7 @@
             let ne = q("#relatedVideosStorage").children[0].cloneNode(true);
             ne.children[1].children[0].innerText = rv.title;
             ne.children[1].children[1].innerText = rv.author;
-            ne.children[0].children[0].src = rv.videoThumbnails.medium.url;
+            ne.children[0].children[0].src = rv.videoThumbnails.find(f => f.quality == "medium").url;
             document.styleSheets[1].insertRule(`.relatedVideo:nth-child(${i+2}) > div:first-child::before { content: "${prettySeconds(rv.lengthSeconds)}"; }`);
             ne.href = rv.videoId;
             q("#relatedVideosContainer").appendChild(ne);
@@ -252,7 +252,7 @@
         </div>
         <audio preload="auto"></audio>
         <div class="belowButtonContainer">
-            <button onclick='window.location.assign("search")'><img src="/fonts/search.svg" style="position: relative; top: 2px; margin-right: 8px;">Search</button>
+            <a href="/rewrite/search"><img src="/fonts/search.svg" style="position: relative; top: 2px; margin-right: 8px;">Search</a>
             <select id="qualitySelect" oninput="chooseFormat(event.target.selectedIndex)"></select>
             <button onclick='window.location.assign("https://youtu.be/"+videoID)'>Watch on YouTube</button>
             <button onclick='window.location.assign("https://hooktube.com/"+videoID)'>Watch on HookTube</button>
