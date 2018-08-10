@@ -42,6 +42,7 @@
     ^ This is the return value, indicated by a R character.
       The notation "Array/JSON" indicates an array containing JSON objects.
       Similarly, "Array/integer" would indicate an array of integers.
+      "204" indicates HTTP 204 No Response, and a successful operation.
 </pre>
 <h2>Pastes</h2>
 <pre>
@@ -55,7 +56,7 @@
 
     Get paste details and content from a pasteID.
 
-- GET /api/pastes/raw/{pasteID}
+- GET /api/pastes/{pasteID}/raw
     R content : string
 
     Get raw paste content as plaintext from a pasteID.
@@ -63,12 +64,26 @@
 - POST /api/pastes
     B JSON
         B username : string?
+        B token : string?
         B content : string
 
     R JSON
         R pasteID : integer
 
-    Upload a new paste. Username, if not provided, will be set to "(anonymous)".
+    Upload a new paste.
+    Specify a token to associate this paste with an account and make it editable by that account.
+    If no token is provided, you can use any username, provided it is not already registered to an account.
+    If neither token nor username is provided, the username will be set to "(anonymous)".
+
+- PATCH /api/pastes/{pasteID}
+    B JSON
+        B content : string
+        B token : string
+
+    R 204
+
+    Edit an existing paste. An account token is required.
+    Set content to an empty string to delete the paste.
 
 - GET /api/pastes
     ? start : integer?
@@ -87,7 +102,7 @@
     If neither start nor end are provided:
         Return as many pastes as possible, sorted by newest to oldest.
     Otherwise:
-        Return as many pastes as possible whose IDs are >= start and <= end.
+        Return as many pastes as possible whose IDs are >= start and &lt;= end.
         If one of start or end is missing, the maximum bound is assumed.
     If limit is provided and is less than the API's internal max, do not return more than that many results.
     Otherwise, return up to the API's internal max.
@@ -120,13 +135,28 @@
         R imageID : string
 
     Upload an image.
+
+- GET /api/images
+    ? limit : integer?
+
+    R Array/JSON
+        R imageID : string
+        R extension : string
+        R author : string
+        R creationTime : integer
+        R expiryTime : integer?
+
+    Get a list of details of existing images.
+    If limit is provided, do not return more than that many results.
 </pre>
 <h2>URLs/Links</h2>
 <pre>
 - GET /api/urls/{hash}
-    R 301 redirect
+    R 303 redirect
 
     Go to a shortened URL.
+    Browsers will be redirected automatically.
+    For non-browsers, examine the "Location" header to find the destination.
 
 - GET /api/urls/{hash}/details
     R JSON
@@ -141,15 +171,19 @@
 - POST /api/urls
     B JSON
         B username : string?
+        B token : string?
         B target : string
 
     R JSON
         R hash : string
 
     Shorten a URL.
+    Specify a token to associate this link with an account.
+    If no token is provided, you can use any username, provided it is not already registered to an account.
+    If neither token nor username is provided, the username will be set to "(anonymous)".
 
 - GET /api/urls
-    ? limit : integer
+    ? limit : integer?
 
     R Array/JSON
         R hash : string
@@ -161,6 +195,53 @@
     Return a list of existing shortened URLs and their details.
     If limit is provided and is less than the API's internal max, do not return more than that many results.
     Otherwise, return up to the API's internal max.
+</pre>
+<h2>Accounts</h2>
+<pre>
+- POST /api/accounts
+    B JSON
+        B username : string
+        B password : string
+
+    R 204
+
+    Create a new account with that username and password.
+
+- PATCH /api/accounts
+    B JSON
+        B username : string
+        B password : string
+        B newPassword : string
+
+    R 204
+
+    Edit an account's password.
+    The password property should contain the account's previous password.
+
+- POST /api/accounts/tokens
+    B JSON
+        B username : string
+        B password : string
+
+    R JSON
+        R token : string
+        R expires : integer
+
+    Create a new account access token. This token is used to create pastes or links from that account.
+    The token will expire and be unusable on the date specified in the expires property.
+    You can create as many tokens as you like for a single account.
+
+- GET /api/accounts/tokens/{token}
+    R JSON
+        R username : string
+        R expires : integer
+
+    Get the username and expiry date of an existing account access token.
+
+- DELETE /api/accounts/tokens/{token}
+    R 204
+
+    Delete an existing account access token.
 </pre>
 <h2>Error codes</h2>
 <pre>
