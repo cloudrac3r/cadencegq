@@ -131,8 +131,12 @@ textarea, input, button, pre, select {
 #videoDescription {
     margin-top: 20px;
     background-color: rgba(225, 220, 230, 0.08);
-    padding: 8px;
+    padding: 10px;
     border-radius: 4px;
+}
+#eow-description {
+    margin: 0;
+    padding: 0;
 }
 
 .searchItem {

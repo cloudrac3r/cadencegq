@@ -231,6 +231,9 @@
             ne.href = rv.videoId;
             q("#relatedVideosContainer").appendChild(ne);
         }
+        // Set links
+        q("#youtubeLink").setAttribute("href", `https://youtube.com/watch?v=${videoID}&feature=cloudtube`);
+        q("#hooktubeLink").setAttribute("href", `https://hooktube.com/watch?v=${videoID}&feature=cloudtube`);
     }
 </script>
 <!-- TEMPLATE header -->
@@ -252,10 +255,10 @@
         </div>
         <audio preload="auto"></audio>
         <div class="belowButtonContainer">
-            <a href="/rewrite/search"><img src="/fonts/search.svg" style="position: relative; top: 2px; margin-right: 8px;">Search</a>
+            <a class="linkbutton" href="/rewrite/search"><img src="/fonts/search.svg" style="position: relative; top: 2px; margin-right: 8px;">Search</a>
             <select id="qualitySelect" oninput="chooseFormat(event.target.selectedIndex)"></select>
-            <button onclick='window.location.assign("https://youtu.be/"+videoID)'>Watch on YouTube</button>
-            <button onclick='window.location.assign("https://hooktube.com/"+videoID)'>Watch on HookTube</button>
+            <a class="linkbutton" id="youtubeLink">Watch on YouTube</a>
+            <a class="linkbutton" id="hooktubeLink">Watch on HookTube</a>
         </div>
         <div class="belowButtonContainer" id="speedSliderContainer">
             Adjust speed <span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" list="speeds" id="speedSlider" min="100" max="5000" value="1000" step="1" oninput="adjustSpeedSlider()"></span>
