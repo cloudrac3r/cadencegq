@@ -231,9 +231,18 @@
             ne.href = rv.videoId;
             q("#relatedVideosContainer").appendChild(ne);
         }
-        // Set links
+        // Set buttons below video
         q("#youtubeLink").setAttribute("href", `https://youtube.com/watch?v=${videoID}&feature=cloudtube`);
         q("#hooktubeLink").setAttribute("href", `https://hooktube.com/watch?v=${videoID}&feature=cloudtube`);
+        // Fix description
+        [...q("#eow-description").children].filter(c => c.tagName == "A").forEach(c => {
+            let href = c.getAttribute("href");
+            if (href.startsWith("/redirect")) {
+                c.setAttribute("href", new URLSearchParams(href).get("q"));
+            } else {
+                c.setAttribute("href", href.replace(/^.*=/, ""));
+            }
+        });
     }
 </script>
 <!-- TEMPLATE header -->
