@@ -1,5 +1,5 @@
 <!-- TEMPLATE pre -->
-<link rel="stylesheet" type="text/css" href="/rewrite/youtube.css">
+<link rel="stylesheet" type="text/css" href="/cloudtube/youtube.css">
 <title></title>
 <script type="text/javascript">
     function prettySeconds(seconds) {
@@ -34,7 +34,7 @@
                     ne.children[1].children[2].innerHTML = video.descriptionHtml;
                     ne.children[0].children[0].src = video.videoThumbnails.find(f => f.quality == "medium").url;
                     document.styleSheets[1].insertRule(`.searchItem:nth-child(${i+1}) > div:first-child::before { content: "${prettySeconds(video.lengthSeconds)}"; }`);
-                    ne.href = "/rewrite/video/"+video.videoId;
+                    ne.href = "/cloudtube/video/"+video.videoId;
                     q("#searchResultsContainer").appendChild(ne);
                 }
             } else {
@@ -47,7 +47,7 @@
         }
     }
     function search() {
-        window.location.assign("/rewrite/search?q="+encodeURIComponent(q("#search").value)+"&sort_by="+q("select").selectedOptions[0].value);
+        window.location.assign("/cloudtube/search?q="+encodeURIComponent(q("#search").value)+"&sort_by="+q("select").selectedOptions[0].value);
     }
     function keypress(event) {
         if (event.keyCode == 13) search();

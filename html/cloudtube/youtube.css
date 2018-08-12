@@ -114,6 +114,11 @@ textarea, input, button, pre, select {
 
 .belowButtonContainer {
     margin-top: 16px;
+    display: flex;
+}
+
+.belowButtonContainer * {
+    margin: 0px 4px;
 }
 
 #videoRightContainer {

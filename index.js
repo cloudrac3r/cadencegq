@@ -45,7 +45,10 @@ const pageHandlers = [
     {web: "/about/contact", local: "about/contact.html"},
     {web: "/about/site", local: "about/site.html"},
     {web: "/examples", local: "examples/examples.html"},
-    {web: "/about/javascript", local: "about/javascript.html"}
+    {web: "/about/javascript", local: "about/javascript.html"},
+    {web: "/legacy/search", local: "legacy/search.html"},
+    {web: "/legacy/[\\w-]+", local: "legacy/video.html"},
+    {web: "/legacy/channel/\\w+", local: "legacy/search.html"}
 ];
 const cacheControl = [
     "ttf", "png", "jpg", "svg"

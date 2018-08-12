@@ -1,9 +1,8 @@
 <!-- TEMPLATE pre -->
-<link rel="stylesheet" type="text/css" href="/youtube/youtube.css">
-<title>CloudTube</title>
+<link rel="stylesheet" type="text/css" href="/cloudtube/youtube.css">
+<title></title>
+<!-- metaOGTags -->
 <script type="text/javascript">
-    const usefulFormats = ["38", "37", "22", "18", "46", "45", "44", "43", "5", "6", "34", "35", "298", "302"];
-
     function prettySeconds(seconds) {
         let minutes = Math.floor(seconds / 60);
         seconds = seconds % 60;
@@ -20,7 +19,6 @@
         return output.join(":");
     }
 
-    let videoID;
     let formats;
     let allFormats;
     let bestAudioURL;
@@ -34,17 +32,17 @@
         let qs = q("#qualitySelect");
        // console.log("saving last time: "+video.currentTime);
         lastCurrentTime = video.currentTime;
-        if (!format.audioEncoding) {
+        if (format.index) {
             if (bestAudioURL) {
                 q("audio").src = bestAudioURL;
             } else if (!checkingAudioURLs) { // So apprently sometimes Vivaldi on Linux doesn't load the audio length properly so I pick one that works
                 checkingAudioURLs = true;
-                Promise.all(allFormats.filter(f => !f.resolution).sort((a, b) => (b.audioBitrate - a.audioBitrate)).map(f => {
+                Promise.all(allFormats.filter(f => f.type.includes("audio")).map(f => {
                     return new Promise(resolve => {
                         let audio = document.createElement("audio");
                         audio.src = f.url;
                         audio.addEventListener("loadeddata", () => {
-                            console.log(f.audioBitrate, f.audioEncoding, audio.duration);
+                            console.log(f.bitrate, f.type, audio.duration);
                             resolve({f, audio});
                         });
                     });
@@ -56,7 +54,7 @@
                     let bestLength = lengths.sort((a, b) => (b - a))[0];
                     let best = results
                         .filter(r => Math.abs(bestLength-r.audio.duration) < 1)
-                        .sort((a, b) => (b.f.audioBitrate - a.f.audioBitrate))[0];
+                        .sort((a, b) => (b.f.bitrate - a.f.bitrate))[0];
                     bestAudioURL = best.f.url;
                     checkingAudioURLs = false;
                     q("audio").src = bestAudioURL;
@@ -168,6 +166,10 @@
         adjustSpeedSlider();
     }
 
+    function seekTo(seconds) {
+        q("video").currentTime = seconds;
+    }
+
     function bodyLoad() {
         let video = q("video");
         let audio = q("audio");
@@ -178,65 +180,78 @@
             video.addEventListener(eventName, playbackIntervention);
             audio.addEventListener(eventName, playbackIntervention);
         }
+        q("#speedSliderContainer").children[0].addEventListener("mousewheel", event => {
+            let offset = 50 * Math.sign(event.deltaY) * Math.sign(-event.shiftKey + 0.5);
+            q("#speedSlider").value = q("#speedSlider").value - offset;
+            adjustSpeedSlider();
+            event.preventDefault();
+        });
         video.waitingTimeout = new BetterTimeout();
         audio.waitingTimeout = new BetterTimeout();
-        videoID = window.location.href.match(new RegExp("/cloudtube/([\\w-]+)"))[1];
-        request(`/api/youtube/video/${videoID}`, result => {
-            if (result.status == 200) {
-                let data = JSON.parse(result.responseText);
-                // Load video
-                //formats = allFormats.filter(f => usefulFormats.includes(f.itag)/* && f.audioEncoding*/);
-                allFormats = data.formats;
-                formats = allFormats.filter(f => f.resolution);
-                for (let i = 0; i < formats.length; i++) {
-                    let f = formats[i];
-                    f.label = (f.quality_label || f.resolution) + " " + f.container + (f.audioEncoding ? "" : " ꜝ") ;
-                    let option = document.createElement("option");
-                    option.setAttribute("value", i);
-                    option.innerText = f.label;
-                    q("#qualitySelect").appendChild(option);
-                }
-                chooseFormat(formats.findIndex(f => f.container == "mp4") || 0);
-                // Stop loading animation
-                for (let block of document.querySelectorAll(".loadingBlock"))
-                    block.style["animation-play-state"] = "paused";
-                // Set video elements
-                q("#videoTitle").innerText = data.title;
-                q("#videoAuthor").innerText = "Uploaded by "+data.author.name;
-                q("#videoAuthor").href = "/cloudtube/channel/"+data.author.id;
-                q("#videoDescription").innerText = data.description;
-                let commaViewCount = data.view_count;
-                for (let i = 1; i < data.view_count.length/3; i++) {
-                    let invi = commaViewCount.length - i*3 - i + 1;
-                    commaViewCount = commaViewCount.slice(0, invi) + "," + commaViewCount.slice(invi);
-                }
-                let pubdate = new Date(data.published).toDateString().split(" ");
-                q("#videoUploaded").innerText = "Uploaded "+(+pubdate[2])+" "+pubdate[1]+" "+pubdate[3];
-                q("#videoViews").innerText = commaViewCount+" views";
-                let percentRating = data.avg_rating/5*100;
-                q("#videoRatingBar").style.background = `linear-gradient(to right, #208819 ${percentRating}%, #ccc ${percentRating}%)`;
-                // Set related videos
-                let relatedVideos = data.related_videos.filter(rv => rv.title && rv.author && rv.length_seconds);
-                for (let i = 0; i < relatedVideos.length; i++) {
-                    let rv = relatedVideos[i];
-                    let ne = q("#relatedVideosStorage").children[0].cloneNode(true);
-                    ne.children[1].children[0].innerText = rv.title;
-                    ne.children[1].children[1].innerText = rv.author;
-                    ne.children[0].children[0].src = rv.iurlmq;
-                    document.styleSheets[1].insertRule(`.relatedVideo:nth-child(${i+2}) > div:first-child::before { content: "${prettySeconds(rv.length_seconds)}"; }`);
-                    ne.href = rv.id;
-                    q("#relatedVideosContainer").appendChild(ne);
-                }
-                // Hide loading block
-                q("#loading").style.display = "none";
-                q("#mainContainer").style.display = "flex";
+        let data = "<!-- videoInfo -->";
+        let videoID = data.videoId;
+        // Load video
+        //formats = allFormats.filter(f => usefulFormats.includes(f.itag)/* && f.audioEncoding*/);
+        allFormats = data.formatStreams.concat(data.adaptiveFormats);
+        formats = allFormats.filter(f => f.type.includes("video"));
+        for (let i = 0; i < formats.length; i++) {
+            let f = formats[i];
+            f.label = (f.quality_label || f.resolution) + " " + f.container + (f.index ? " ꜝ" : "") ;
+            let option = document.createElement("option");
+            option.setAttribute("value", i);
+            option.innerText = f.label;
+            q("#qualitySelect").appendChild(option);
+        }
+        chooseFormat(formats.findIndex(f => f.container == "mp4") || 0);
+        // Set video elements
+        q("#videoTitle").innerText = data.title;
+        q("#videoAuthor").innerText = "Uploaded by "+data.author;
+        q("#videoAuthor").href = "/cloudtube/channel/"+data.authorId;
+        q("#videoDescription").innerHTML = data.descriptionHtml;
+        data.viewCount = data.viewCount.toString();
+        let commaViewCount = data.viewCount;
+        for (let i = 1; i < data.viewCount.length/3; i++) {
+            let invi = commaViewCount.length - i*3 - i + 1;
+            commaViewCount = commaViewCount.slice(0, invi) + "," + commaViewCount.slice(invi);
+        }
+        q("#videoViews").innerText = commaViewCount+" views";
+        let pubdate = new Date(data.published*1000).toDateString().split(" ");
+        q("#videoUploaded").innerText = "Uploaded "+(+pubdate[2])+" "+pubdate[1]+" "+pubdate[3];
+        let percentRating = data.rating/5*100;
+        q("#videoRatingBar").style.background = `linear-gradient(to right, #208819 ${percentRating}%, #ccc ${percentRating}%)`;
+        // Set related videos
+        let relatedVideos = data.recommendedVideos.filter(rv => rv.title && rv.author && rv.videoId && rv.lengthSeconds);
+        for (let i = 0; i < relatedVideos.length; i++) {
+            let rv = relatedVideos[i];
+            let ne = q("#relatedVideosStorage").children[0].cloneNode(true);
+            ne.children[1].children[0].innerText = rv.title;
+            ne.children[1].children[1].innerText = rv.author;
+            ne.children[0].children[0].src = rv.videoThumbnails.find(f => f.quality == "medium").url;
+            document.styleSheets[1].insertRule(`.relatedVideo:nth-child(${i+2}) > div:first-child::before { content: "${prettySeconds(rv.lengthSeconds)}"; }`);
+            ne.href = rv.videoId;
+            q("#relatedVideosContainer").appendChild(ne);
+        }
+        // Set buttons below video
+        q("#youtubeLink").setAttribute("href", `https://youtube.com/watch?v=${videoID}&feature=cloudtube`);
+        q("#hooktubeLink").setAttribute("href", `https://hooktube.com/watch?v=${videoID}&feature=cloudtube`);
+        q("#legacyLink").setAttribute("href", `/legacy/${videoID}`);
+        // Fix description
+        [...q("#eow-description").children].filter(c => c.tagName == "A").forEach(c => {
+            if (c.innerText.startsWith("#")) {
+                c.removeAttribute("href");
             } else {
+                let href = c.getAttribute("href");
+                if (href.startsWith("/redirect")) {
+                    href = href.replace(/^.*\?/, "");
+                    c.setAttribute("href", new URLSearchParams(href).get("q"));
+                } else {
+                    c.setAttribute("href", href.replace(/^.*=/, ""));
+                }
             }
         });
     }
 </script>
 <!-- TEMPLATE header -->
-<!-- TEMPLATE loading -->
 <div id="mainContainer">
     <div style="flex: 1;">
         <div class="videoContainer">
@@ -255,10 +270,11 @@
         </div>
         <audio preload="auto"></audio>
         <div class="belowButtonContainer">
-            <button onclick='window.location.assign("search")'><img src="/fonts/search.svg" style="position: relative; top: 2px; margin-right: 8px;">Search</button>
+            <a class="linkbutton" href="/cloudtube/search"><img src="/fonts/search.svg" style="position: relative; top: 2px; margin-right: 8px;">Search</a>
             <select id="qualitySelect" oninput="chooseFormat(event.target.selectedIndex)"></select>
-            <button onclick='window.location.assign("https://youtu.be/"+videoID)'>Watch on YouTube</button>
-            <button onclick='window.location.assign("https://hooktube.com/"+videoID)'>Watch on HookTube</button>
+            <a class="linkbutton" id="youtubeLink">Watch on YouTube</a>
+            <a class="linkbutton" id="hooktubeLink">Watch on HookTube</a>
+            <a class="linkbutton" id="legacyLink">Watch on legacy</a>
         </div>
         <div class="belowButtonContainer" id="speedSliderContainer">
             Adjust speed <span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" list="speeds" id="speedSlider" min="100" max="5000" value="1000" step="1" oninput="adjustSpeedSlider()"></span>

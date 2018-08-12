@@ -7,14 +7,14 @@ const fs = require("fs");
 module.exports = ({db, resolveTemplates}) => {
     return [
         {
-            route: "/rewrite/video/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
+            route: "/cloudtube/video/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
                 rp(`https://invidio.us/api/v1/videos/${fill[0]}`).then(body => {
                     try {
                         let data = JSON.parse(body);
-                        fs.readFile("html/rewrite/video.html", {encoding: "utf8"}, (err, page) => {
+                        fs.readFile("html/cloudtube/video.html", {encoding: "utf8"}, (err, page) => {
                             resolveTemplates(page).then(page => {
                                 page = page.replace('"<!-- videoInfo -->"', body);
-                                page = page.replace("<title></title>", `<title>${data.title} — CloudTube</title>`);
+                                page = page.replace("<title></title>", `<title>${data.title} — CloudTube video</title>`);
                                 while (page.includes("yt.www.watch.player.seekTo")) page = page.replace("yt.www.watch.player.seekTo", "seekTo");
                                 let metaOGTags =
                                     `<meta property="og:title" content="${data.title.replace('"', "'")} — CloudTube video" />\n`+
@@ -39,7 +39,7 @@ module.exports = ({db, resolveTemplates}) => {
             })
         },
         {
-            route: "/rewrite/channel/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
+            route: "/cloudtube/channel/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
                 Promise.all([
                     rp(`https://invidio.us/api/v1/channels/${fill[0]}`),
                     rp(`https://invidio.us/api/v1/channels/${fill[0]}/videos`)
@@ -47,10 +47,10 @@ module.exports = ({db, resolveTemplates}) => {
                     try {
                         channelInfo = JSON.parse(channelInfo);
                         channelVideos = JSON.parse(channelVideos);
-                        fs.readFile("html/rewrite/channel.html", {encoding: "utf8"}, (err, page) => {
+                        fs.readFile("html/cloudtube/channel.html", {encoding: "utf8"}, (err, page) => {
                             resolveTemplates(page).then(page => {
                                 page = page.replace('"<!-- channelInfo -->"', JSON.stringify([channelInfo, channelVideos]));
-                                page = page.replace("<title></title>", `<title>${channelInfo.author} — CloudTube</title>`);
+                                page = page.replace("<title></title>", `<title>${channelInfo.author} — CloudTube channel</title>`);
                                 let metaOGTags =
                                     `<meta property="og:title" content="${channelInfo.author.replace('"', "'")} — CloudTube channel" />\n`+
                                     `<meta property="og:type" content="video.movie" />\n`+
@@ -74,8 +74,8 @@ module.exports = ({db, resolveTemplates}) => {
             })
         },
         {
-            route: "/rewrite/search", methods: ["GET"], code: ({req, params}) => new Promise(resolve => {
-                fs.readFile("html/rewrite/search.html", {encoding: "utf8"}, (err, page) => {
+            route: "/cloudtube/search", methods: ["GET"], code: ({req, params}) => new Promise(resolve => {
+                fs.readFile("html/cloudtube/search.html", {encoding: "utf8"}, (err, page) => {
                     if (err) throw err;
                     resolveTemplates(page).then(page => {
                         if (params.q) { // search terms were entered
