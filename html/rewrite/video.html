@@ -236,11 +236,16 @@
         q("#hooktubeLink").setAttribute("href", `https://hooktube.com/watch?v=${videoID}&feature=cloudtube`);
         // Fix description
         [...q("#eow-description").children].filter(c => c.tagName == "A").forEach(c => {
-            let href = c.getAttribute("href");
-            if (href.startsWith("/redirect")) {
-                c.setAttribute("href", new URLSearchParams(href).get("q"));
+            if (c.innerText.startsWith("#")) {
+                c.removeAttribute("href");
             } else {
-                c.setAttribute("href", href.replace(/^.*=/, ""));
+                let href = c.getAttribute("href");
+                if (href.startsWith("/redirect")) {
+                    href = href.replace(/^.*\?/, "");
+                    c.setAttribute("href", new URLSearchParams(href).get("q"));
+                } else {
+                    c.setAttribute("href", href.replace(/^.*=/, ""));
+                }
             }
         });
     }
