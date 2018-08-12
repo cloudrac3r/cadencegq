@@ -104,6 +104,16 @@ textarea, input:not([type=range]), button, pre, select, .infoBox {
     margin: 4px;
 }
 
+a.linkbutton {
+    background-color: rgba(225, 220, 255, 0.05);
+    padding: 8px;
+    border-radius: 4px;
+    color: #ddd;
+    text-decoration: none;
+    border: 1px solid grey;
+    font-size: 16px;
+}
+
 pre {
     white-space: pre-wrap;
     font-size: 13.3333px;

@@ -1,5 +1,5 @@
 <!-- TEMPLATE pre -->
-<link rel="stylesheet" type="text/css" href="/youtube/youtube.css">
+<link rel="stylesheet" type="text/css" href="/legacy/youtube.css">
 <title>CloudTube</title>
 <script type="text/javascript">
     function prettySeconds(seconds) {
@@ -66,7 +66,7 @@
                     ne.children[1].children[2].innerText = video.snippet.description;
                     ne.children[0].children[0].src = video.snippet.thumbnails.medium.url;
                     document.styleSheets[1].insertRule(`.searchItem:nth-child(${i+1}) > div:first-child::before { content: "${video.duration}"; }`);
-                    ne.href = "/cloudtube/"+video.id;
+                    ne.href = "/legacy/"+video.id;
                     q("#searchResultsContainer").appendChild(ne);
                 }
                 // Hide loading block
@@ -76,7 +76,7 @@
         }
     }
     function search() {
-        window.location.assign("/cloudtube/search?q="+encodeURIComponent(q("#search").value)+"&order="+q("select").selectedOptions[0].value);
+        window.location.assign("/legacy/search?q="+encodeURIComponent(q("#search").value)+"&order="+q("select").selectedOptions[0].value);
     }
     function keypress(event) {
         if (event.keyCode == 13) search();

@@ -2,9 +2,125 @@ const ytdl = require("ytdl-core");
 const auth = require("../auth.json");
 const yts = require("youtube-search");
 const rp = require("request-promise");
+const fs = require("fs");
 
-module.exports = ({db}) => {
+module.exports = ({db, resolveTemplates}) => {
     return [
+        {
+            route: "/cloudtube/video/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
+                rp(`https://invidio.us/api/v1/videos/${fill[0]}`).then(body => {
+                    try {
+                        let data = JSON.parse(body);
+                        fs.readFile("html/cloudtube/video.html", {encoding: "utf8"}, (err, page) => {
+                            resolveTemplates(page).then(page => {
+                                page = page.replace('"<!-- videoInfo -->"', body);
+                                page = page.replace("<title></title>", `<title>${data.title} — CloudTube video</title>`);
+                                while (page.includes("yt.www.watch.player.seekTo")) page = page.replace("yt.www.watch.player.seekTo", "seekTo");
+                                let metaOGTags =
+                                    `<meta property="og:title" content="${data.title.replace('"', "'")} — CloudTube video" />\n`+
+                                    `<meta property="og:type" content="video.movie" />\n`+
+                                    `<meta property="og:image" content="${data.videoThumbnails.find(f => f.quality == "medium").url}" />\n`+
+                                    `<meta property="og:url" content="https://cadence.gq${req.path}" />\n`+
+                                    `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
+                                page = page.replace("<!-- metaOGTags -->", metaOGTags);
+                                resolve({
+                                    statusCode: 200,
+                                    contentType: "text/html",
+                                    content: page
+                                });
+                            });
+                        });
+                    } catch (e) {
+                        resolve([400, "Error parsing data from Invidious"]);
+                    }
+                }).catch(err => {
+                    resolve([500, "Error requesting data from Invidious"]);
+                });
+            })
+        },
+        {
+            route: "/cloudtube/channel/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
+                Promise.all([
+                    rp(`https://invidio.us/api/v1/channels/${fill[0]}`),
+                    rp(`https://invidio.us/api/v1/channels/${fill[0]}/videos`)
+                ]).then(([channelInfo, channelVideos]) => {
+                    try {
+                        channelInfo = JSON.parse(channelInfo);
+                        channelVideos = JSON.parse(channelVideos);
+                        fs.readFile("html/cloudtube/channel.html", {encoding: "utf8"}, (err, page) => {
+                            resolveTemplates(page).then(page => {
+                                page = page.replace('"<!-- channelInfo -->"', JSON.stringify([channelInfo, channelVideos]));
+                                page = page.replace("<title></title>", `<title>${channelInfo.author} — CloudTube channel</title>`);
+                                let metaOGTags =
+                                    `<meta property="og:title" content="${channelInfo.author.replace('"', "'")} — CloudTube channel" />\n`+
+                                    `<meta property="og:type" content="video.movie" />\n`+
+                                    `<meta property="og:image" content="${channelInfo.authorBanners[0].url}" />\n`+
+                                    `<meta property="og:url" content="https://cadence.gq${req.path}" />\n`+
+                                    `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
+                                page = page.replace("<!-- metaOGTags -->", metaOGTags);
+                                resolve({
+                                    statusCode: 200,
+                                    contentType: "text/html",
+                                    content: page
+                                });
+                            });
+                        });
+                    } catch (e) {
+                        resolve([400, "Error parsing data from Invidious"]);
+                    }
+                }).catch(err => {
+                    resolve([500, "Error requesting data from Invidious"]);
+                });
+            })
+        },
+        {
+            route: "/cloudtube/search", methods: ["GET"], code: ({req, params}) => new Promise(resolve => {
+                fs.readFile("html/cloudtube/search.html", {encoding: "utf8"}, (err, page) => {
+                    if (err) throw err;
+                    resolveTemplates(page).then(page => {
+                        if (params.q) { // search terms were entered
+                            let sort_by = params.sort_by || "relevance";
+                            rp(`https://invidio.us/api/v1/search?q=${params.q}&sort_by=${sort_by}`).then(body => {
+                                try {
+                                    // json.parse?
+                                    page = page.replace('"<!-- searchResults -->"', body);
+                                    page = page.replace("<title></title>", `<title>${params.q} — CloudTube search</title>`);
+                                    let metaOGTags =
+                                        `<meta property="og:title" content="${params.q} — CloudTube search" />\n`+
+                                        `<meta property="og:type" content="video.movie" />\n`+
+                                        `<meta property="og:url" content="https://cadence.gq${req.path}" />\n`+
+                                        `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
+                                    page = page.replace("<!-- metaOGTags -->", metaOGTags);
+                                    resolve({
+                                        statusCode: 200,
+                                        contentType: "text/html",
+                                        content: page
+                                    });
+                                } catch (e) {
+                                    resolve([400, "Error parsing data from Invidious"]);
+                                }
+                            }).catch(err => {
+                                resolve([500, "Error requesting data from Invidious"]);
+                            });
+                        } else { // no search terms
+                            page = page.replace("<!-- searchResults -->", "");
+                            page = page.replace("<title></title>", `<title>CloudTube search</title>`);
+                            let metaOGTags =
+                                `<meta property="og:title" content="CloudTube search" />\n`+
+                                `<meta property="og:type" content="video.movie" />\n`+
+                                `<meta property="og:url" content="https://cadence.gq${req.path}" />\n`+
+                                `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
+                            page = page.replace("<!-- metaOGTags -->", metaOGTags);
+                            resolve({
+                                statusCode: 200,
+                                contentType: "text/html",
+                                content: page
+                            });
+                        }
+                    });
+                });
+            })
+        },
         {
             route: "/api/youtube/video/([\\w-]+)", methods: ["GET"], code: ({fill}) => {
                 return new Promise(resolve => {

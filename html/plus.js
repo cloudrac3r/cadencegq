@@ -264,8 +264,12 @@ function makeInfoBoxesWork() {
     }
 }
 
+if (document.readyState == "loading") {
+    document.addEventListener("DOMContentLoaded", postLoad);
+} else {
+    postLoad();
+}
 function postLoad() {
-    makeHeadersWork();
     makeInfoBoxesWork();
     try { bodyLoad() } catch (e) {};
     getLoginDetails(login => {
