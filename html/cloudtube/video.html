@@ -196,7 +196,7 @@
         formats = allFormats.filter(f => f.type.includes("video"));
         for (let i = 0; i < formats.length; i++) {
             let f = formats[i];
-            f.label = (f.quality_label || f.resolution) + " " + f.container + (f.index ? " ꜝ" : "") ;
+            f.label = (f.qualityLabel || f.resolution) + " " + f.container + (f.index ? " ꜝ" : "") ;
             let option = document.createElement("option");
             option.setAttribute("value", i);
             option.innerText = f.label;
