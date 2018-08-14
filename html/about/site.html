@@ -1,25 +1,27 @@
 <!-- TEMPLATE pre -->
 <title>Website info</title>
 <script type="text/javascript">
-    getServerInfo(info => {
-        q("#dependencies").innerText = info.dependencies.join(", ");
-        q("#dependencies").classList.remove("dim");
-        info.requests = ""+info.requests;
-        let commas = info.requests;
-        for (let i = 1; i < info.requests.length/3; i++) {
-            let invi = commas.length - i*3 - i + 1;
-            commas = commas.slice(0, invi) + "," + commas.slice(invi);
-        }
-        q("#requests").innerText = commas;
-        q("#requests").classList.remove("dim");
-        q("#version").innerText = info.nodeVersion;
-        let date = new Date(info.latestCommitTime);
-        let dateString = date.toDateString()+" "+date.toTimeString().split(":").slice(0, 2).join(":");
-        q("#commitInfo").classList.remove("dim");
-        q("#commitInfo").innerHTML =
-            `Latest commit was at ${dateString}: `+
-            `<a href="https://github.com/cloudrac3r/cadencegq/commit/${info.latestCommit}">${info.latestCommit}</a>`;
-    });
+    function bodyLoad() {
+        getServerInfo(info => {
+            q("#dependencies").innerText = info.dependencies.join(", ");
+            q("#dependencies").classList.remove("dim");
+            info.requests = ""+info.requests;
+            let commas = info.requests;
+            for (let i = 1; i < info.requests.length/3; i++) {
+                let invi = commas.length - i*3 - i + 1;
+                commas = commas.slice(0, invi) + "," + commas.slice(invi);
+            }
+            q("#requests").innerText = commas;
+            q("#requests").classList.remove("dim");
+            q("#version").innerText = info.nodeVersion;
+            let date = new Date(info.latestCommitTime);
+            let dateString = date.toDateString()+" "+date.toTimeString().split(":").slice(0, 2).join(":");
+            q("#commitInfo").classList.remove("dim");
+            q("#commitInfo").innerHTML =
+                `Latest commit was at ${dateString}: `+
+                `<a href="https://github.com/cloudrac3r/cadencegq/commit/${info.latestCommit}">${info.latestCommit}</a>`;
+        });
+    }
 </script>
 <style>
     .bold {
