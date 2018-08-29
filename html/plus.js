@@ -271,7 +271,12 @@ if (document.readyState == "loading") {
 }
 function postLoad() {
     makeInfoBoxesWork();
-    try { bodyLoad() } catch (e) {};
+    let bodyLoadExists = false;
+    try {
+        bodyLoad
+        bodyLoadExists = true;
+    } catch (e) {};
+    if (bodyLoadExists) bodyLoad();
     getLoginDetails(login => {
         let accountStatus = q("#accountState");
         if (login) {

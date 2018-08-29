@@ -122,6 +122,51 @@ module.exports = ({db, resolveTemplates}) => {
             })
         },
         {
+            route: "/api/youtube/subscribe", methods: ["POST"], code: async ({data}) => {
+                if (!data.channelID) return [400, 1];
+                if (!data.token) return [400, 8];
+                let userRow = await db.get("SELECT userID FROM AccountTokens WHERE token = ?", data.token);
+                if (!userRow || userRow.expires <= Date.now()) return [401, 8];
+                let subscriptions = (await db.all("SELECT channelID FROM AccountSubscriptions WHERE userID = ?", userRow.userID)).map(r => r.channelID);
+                let nowSubscribed;
+                if (subscriptions.includes(data.channelID)) {
+                    await db.run("DELETE FROM AccountSubscriptions WHERE userID = ? AND channelID = ?", [userRow.userID, data.channelID]);
+                    nowSubscribed = false;
+                } else {
+                    await db.run("INSERT INTO AccountSubscriptions VALUES (?, ?)", [userRow.userID, data.channelID]);
+                    nowSubscribed = true;
+                }
+                return [200, {channelID: data.channelID, nowSubscribed}];
+            }
+        },
+        {
+            route: "/api/youtube/subscriptions", methods: ["POST"], code: async ({data}) => {
+                let subscriptions;
+                if (data.token) {
+                    let userRow = await db.get("SELECT userID FROM AccountTokens WHERE token = ?", data.token);
+                    if (!userRow || userRow.expires <= Date.now()) return [401, 8];
+                    subscriptions = (await db.all("SELECT channelID FROM AccountSubscriptions WHERE userID = ?", userRow.userID)).map(r => r.channelID);
+                } else {
+                    if (data.subscriptions && data.subscriptions.constructor.name == "Array" && data.subscriptions.every(i => typeof(i) == "string")) subscriptions = data.subscriptions;
+                    else return [400, 4];
+                }
+                let videos = [];
+                let channels = [];
+                await Promise.all(subscriptions.map(s => new Promise(resolve => {
+                    rp(`https://invidio.us/api/v1/channels/${s}`).then(body => {
+                        let data = JSON.parse(body);
+                        data.latestVideos.forEach(v => v.author = data.author);
+                        videos = videos.concat(data.latestVideos);
+                        channels.push({author: data.author, authorID: data.authorId});
+                        resolve();
+                    }).catch(resolve);
+                })));
+                videos = videos.sort((a, b) => (b.published - a.published)).slice(0, 50);
+                channels = channels.sort((a, b) => (a.author.toLowerCase() < b.author.toLowerCase() ? -1 : 1));
+                return [200, {videos, channels}];
+            }
+        },
+        {
             route: "/api/youtube/video/([\\w-]+)", methods: ["GET"], code: ({fill}) => {
                 return new Promise(resolve => {
                     ytdl.getInfo(fill[0]).then(info => {

@@ -117,7 +117,7 @@ textarea, input, button, pre, select {
     display: flex;
 }
 
-.belowButtonContainer * {
+.belowButtonContainer > * {
     margin: 0px 4px;
 }
 
@@ -208,17 +208,17 @@ input, button {
 }
 
 #speedSliderContainer, #speedSliderContainer > span {
+    flex-grow: 1;
     display: flex;
-    line-height: 32px;
+    line-height: 36px;
+    height: 36px;
+    margin: 0px 2px;
 }
 #speedSliderContainer > span {
-    margin-left: 10px;
     flex-grow: 1;
-    max-width: 500px;
+    align-items: baseline;
+    max-width: 380px;
     display: flex;
-    height: 32px;
-    font-size: 13px;
-    font-family: "FreeSans","Noto Sans",Arial,sans-serif;
     background-color: #3e4148;
     border: 1px solid grey;
     border-radius: 4px;
@@ -260,11 +260,55 @@ input, button {
     margin-top: -5px;
     cursor: default;
 }
+.speedText {
+    font-size: 15px;
+    margin-left: 6px;
+}
 #speedLabel {
-    width: 44px;
+    width: 40px;
     text-align: right;
     cursor: pointer;
     user-select: none;
+    font-family: "FreeSans","Noto Sans",Arial,sans-serif;
+    font-size: 13px;
+}
+
+#subManageButtonContainer {
+    display: flex;
+    align-items: center;
+}
+#subManageButtonContainer h2 {
+    margin-top: 0px;
+    display: inline-block;
+}
+#subManageButtonContainer button {
+    display: none;
+    margin-left: 40px;
+}
+#subManageContainer {
+    display: none;
+    margin-bottom: 20px;
+}
+#subManageList {
+    display: none;
+    margin-top: 20px;
+    background-color: rgba(225, 220, 230, 0.08);
+    padding: 10px;
+    border-radius: 4px;
+}
+#subManageList table {
+    margin-top: 10px;
+}
+#subManageList td:first-child {
+    padding: 0px 8px;
+    min-width: 120px;
+}
+#subManageList > button {
+    margin-top: 12px;
+}
+#subExplanation {
+    display: none;
+    line-height: 1.4;
 }
 
 #loading {

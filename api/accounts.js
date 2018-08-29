@@ -64,6 +64,7 @@ module.exports = ({db, extra}) => {
                 if (!token) return [400, 1];
                 let row = await db.get("SELECT username, expires FROM Accounts INNER JOIN AccountTokens ON Accounts.userID = AccountTokens.userID WHERE token = ?", token);
                 if (!row || row.expires <= Date.now()) return [401, 8];
+                row.subscriptions = (await db.all("SELECT channelID FROM AccountSubscriptions INNER JOIN AccountTokens ON AccountTokens.userID = AccountSubscriptions.userID WHERE token = ?", token)).map(r => r.channelID);
                 return [200, row];
             }
         }

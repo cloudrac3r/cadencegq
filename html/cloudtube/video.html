@@ -176,6 +176,53 @@
         q("video").currentTime = seconds;
     }
 
+    function checkSubscribedStatus() {
+        if (localStorage.getItem("subscriptions") == null) localStorage.setItem("subscriptions", "");
+        return localStorage.getItem("subscriptions").includes(q("#videoAuthor").getAttribute("data-channelid")+",");
+    }
+
+    function updateSubscribeButton() {
+        q("#subscribe").innerText = checkSubscribedStatus() ? "Unsubscribe" : "Subscribe";
+    }
+
+    function toggleSubscription() {
+        let channelID = q("#videoAuthor").getAttribute("data-channelid");
+        let token = localStorage.getItem("token");
+        if (token) {
+            let s = q("#subscribe");
+            s.style.width = s.offsetWidth;
+            s.innerText = "...";
+            s.disabled = true;
+            request(`/api/youtube/subscribe`, result => {
+                if (result.status == 200) {
+                    let data = JSON.parse(result.responseText);
+                    if (checkSubscribedStatus() != data.nowSubscribed) {
+                        updateLocalStorage();
+                    }
+                    s.style.width = "";
+                    updateSubscribeButton();
+                } else {
+                    console.log(result);
+                    s.innerText = "error.";
+                }
+                s.disabled = false;
+            }, {token, channelID});
+        } else {
+            updateLocalStorage();
+            updateSubscribeButton();
+        }
+    }
+    function updateLocalStorage() {
+        let channelID = q("#videoAuthor").getAttribute("data-channelid");
+        let commaString = channelID+",";
+        let subscriptionsString = localStorage.getItem("subscriptions");
+        if (checkSubscribedStatus()) {
+            localStorage.setItem("subscriptions", subscriptionsString.replace(commaString, ""));
+        } else {
+            localStorage.setItem("subscriptions", subscriptionsString+commaString);
+        }
+    }
+
     function bodyLoad() {
         let video = q("video");
         let audio = q("audio");
@@ -214,6 +261,7 @@
         q("#videoTitle").innerText = data.title;
         q("#videoAuthor").innerText = "Uploaded by "+data.author;
         q("#videoAuthor").href = "/cloudtube/channel/"+data.authorId;
+        q("#videoAuthor").setAttribute("data-channelid", data.authorId);
         q("#videoDescription").innerHTML = data.descriptionHtml;
         data.viewCount = data.viewCount.toString();
         let commaViewCount = data.viewCount;
@@ -239,6 +287,17 @@
             q("#relatedVideosContainer").appendChild(ne);
         }
         // Set buttons below video
+        getLoginDetails(details => {
+            if (details && details.subscriptions) {
+                updateLocalStorage();
+                let subscriptionsString = "";
+                for (let s of details.subscriptions) subscriptionsString += s+",";
+                localStorage.setItem("subscriptions", subscriptionsString);
+                updateSubscribeButton();
+            } else {
+                updateSubscribeButton();
+            }
+        });
         q("#youtubeLink").setAttribute("href", `https://youtube.com/watch?v=${videoID}&feature=cloudtube`);
         q("#hooktubeLink").setAttribute("href", `https://hooktube.com/watch?v=${videoID}&feature=cloudtube`);
         q("#legacyLink").setAttribute("href", `/legacy/${videoID}`);
@@ -335,14 +394,15 @@
         </div>
         <audio preload="auto"></audio>
         <div class="belowButtonContainer">
-            <a class="linkbutton" href="/cloudtube/search"><img src="/fonts/search.svg" style="position: relative; top: 2px; margin-right: 8px;">Search</a>
+            <button id="subscribe" onclick="toggleSubscription()">Subscribe</button>
             <select id="qualitySelect" oninput="chooseFormat(event.target.selectedIndex)"></select>
+            <span id="speedSliderContainer"><span><span class="speedText">Speed:</span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" list="speeds" id="speedSlider" min="100" max="5000" value="1000" step="1" oninput="adjustSpeedSlider()"></span></span>
+        </div>
+        <div class="belowButtonContainer">
+            <a class="linkbutton" href="/cloudtube/subscriptions"><img src="/fonts/search.svg" style="position: relative; top: 2px; margin: 0px 8px 0px 4px;">Search</a>
             <a class="linkbutton" id="youtubeLink">Watch on YouTube</a>
             <a class="linkbutton" id="hooktubeLink">Watch on HookTube</a>
             <a class="linkbutton" id="legacyLink">Watch on legacy</a>
-        </div>
-        <div class="belowButtonContainer" id="speedSliderContainer">
-            Adjust speed <span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" list="speeds" id="speedSlider" min="100" max="5000" value="1000" step="1" oninput="adjustSpeedSlider()"></span>
         </div>
         <div id="videoDescription">
             Placeholder description
