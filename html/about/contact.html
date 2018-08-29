@@ -2,19 +2,25 @@
 <title>Contact</title>
 <!-- TEMPLATE header -->
 <h1>Contact</h1>
-<p>Email: <span id="email">dmpvesbd4s@wjwbmej.ofu</span> (preferred)</p>
+<p>
+    There are multiple ways to talk to me over the internet.
+    While I'd prefer if you used email for important enquiries and Discord for everything else,
+    any of these will work and I will reply no matter what.
+    Please, feel free to report bugs, brag about your gaming skill, or even just say hi! I like talking.
+</p>
+<p>Email: <span id="email">dmpvesbd4s@wjwbmej.ofu</span></p>
 <p id="noscript" style="color: #fff">
     Turn on JavaScript to decrypt this email address.<br>
     All JavaScript code on this website is free software. <a href="/about/javascript">More details.</a><br>
     If you refuse to turn on JavaScript, you can perform a Caesar shift of -1 on this email address to decrypt it manually.<br>
     (You're also going to have a <em>really</em> horrible time trying to use this site if you leave it off.)
 </p>
-<p><a href="https://discordapp.com/">Discord</a>: Cadence#3263 (preferred)</p>
+<p><a href="https://discordapp.com/">Discord</a>: Cadence#3263</p>
 <p><a href="https://matrix.org/">Riot/Matrix</a>: <a href="https://matrix.to/#/@cloudrac3r:matrix.org">@cloudrac3r:matrix.org</a></p>
 <p><a href="https://ring.cx/">Ring</a>: cloudrac3r / ring:167866c36c82e7c0b68d5c8db93dcc09478756ea</p>
 <h2>Other accounts</h2>
 <p>GitHub: <a href="https://github.com/cloudrac3r">cloudrac3r</a></p>
-<p>Reddit: <a href="https://www.reddit.com/user/cloudrac3r">u/cloudrac3r</a></p>
+<p>Reddit: <a href="https://www.reddit.com/user/cloudrac3r">u/cloudrac3r</a> (but reddit chat is dumb, send a private message instead)</p>
 <p>osu: <a href="https://osu.ppy.sh/users/9177616">cloudrac3r</a></p>
 <p>Steam: <a href="https://steamcommunity.com/id/cloudrac3r/">cloudrac3r</a></p>
 <h2>Crypto</h2>
@@ -27,8 +33,10 @@ BCH or DOGE preferred, but any of these addresses will work. Thanks!</p>
 <p>XMR: 4AEvQLKsnXqghawUGxb4y7hG5YGaL7SXK8kQ4kKVezAZYV2JbECerCK5WGRq2wT3dpKu3WTRvaEPuXsSBiibpHYq5yb7tWo</p>
 <p>DOGE: DEv1PGFvCJsBoBCqKym8Mp2SLue6ATkPaU</p>
 <script>
-    q("#noscript").style.display = "none";
-    let email = q("#email");
-    email.innerHTML = String.fromCharCode(...[...email.innerHTML].map(l => l.charCodeAt(0)-(l.match(/\w/) && 1)));
+    function bodyLoad() {
+        q("#noscript").style.display = "none";
+        let email = q("#email");
+        email.innerHTML = String.fromCharCode(...[...email.innerHTML].map(l => l.charCodeAt(0)-(l.match(/\w/) && 1)));
+    }
 </script>
 <!-- TEMPLATE end -->

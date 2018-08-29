@@ -26,7 +26,7 @@ module.exports = ({db}) => {
         {
             route: "/api/hits", methods: ["GET"], code: async () => {
                 let rows = await db.all("SELECT * FROM Hits ORDER BY hits DESC");
-                rows = rows.slice(0, 6);
+                rows = rows.slice(0, 12);
                 let columns = [[], []];
                 for (let row of rows) {
                     columns[1].push(Object.values(row)[0]);
