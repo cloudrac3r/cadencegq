@@ -1,6 +1,16 @@
 <!-- TEMPLATE pre -->
 <link rel="stylesheet" type="text/css" href="/cloudtube/youtube.css">
 <title>Subscriptions — CloudTube</title>
+<style>
+    .unread {
+        padding-left: 20px;
+        background: left url(/fonts/unread.svg) no-repeat;
+    }
+    .read {
+        padding-left: 20px;
+        background: left url(/fonts/read.svg) no-repeat;
+    }
+</style>
 <script type="text/javascript">
     function prettySeconds(seconds) {
         let minutes = Math.floor(seconds / 60);
@@ -40,6 +50,10 @@
                 ne.children[1].children[1].innerText = video.author+" • "+humaniseDate(video.published);
                 ne.children[1].children[2].innerHTML = video.descriptionHtml;
                 ne.children[0].children[0].src = video.videoThumbnails.find(f => f.quality == "medium").url;
+                if (localStorage.getItem("trackWatchedVideos") == "1") {
+                    ne.children[0].children[0].classList.add((localStorage.getItem("watchedVideos") || "").includes(video.videoId) ? "read" : "unread");
+                    q("#trackWatchedCheckbox").checked = true;
+                }
                 document.styleSheets[1].insertRule(`.searchItem:nth-child(${i+1}) > div:first-child::before { content: "${prettySeconds(video.lengthSeconds)}"; }`);
                 ne.href = "/cloudtube/video/"+video.videoId;
                 q("#searchResultsContainer").appendChild(ne);
@@ -97,6 +111,12 @@
         }
     }
 
+    function toggleTracking(event) {
+        localStorage.setItem("trackWatchedVideos", ""+(+event.target.checked));
+        if (!event.target.checked) localStorage.setItem("watchedVideos", "");
+        window.location.reload();
+    }
+
     function search() {
         window.location.assign("/cloudtube/search?q="+encodeURIComponent(q("#search").value)+"&sort_by="+q("select").selectedOptions[0].value);
     }
@@ -132,6 +152,7 @@
             Subscribing does not require any accounts and does not directly send requests to YouTube.<br>
             Using the search bar above still searches all of CloudTube, not just your subscriptions.
         </p>
+        <div><input type="checkbox" id="trackWatchedCheckbox" onchange="toggleTracking(event)"><label for="trackWatchedCheckbox">Record all watched videos, and mark videos as watched/unwatched on this page</label></div>
     </div>
     <table style="display: none">
         <tbody id="subStorage">
