@@ -262,7 +262,7 @@
         q("#videoAuthor").innerText = "Uploaded by "+data.author;
         q("#videoAuthor").href = "/cloudtube/channel/"+data.authorId;
         q("#videoAuthor").setAttribute("data-channelid", data.authorId);
-        q("#videoDescription").innerHTML = data.descriptionHtml;
+        q(".videoDescription").innerHTML = data.descriptionHtml;
         data.viewCount = data.viewCount.toString();
         let commaViewCount = data.viewCount;
         for (let i = 1; i < data.viewCount.length/3; i++) {
@@ -270,8 +270,7 @@
             commaViewCount = commaViewCount.slice(0, invi) + "," + commaViewCount.slice(invi);
         }
         q("#videoViews").innerText = commaViewCount+" views";
-        let pubdate = new Date(data.published*1000).toDateString().split(" ");
-        q("#videoUploaded").innerText = "Uploaded "+(+pubdate[2])+" "+pubdate[1]+" "+pubdate[3];
+        q("#videoUploaded").innerText = "Uploaded "+humaniseDate(data.published*1000);
         let percentRating = data.rating/5*100;
         q("#videoRatingBar").style.background = `linear-gradient(to right, #208819 ${percentRating}%, #ccc ${percentRating}%)`;
         // Set related videos
@@ -280,7 +279,7 @@
             let rv = relatedVideos[i];
             let ne = q("#relatedVideosStorage").children[0].cloneNode(true);
             ne.children[1].children[0].innerText = rv.title;
-            ne.children[1].children[1].innerText = rv.author;
+            ne.children[1].children[1].innerText = rv.author+" • "+rv.viewCountText+" views";
             ne.children[0].children[0].src = rv.videoThumbnails.find(f => f.quality == "medium").url;
             document.styleSheets[1].insertRule(`.relatedVideo:nth-child(${i+2}) > div:first-child::before { content: "${prettySeconds(rv.lengthSeconds)}"; }`);
             ne.href = rv.videoId;
@@ -404,7 +403,7 @@
             <a class="linkbutton" id="hooktubeLink">Watch on HookTube</a>
             <a class="linkbutton" id="legacyLink">Watch on legacy</a>
         </div>
-        <div id="videoDescription">
+        <div class="videoDescription">
             Placeholder description
         </div>
     </div>

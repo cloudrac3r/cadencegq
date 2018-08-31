@@ -3,6 +3,7 @@ const auth = require("../auth.json");
 const yts = require("youtube-search");
 const rp = require("request-promise");
 const fs = require("fs");
+const fxp = require("fast-xml-parser");
 
 module.exports = ({db, resolveTemplates}) => {
     return [
@@ -153,9 +154,18 @@ module.exports = ({db, resolveTemplates}) => {
                 let videos = [];
                 let channels = [];
                 await Promise.all(subscriptions.map(s => new Promise(resolve => {
-                    rp(`https://invidio.us/api/v1/channels/${s}`).then(body => {
+                    Promise.all([
+                        rp(`https://invidio.us/api/v1/channels/${s}`),
+                        rp(`https://www.youtube.com/feeds/videos.xml?channel_id=${s}`)
+                    ]).then(([body, xml]) => {
                         let data = JSON.parse(body);
-                        data.latestVideos.forEach(v => v.author = data.author);
+                        let feedItems = fxp.parse(xml).feed.entry;
+                        data.latestVideos.forEach(v => {
+                            v.author = data.author;
+                            let feedItem = feedItems.find(i => i["yt:videoId"] == v.videoId);
+                            if (feedItem) v.published = new Date(feedItem.published).getTime();
+                            else v.published = v.published * 1000;
+                        });
                         videos = videos.concat(data.latestVideos);
                         channels.push({author: data.author, authorID: data.authorId});
                         resolve();

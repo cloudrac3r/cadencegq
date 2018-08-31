@@ -37,7 +37,7 @@
                 let video = videos[i];
                 let ne = q("#searchItemStorage").children[0].cloneNode(true);
                 ne.children[1].children[0].innerText = video.title;
-                ne.children[1].children[1].innerText = video.author;
+                ne.children[1].children[1].innerText = video.author+" • "+humaniseDate(video.published);
                 ne.children[1].children[2].innerHTML = video.descriptionHtml;
                 ne.children[0].children[0].src = video.videoThumbnails.find(f => f.quality == "medium").url;
                 document.styleSheets[1].insertRule(`.searchItem:nth-child(${i+1}) > div:first-child::before { content: "${prettySeconds(video.lengthSeconds)}"; }`);

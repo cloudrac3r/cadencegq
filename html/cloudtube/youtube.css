@@ -133,7 +133,7 @@ textarea, input, button, pre, select {
     border-radius: 3px;
 }
 
-#videoDescription {
+.videoDescription {
     margin-top: 20px;
     background-color: rgba(225, 220, 230, 0.08);
     padding: 10px;

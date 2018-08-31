@@ -182,6 +182,11 @@ function dataToTable(columns, rows) {
     return output;
 }
 
+function humaniseDate(date) {
+    let array = new Date(date).toDateString().split(" ");
+    return (+array[2])+" "+array[1]+" "+array[3];
+}
+
 function getLoginDetails(callback) {
     if (!callback) callback = new Function();
     if (loginAttempted) {
