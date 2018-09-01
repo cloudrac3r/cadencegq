@@ -284,7 +284,7 @@
             let rv = relatedVideos[i];
             let ne = q("#relatedVideosStorage").children[0].cloneNode(true);
             ne.children[1].children[0].innerText = rv.title;
-            ne.children[1].children[1].innerText = rv.author+" • "+rv.viewCountText+" views";
+            ne.children[1].children[1].innerText = rv.author+" • "+rv.viewCountText;
             ne.children[0].children[0].src = rv.videoThumbnails.find(f => f.quality == "medium").url;
             document.styleSheets[1].insertRule(`.relatedVideo:nth-child(${i+2}) > div:first-child::before { content: "${prettySeconds(rv.lengthSeconds)}"; }`);
             ne.href = rv.videoId;
