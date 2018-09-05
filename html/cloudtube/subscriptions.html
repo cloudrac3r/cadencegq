@@ -84,6 +84,7 @@
     }
 
     function unsubChannel(event) {
+        if (!event.path) event.path = event.composedPath();
         let tr = event.path.find(e => e.tagName == "TR");
         let channelID = tr.getAttribute("data-channelid");
         let button = event.path.find(e => e.tagName == "BUTTON");
