@@ -303,6 +303,7 @@
             }
         });
         q("#youtubeLink").setAttribute("href", `https://youtube.com/watch?v=${videoID}&feature=cloudtube`);
+        q("#invidiousLink").setAttribute("href", `https://invidio.us/watch?v=${videoID}&feature=cloudtube`);
         q("#hooktubeLink").setAttribute("href", `https://hooktube.com/watch?v=${videoID}&feature=cloudtube`);
         q("#legacyLink").setAttribute("href", `/legacy/${videoID}`);
         // Fix description
@@ -407,6 +408,7 @@
         <div class="belowButtonContainer">
             <a class="linkbutton" href="/cloudtube/subscriptions"><img src="/fonts/search.svg" style="position: relative; top: 2px; margin: 0px 8px 0px 4px;">Search</a>
             <a class="linkbutton" id="youtubeLink">Watch on YouTube</a>
+            <a class="linkbutton" id="invidiousLink">Watch on Invidious</a>
             <a class="linkbutton" id="hooktubeLink">Watch on HookTube</a>
             <a class="linkbutton" id="legacyLink">Watch on legacy</a>
         </div>
