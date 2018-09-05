@@ -48,7 +48,7 @@ const pageHandlers = [
     {web: "/about/javascript", local: "about/javascript.html"},
     {web: "/legacy/search", local: "legacy/search.html"},
     {web: "/legacy/[\\w-]+", local: "legacy/video.html"},
-    {web: "/legacy/channel/\\w+", local: "legacy/search.html"},
+    {web: "/legacy/channel/[\\w-]+", local: "legacy/search.html"},
     {web: "/cloudtube/subscriptions", local: "cloudtube/subscriptions.html"}
 ];
 const cacheControl = [
