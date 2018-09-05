@@ -314,6 +314,8 @@
                 if (href.startsWith("/redirect")) {
                     href = href.replace(/^.*\?/, "");
                     c.setAttribute("href", new URLSearchParams(href).get("q"));
+                } else if (href.match(/^https?:\/\/(www\.)?youtube\.com\/channel\/([^\/]{12,})/)) {
+                    c.setAttribute("href", href.replace(/.*channel/, "/cloudtube/channel"));
                 } else {
                     c.setAttribute("href", href.replace(/^.*=/, ""));
                 }
