@@ -49,7 +49,8 @@ const pageHandlers = [
     {web: "/legacy/search", local: "legacy/search.html"},
     {web: "/legacy/[\\w-]+", local: "legacy/video.html"},
     {web: "/legacy/channel/[\\w-]+", local: "legacy/search.html"},
-    {web: "/cloudtube/subscriptions", local: "cloudtube/subscriptions.html"}
+    {web: "/cloudtube/subscriptions", local: "cloudtube/subscriptions.html"},
+    {web: "/misc/discord.io", local: "misc/discordio.html"}
 ];
 const cacheControl = [
     "ttf", "png", "jpg", "svg"
