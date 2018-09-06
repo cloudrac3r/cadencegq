@@ -171,7 +171,7 @@ module.exports = ({db, resolveTemplates}) => {
                         resolve();
                     }).catch(resolve);
                 })));
-                videos = videos.sort((a, b) => (b.published - a.published)).slice(0, 50);
+                videos = videos.sort((a, b) => (b.published - a.published)).slice(0, 60);
                 channels = channels.sort((a, b) => (a.author.toLowerCase() < b.author.toLowerCase() ? -1 : 1));
                 return [200, {videos, channels}];
             }
