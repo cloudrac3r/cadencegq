@@ -115,6 +115,7 @@ async function resolveTemplates(page) {
 }
 
 function serverRequest(req, res) {
+    req.gmethod = req.method == "HEAD" ? "GET" : req.method;
     let headers = {};
     if (cacheControl.includes(req.url.split(".")[1])) headers["Cache-Control"] = "max-age=604800, public";
     //console.log(">>> "+req.url+" "+req["user-agent"]);
@@ -132,7 +133,7 @@ function serverRequest(req, res) {
     let foundRoute = routeHandlers.find(h => {
         let rr = new RegExp("^"+h.route+"$");
         let match = reqPath.match(rr);
-        if (match && h.methods.includes(req.method)) {
+        if (match && h.methods.includes(req.gmethod)) {
             cf.log("Using routeHandler "+h.route+" to respond to "+reqPath, "spam");
             new Promise(resolve => {
                 let fill = match.slice(1);
@@ -182,10 +183,14 @@ function serverRequest(req, res) {
                         headers["Content-Length"] = Buffer.byteLength(page);
                         cf.log("Using pageHandler "+h.web+" ("+h.local+") to respond to "+reqPath, "spam");
                         res.writeHead(200, Object.assign({"Content-Type": mimeType(h.local)}, headers, globalHeaders));
-                        res.write(page, () => {
+                        if (req.method == "HEAD") {
                             res.end();
-                            addHit(reqPath);
-                        });
+                        } else {
+                            res.write(page, () => {
+                                res.end();
+                                addHit(reqPath);
+                            });
+                        }
                     });
                 });
                 return true;
