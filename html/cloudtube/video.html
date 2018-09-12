@@ -221,11 +221,6 @@
         } else {
             localStorage.setItem("subscriptions", subscriptionsString+commaString);
         }
-        if (localStorage.getItem("trackWatchedVideos")) {
-            let videoID = window.location.href.replace("/video/([\\w-]+)");
-            let watchedVideos = localStorage.getItem("watchedVideos") || "";
-            if (!watchedVideos.includes(videoID+",")) localStorage.setItem("watchedVideos", watchedVideos+videoID+",");
-        }
     }
 
     function bodyLoad() {
@@ -322,6 +317,12 @@
                 }
             }
         });
+        // Record video as watched in localStorage
+        if (localStorage.getItem("trackWatchedVideos")) {
+            let videoID = window.location.href.match("/video/([\\w-]+)")[1];
+            let watchedVideos = localStorage.getItem("watchedVideos") || "";
+            if (!watchedVideos.includes(videoID+",")) localStorage.setItem("watchedVideos", watchedVideos+videoID+",");
+        }
     }
 
     document.addEventListener("keydown", event => {
