@@ -1,0 +1,162 @@
+<!-- TEMPLATE pre -->
+<title>Godmaster boss completion</title>
+<style>
+    #columnContainer {
+        display: flex;
+    }
+    #columnContainer > * {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #aaa;
+        margin: 4px;
+        padding: 10px;
+    }
+    #columnContainer > * > * {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+    }
+    #columnContainer > * > * > * {
+        margin-right: 8px;
+    }
+    img {
+        width: 24px;
+    }
+    #submitLog {
+        color: linear-gradient(to bottom, #ddd, 40px transparent);
+    }
+</style>
+<script>
+    let bosses = [
+        [
+            "Gruz Mother",
+            "Vengefly King",
+            "Brooding Mawlek",
+            "False Knight",
+            "Failed Champion",
+            "Hornet Protector",
+            "Hornet Sentinel",
+            "Massive Moss Charger",
+            "Flukemarm",
+            "Mantis Lords",
+            "Sisters of Battle"
+        ],
+        [
+            "Oblobble",
+            "Hive Knight",
+            "Broken Vessel",
+            "Lost Kin",
+            "Nosk",
+            "Winged Nosk",
+            "The Collector",
+            "God Tamer",
+            "Crystal Guardian",
+            "Enraged Guardian",
+            "Uumuu"
+        ],
+        [
+            "Traitor Lord",
+            "Grey Prince Zote",
+            "Soul Warrior",
+            "Soul Master",
+            "Soul Tyrant",
+            "Dung Defender",
+            "White Defender",
+            "Watcher Knight",
+            "No Eyes",
+            "Marmu",
+            "Galien"
+        ],
+        [
+            "Markoth",
+            "Xero",
+            "Gorb",
+            "Elder Hu",
+            "Oro & Mato",
+            "Paintmaster Sheo",
+            "Nailsage Sly",
+            "Pure Vessel",
+            "Grimm",
+            "Nightmare King",
+            "Radiance"
+        ]
+    ];
+    let completionImages = [
+        "/fonts/gm-empty.png",
+        "/fonts/gm-bronze.png",
+        "/fonts/gm-silver.png",
+        "/fonts/gm-gold.png"
+    ];
+    function bodyLoad() {
+        for (let column of bosses) {
+            let columnE = document.createElement("div");
+            for (let bossName of column) {
+                let bossE = q("#storage > span").cloneNode(true);
+                bossE.children[0].children[0].src = completionImages[0];
+                bossE.children[1].innerText = bossName;
+                columnE.appendChild(bossE);
+            }
+            q("#columnContainer").appendChild(columnE);
+        }
+        request("/api/godmaster", result => {
+            let data = JSON.parse(result.responseText);
+            for (let user of data) {
+                let button = q("#storage > button").cloneNode(true);
+                button.innerText = user.username;
+                button.setAttribute("data-summary", user.summary);
+                q("#loadContainer").appendChild(button);
+            }
+        });
+        getLoginDetails(details => {
+            if (!details) {
+                q("#submitLog").innerText = "You are not logged in. Log in to save scores.";
+                q("#saveButton").style.display = "none";
+            }
+        });
+    }
+    function toggleCompletion(event) {
+        let nextIndex = completionImages.findIndex(i => event.target.src.endsWith(i))+1;
+        if (nextIndex >= completionImages.length) nextIndex = 0;
+        event.target.src = completionImages[nextIndex];
+    }
+    function packBossSummary() {
+        return [...document.querySelectorAll("img")].map(ie => completionImages.findIndex(i => ie.src.endsWith(i))).slice(0, 44);
+    }
+    function unpackBossSummary(summary) {
+        [...document.querySelectorAll("img")].forEach(ie => ie.src = completionImages[summary.shift()] || completionImages[0]);
+    }
+    function save() {
+        getLoginDetails(details => {
+            if (!details) return;
+            request("/api/godmaster", result => {
+                if (result.status == 204) {
+                    q("#submitLog").innerText = "Saved results!\n"+q("#submitLog").innerText;
+                } else {
+                    q("#submitLog").innerText = "Failed to save results: "+result.responseText+"\n"+q("#submitLog").innerText;
+                }
+            }, {token: localStorage.getItem("token"), summary: packBossSummary()});
+        });
+    }
+    function load(event) {
+        let summary = JSON.parse(event.target.getAttribute("data-summary"));
+        unpackBossSummary(summary);
+    }
+</script>
+<!-- TEMPLATE header -->
+<h1>Godmaster boss completion</h1>
+<div id="columnContainer"></div>
+<button id="saveButton" onclick="save()">Save</button>
+<div id="submitLog"></div>
+<h2>Load scores</h2>
+<div id="loadContainer"></div>
+<div style="display: none;" id="storage">
+    <span>
+        <span>
+            <img onclick="toggleCompletion(event)">
+        </span>
+        <span>
+        </span>
+    </span>
+    <button onclick="load(event)"></button>
+</div>
+<!-- TEMPLATE end -->

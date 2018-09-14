@@ -7,6 +7,8 @@
 	"settings": {
 		"todo-tree.grouped": false,
 		"todo-tree.expanded": false,
-		"todo-tree.flat": false
+		"todo-tree.flat": false,
+		"editor.insertSpaces": true,
+		"editor.detectIndentation": false
 	}
 }
