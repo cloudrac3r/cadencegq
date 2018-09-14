@@ -17,6 +17,6 @@
     "simple-git": "^1.96.0",
     "sqlite": "^2.9.2",
     "youtube-search": "^1.1.1",
-    "ytdl-core": "^0.20.4"
+    "ytdl-core": "^0.25.2"
   }
 }
