@@ -131,6 +131,8 @@
             request("/api/godmaster", result => {
                 if (result.status == 204) {
                     q("#submitLog").innerText = "Saved results!\n"+q("#submitLog").innerText;
+                    let existingButton = [...document.querySelectorAll("button")].find(b => b.innerText == details.username);
+                    if (existingButton) existingButton.setAttribute("data-summary", JSON.stringify(packBossSummary()));
                 } else {
                     q("#submitLog").innerText = "Failed to save results: "+result.responseText+"\n"+q("#submitLog").innerText;
                 }
