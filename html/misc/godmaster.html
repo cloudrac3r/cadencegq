@@ -6,6 +6,7 @@
     }
     #columnContainer > * {
         display: flex;
+        flex-wrap: wrap;
         flex-direction: column;
         border: 1px solid #aaa;
         margin: 4px;
@@ -24,6 +25,9 @@
     }
     #submitLog {
         color: linear-gradient(to bottom, #ddd, 40px transparent);
+    }
+    input {
+        width: 240px;
     }
 </style>
 <script>
@@ -81,19 +85,25 @@
             "Radiance"
         ]
     ];
+    let allBosses = [].concat(...bosses);
     let completionImages = [
         "/fonts/gm-empty.png",
         "/fonts/gm-bronze.png",
         "/fonts/gm-silver.png",
         "/fonts/gm-gold.png"
     ];
+    if (!localStorage.getItem("unlockedBosses")) localStorage.setItem("unlockedBosses", "");
+    let unlockedBosses = localStorage.getItem("unlockedBosses");
+    let unlockedBossCount = unlockedBosses.split(",").length;
     function bodyLoad() {
+        if (unlockedBossCount == allBosses.length+1) q("#unlockContainer").style.display = "none";
         for (let column of bosses) {
             let columnE = document.createElement("div");
             for (let bossName of column) {
                 let bossE = q("#storage > span").cloneNode(true);
                 bossE.children[0].children[0].src = completionImages[0];
-                bossE.children[1].innerText = bossName;
+                bossE.children[1].setAttribute("data-fullname", bossName);
+                if (unlockedBosses.includes(bossName+",")) bossE.children[1].innerText = bossName;
                 columnE.appendChild(bossE);
             }
             q("#columnContainer").appendChild(columnE);
@@ -143,9 +153,38 @@
         let summary = JSON.parse(event.target.getAttribute("data-summary"));
         unpackBossSummary(summary);
     }
+    function unlockAll() {
+        for (let boss of document.querySelectorAll("#columnContainer > div > span > span:last-child")) {
+            boss.innerText = boss.getAttribute("data-fullname");
+        }
+        let unlockedBosses = "";
+        for (let column of bosses) for (let boss of column) unlockedBosses += boss+",";
+        localStorage.setItem("unlockedBosses", unlockedBosses);
+        q("#unlockContainer").style.display = "none";
+    }
+    function unlockOne(event) {
+        if (event && event.keyCode != 13) return;
+        let input = q("#bossNameInput");
+        if (bossName = allBosses.find(b => b.toLowerCase() == input.value)) {
+            for (let boss of document.querySelectorAll("#columnContainer > div > span > span:last-child")) {
+                if (boss.getAttribute("data-fullname") == bossName) boss.innerText = bossName;
+            }
+            localStorage.setItem("unlockedBosses", localStorage.getItem("unlockedBosses")+bossName+",");
+        }
+        input.value = "";
+        input.focus();
+    }
 </script>
 <!-- TEMPLATE header -->
 <h1>Godmaster boss completion</h1>
+<div id="unlockContainer">
+    <div>
+        <div>Enter a boss name as it appears on the Hall of Gods tablet to unlock its name in this list.</div>
+        <div>Unlocked bosses will be saved permanently in your browser.</div>
+        <div><input type="text" id="bossNameInput" onkeypress="unlockOne(event)"><button onclick="unlockOne()">Unlock</button></div>
+        <div><button onclick="unlockAll()">Unlock all boss names</button></div>
+    </div>
+</div>
 <div id="columnContainer"></div>
 <button id="saveButton" onclick="save()">Save</button>
 <div id="submitLog"></div>
@@ -156,8 +195,7 @@
         <span>
             <img onclick="toggleCompletion(event)">
         </span>
-        <span>
-        </span>
+        <span>???</span>
     </span>
     <button onclick="load(event)"></button>
 </div>
