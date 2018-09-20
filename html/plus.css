@@ -18,11 +18,27 @@ body {
 }
 
 #header {
-    display: block;
+    display: inline-block;
+    width: 100%;
     background-color: #4f5359;
     margin: 0px;
     padding: 4px;
     box-shadow: 0px 0px 20px 5px rgba(0, 0, 0, 0.1);
+}
+#header.mobile {
+    box-sizing: border-box;
+}
+#header #headerExpandMenu {
+    display: none;
+    float: right;
+    font-size: 22px;
+    line-height: 1;
+}
+#header.mobile #headerExpandMenu {
+    display: unset;
+}
+#header.mobile.hidden *:nth-child(n+4) {
+    display: none;
 }
 #header * {
     vertical-align: middle;
@@ -40,6 +56,14 @@ body {
     padding: 2px 8px 8px;
     border-radius: 0px 0px 10px 10px;
     display: none;
+}
+#header.mobile div {
+    box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.15);
+    position: fixed;
+    right: 0;
+    border-radius: 10px 0px 0px 10px;
+    top: unset;
+    padding-top: 8px;
 }
 #header div:before {
     box-shadow: 0px 0px 20px 5px rgba(0, 0, 0, 0.1);
@@ -64,7 +88,10 @@ body {
     transition: 0.15s ease-out;
     cursor: pointer;
 }
-#header .headerArrow:before, #header .headerUnderline:before {
+#header.mobile .headerButton {
+    display: block;
+}
+#header:not(.mobile) .headerArrow:before, #header:not(.mobile) .headerUnderline:before {
     content: "";
     padding-bottom: 0px;
     border-bottom: 1px solid #999;
@@ -73,7 +100,7 @@ body {
     position: relative;
     top: 21px;
 }
-#header .headerArrow:after {
+#header:not(.mobile) .headerArrow:after {
     content: url("/fonts/arrow-down.svg");
 }
 #header .headerButton:hover {
@@ -84,13 +111,19 @@ body {
     color: #aaa;
     margin: 0px;
 }
+#header.mobile .vr {
+    display: none;
+}
 #header .sitename {
     font-weight: bold;
     font-size: 18px;
     margin-bottom: 2px;
     color: #ddd;
 }
-#header > *:last-child {
+#header.mobile .sitename {
+    display: inline-block;
+}
+#header:not(.mobile) > *:last-child {
     float: right;
     margin-right: 10px;
 }

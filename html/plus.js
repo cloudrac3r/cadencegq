@@ -289,5 +289,6 @@ function postLoad() {
         } else {
             accountStatus.innerText = "Log in";
         }
+        checkMobileHeader();
     });
 }

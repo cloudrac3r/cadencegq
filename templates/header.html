@@ -2,6 +2,7 @@
 <nav id="header">
     <a href="/" class="headerButton sitename">Cadence</a>
     <span class="vr">|</span>
+    <span class="headerButton headerUnderline" id="headerExpandMenu">≡</span>
     <div>
         <a class="headerButton" href="/pastes/submit">New paste</a>
         <a class="headerButton" href="/pastes/list">Latest pastes</a>
@@ -35,4 +36,20 @@
     <span class="headerButton headerArrow">About</span>
     <a class="headerButton headerUnderline" href="/account" id="accountState"></a>
 </nav>
+<script>
+    let nav = document.getElementById("header");
+    let marker = document.getElementById("accountState");
+    const expectedMaxTop = 20; // should be 7 for one line, 47 for two
+    function checkMobileHeader() {
+        if (marker.offsetTop <= expectedMaxTop && nav.classList.contains("mobile")) {
+            nav.classList.remove("mobile");
+        }
+        if (marker.offsetTop > expectedMaxTop && !nav.classList.contains("mobile")) {
+            nav.classList.add("mobile");
+        }
+    }
+    checkMobileHeader();
+    window.addEventListener("resize", checkMobileHeader);
+    nav.classList.add("hidden");
+</script>
 <div id="page">

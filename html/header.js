@@ -22,5 +22,8 @@ function makeHeadersWork() {
                 else divElement.style.display = "none";
             });
         });
-    });;
+    });
+    q("#headerExpandMenu").addEventListener("mousedown", () => {
+        q("#header").classList.toggle("hidden");
+    });
 }
