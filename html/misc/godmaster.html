@@ -3,10 +3,10 @@
 <style>
     #columnContainer {
         display: flex;
+        flex-wrap: wrap;
     }
     #columnContainer > * {
         display: flex;
-        flex-wrap: wrap;
         flex-direction: column;
         border: 1px solid #aaa;
         margin: 4px;
@@ -174,6 +174,37 @@
         input.value = "";
         input.focus();
     }
+    function enableClickUnlock(event) {
+        event.target.parentElement.removeChild(event.target);
+        for (let boss of document.querySelectorAll("#columnContainer > div > span > span:last-child")) {
+            if (boss.innerText == "???") {
+                boss.style.cursor = "pointer";
+                boss.onclick = () => {
+                    boss.innerText = boss.getAttribute("data-fullname");
+                    localStorage.setItem("unlockedBosses", localStorage.getItem("unlockedBosses")+boss.innerText+",");
+                    boss.style.cursor = "inherit";
+                }
+            }
+        }
+    }
+    function generateCode() {
+        let summary = packBossSummary();
+        let states = Array(completionImages.length).fill().map(e => []);
+        for (let i = 0; i < summary.length; i++) {
+            states[summary[i]].push(i+1);
+        }
+        let editPrefix = ["n", "b", "s", "g"];
+        let code = states.map((s, i) => `s!gm [edit${editPrefix[i]}] ${s.join(" ")}`).join("\n\n");
+        let ta = document.createElement("textarea");
+        q("body").appendChild(ta);
+        ta.value = code;
+        ta.select();
+        document.execCommand("copy");
+        q("body").removeChild(ta);
+        q("#copyLog").innerText =
+            "Copied commands to clipboard. There are multiple commands seperated by newlines, so paste them into a text editor "+
+            "and select and paste each line in turn into Discord.";
+    }
 </script>
 <!-- TEMPLATE header -->
 <h1>Godmaster boss completion</h1>
@@ -182,7 +213,7 @@
         <div>Enter a boss name as it appears on the Hall of Gods tablet to unlock its name in this list.</div>
         <div>Unlocked bosses will be saved permanently in your browser.</div>
         <div><input type="text" id="bossNameInput" onkeypress="unlockOne(event)"><button onclick="unlockOne()">Unlock</button></div>
-        <div><button onclick="unlockAll()">Unlock all boss names</button></div>
+        <div><button onclick="unlockAll()">Unlock all boss names</button> <button onclick="enableClickUnlock(event)">Enable click to unlock</button></div>
     </div>
 </div>
 <div id="columnContainer"></div>
@@ -190,6 +221,8 @@
 <div id="submitLog"></div>
 <h2>Load scores</h2>
 <div id="loadContainer"></div>
+<div><button onclick="generateCode()">Copy RSRB code</button></div>
+<div id="copyLog"></div>
 <div style="display: none;" id="storage">
     <span>
         <span>
