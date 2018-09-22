@@ -5,6 +5,25 @@ const rp = require("request-promise");
 const fs = require("fs");
 const fxp = require("fast-xml-parser");
 
+function fetchChannel(channelID) {
+    return new Promise(resolve => {
+        Promise.all([
+            rp(`https://invidio.us/api/v1/channels/${channelID}`),
+            rp(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelID}`)
+        ]).then(([body, xml]) => {
+            let data = JSON.parse(body);
+            let feedItems = fxp.parse(xml).feed.entry;
+            data.latestVideos.forEach(v => {
+                v.author = data.author;
+                let feedItem = feedItems.find(i => i["yt:videoId"] == v.videoId);
+                if (feedItem) v.published = new Date(feedItem.published).getTime();
+                else v.published = v.published * 1000;
+            });
+            resolve(data);
+        }).catch(resolve);
+    });
+}
+
 module.exports = ({db, resolveTemplates}) => {
     return [
         {
@@ -43,11 +62,11 @@ module.exports = ({db, resolveTemplates}) => {
             route: "/cloudtube/channel/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
                 Promise.all([
                     rp(`https://invidio.us/api/v1/channels/${fill[0]}`),
-                    rp(`https://invidio.us/api/v1/channels/${fill[0]}/videos`)
-                ]).then(([channelInfo, channelVideos]) => {
+                    fetchChannel(fill[0])
+                ]).then(([channelInfo, data]) => {
                     try {
                         channelInfo = JSON.parse(channelInfo);
-                        channelVideos = JSON.parse(channelVideos);
+                        let channelVideos = data.latestVideos;
                         fs.readFile("html/cloudtube/channel.html", {encoding: "utf8"}, (err, page) => {
                             resolveTemplates(page).then(page => {
                                 page = page.replace('"<!-- channelInfo -->"', JSON.stringify([channelInfo, channelVideos]));
@@ -153,23 +172,11 @@ module.exports = ({db, resolveTemplates}) => {
                 }
                 let videos = [];
                 let channels = [];
-                await Promise.all(subscriptions.map(s => new Promise(resolve => {
-                    Promise.all([
-                        rp(`https://invidio.us/api/v1/channels/${s}`),
-                        rp(`https://www.youtube.com/feeds/videos.xml?channel_id=${s}`)
-                    ]).then(([body, xml]) => {
-                        let data = JSON.parse(body);
-                        let feedItems = fxp.parse(xml).feed.entry;
-                        data.latestVideos.forEach(v => {
-                            v.author = data.author;
-                            let feedItem = feedItems.find(i => i["yt:videoId"] == v.videoId);
-                            if (feedItem) v.published = new Date(feedItem.published).getTime();
-                            else v.published = v.published * 1000;
-                        });
-                        videos = videos.concat(data.latestVideos);
-                        channels.push({author: data.author, authorID: data.authorId});
-                        resolve();
-                    }).catch(resolve);
+                await Promise.all(subscriptions.map(s => new Promise(async resolve => {
+                    let data = await fetchChannel(s);
+                    videos = videos.concat(data.latestVideos);
+                    channels.push({author: data.author, authorID: data.authorId});
+                    resolve();
                 })));
                 videos = videos.sort((a, b) => (b.published - a.published)).slice(0, 60);
                 channels = channels.sort((a, b) => (a.author.toLowerCase() < b.author.toLowerCase() ? -1 : 1));
