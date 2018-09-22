@@ -49,7 +49,7 @@
                 ne.children[1].children[0].innerText = video.title;
                 ne.children[1].children[1].innerText = video.author+" • "+humaniseDate(video.published);
                 ne.children[1].children[2].innerHTML = video.descriptionHtml;
-                ne.children[0].children[0].src = video.videoThumbnails.find(f => f.quality == "medium").url;
+                ne.children[0].children[0].src = `https://invidio.us/vi/${video.videoId}/mqdefault.jpg`;
                 if (localStorage.getItem("trackWatchedVideos") == "1") {
                     ne.children[0].children[0].classList.add((localStorage.getItem("watchedVideos") || "").includes(video.videoId) ? "read" : "unread");
                     q("#trackWatchedCheckbox").checked = true;
