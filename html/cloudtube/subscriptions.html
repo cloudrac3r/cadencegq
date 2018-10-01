@@ -43,6 +43,7 @@
             q("#subManageContainer").style.display = "block";
             let data = JSON.parse(result.responseText);
             let {channels, videos} = data;
+            if (!localStorage.getItem("watchedVideos")) localStorage.setItem("watchedVideos", "");
             for (let i = 0; i < videos.length; i++) {
                 let video = videos[i];
                 let ne = q("#searchItemStorage").children[0].cloneNode(true);
@@ -51,11 +52,26 @@
                 ne.children[1].children[2].innerHTML = video.descriptionHtml;
                 ne.children[0].children[0].src = `https://invidio.us/vi/${video.videoId}/mqdefault.jpg`;
                 if (localStorage.getItem("trackWatchedVideos") == "1") {
-                    ne.children[0].children[0].classList.add((localStorage.getItem("watchedVideos") || "").includes(video.videoId) ? "read" : "unread");
+                    ne.children[0].children[0].classList.add(localStorage.getItem("watchedVideos").includes(video.videoId) ? "read" : "unread");
                     q("#trackWatchedCheckbox").checked = true;
                 }
                 document.styleSheets[1].insertRule(`.searchItem:nth-child(${i+1}) > div:first-child::before { content: "${prettySeconds(video.lengthSeconds)}"; }`);
                 ne.href = "/cloudtube/video/"+video.videoId;
+                ne.addEventListener("click", event => {
+                    if (event.clientX <= 45) { // read indicator
+                        let img = ne.children[0].children[0];
+                        img.classList.toggle("read");
+                        img.classList.toggle("unread");
+                        if (img.classList.contains("read")) {
+                            if (!localStorage.getItem("watchedVideos").includes(video.videoId)) localStorage.setItem("watchedVideos", localStorage.getItem("watchedVideos")+video.videoId+",");
+                        } else {
+                            if (localStorage.getItem("watchedVideos").includes(video.videoId)) {
+                                localStorage.setItem("watchedVideos", localStorage.getItem("watchedVideos").replace(video.videoId+",", ""));
+                            }
+                        }
+                        event.preventDefault();
+                    }
+                });
                 q("#searchResultsContainer").appendChild(ne);
             }
             for (let c of channels) {
