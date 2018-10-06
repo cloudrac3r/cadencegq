@@ -7,6 +7,9 @@ body {
     color: #ddd;
     background-color: #36393e;
     margin: 0px;
+}
+
+body, button, input {
     font-family: Bariol,sans-serif;
 }
 
@@ -135,7 +138,7 @@ textarea, input:not([type=range]), button, pre, select, .infoBox {
     margin: 4px;
 }
 
-a.linkbutton {
+a.linkbutton, a.linkbutton:visited {
     background-color: rgba(225, 220, 255, 0.05);
     padding: 8px;
     border-radius: 4px;
@@ -143,6 +146,7 @@ a.linkbutton {
     text-decoration: none;
     border: 1px solid grey;
     font-size: 16px;
+    line-height: 1;
 }
 
 pre {

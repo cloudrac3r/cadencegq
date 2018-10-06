@@ -51,7 +51,10 @@ const pageHandlers = [
     {web: "/legacy/channel/[\\w-]+", local: "legacy/search.html"},
     {web: "/cloudtube/subscriptions", local: "cloudtube/subscriptions.html"},
     {web: "/misc/discord.io", local: "misc/discordio.html"},
-    {web: "/misc/godmaster", local: "misc/godmaster.html"}
+    {web: "/misc/godmaster", local: "misc/godmaster.html"},
+    {web: "/egg", local: "/egg/browse.html"},
+    {web: "/egg/card/[0-9]+", local: "/egg/card.html"},
+    {web: "/egg/card/[0-9]+/fill", local: "/egg/fill.html"}
 ];
 const cacheControl = [
     "ttf", "png", "jpg", "svg"

@@ -1,0 +1,112 @@
+<!-- TEMPLATE pre -->
+<link rel="stylesheet" type="text/css" href="/egg/egg.css">
+<title>Egg Central</title>
+<script>
+    function bodyLoad() {
+        let cardID = window.location.href.match(/\/card\/([0-9]+)/)[1];
+        let assignMode = false;
+        if (!assignMode) q("#lastClickCoords").parentElement.style.display = "none";
+        request("/api/bingo/"+cardID, response => {
+            let card = JSON.parse(response.responseText);
+            q("h2").innerText = card.name;
+            if (card.external) {
+                q("#externalWarning a").href = card.external;
+                q("#externalWarning").style.display = "block";
+            } else {
+                let img = q(".egContainer img");
+                img.src = card.url;
+                img.onload = () => {
+                    let scale = img.clientWidth/img.naturalWidth;
+                    if (window.location.hash) {
+                        let hash = window.location.hash.replace(/^#/, "");
+                        let binary = "";
+                        while (hash.length) {
+                            binary += parseInt(hash.padEnd(2, "0").slice(0, 2), 16).toString(2).padStart(8, "0");
+                            hash = hash.slice(2);
+                        }
+                        for (let i = 0; i < card.tiles.length; i++) {
+                            if (binary[i] == "1") addTileOverlay(card.tiles[i]);
+                        }
+                    } else updateHash();
+                    let clickedOnce = false;
+                    let firstCoords = [];
+                    img.onclick = event => {
+                        clickedOnce = !clickedOnce;
+                        let coords = [(event.layerX-img.x)*(1/scale), (event.layerY-img.y)*(1/scale)];
+                        if (assignMode) {
+                            if (clickedOnce) {
+                                firstCoords = coords;
+                                q("#lastClickCoords").innerText = `${coords[0]}, ${coords[1]}`;
+                            } else {
+                                q("#lastClickCoords").innerText = `${firstCoords[0]}, ${firstCoords[1]} / ${coords[0]}, ${coords[1]}`;
+                            }
+                        } else {
+                            let tileCoords = card.tiles.find(t => t.x1 <= coords[0] && t.x2 >= coords[0] && t.y1 <= coords[1] && t.y2 >= coords[1]);
+                            if (tileCoords) addTileOverlay(tileCoords);
+                        }
+                    }
+                    function updateHash() {
+                        let hash = "";
+                        let checkedTiles = [...egOverlayContainer.children].map(c => parseInt(c.getAttribute("data-tile")));
+                        for (let tile of card.tiles) {
+                            if (checkedTiles.includes(tile.id)) hash += "1";
+                            else hash += "0";
+                        }
+                        let fragments = [];
+                        while (hash.length) {
+                            fragments.push(hash.slice(0, 8).padEnd(8, "0"));
+                            hash = hash.slice(8);
+                        }
+                        for (let f of fragments) {
+                            hash += parseInt(f, 2).toString("16");
+                        }
+                        q("#permalink").href = "#"+hash;
+                    }
+                    function addTileOverlay(tileCoords) {
+                        let overlay = document.createElement("span");
+                        overlay.setAttribute("data-tile", tileCoords.id);
+                        overlay.style = `display: inline-block; background-color: rgba(100, 100, 255, 0.4); position: absolute; left: ${img.x+tileCoords.x1*scale}; top: ${img.y+tileCoords.y1*scale}; width: ${(tileCoords.x2-tileCoords.x1)*scale}; height: ${(tileCoords.y2-tileCoords.y1)*scale};`;
+                        overlay.onclick = () => {
+                            overlay.parentElement.removeChild(overlay);
+                            updateHash();
+                        }
+                        q("#egOverlayContainer").appendChild(overlay);
+                        updateHash();
+                    }
+                }
+            }
+        });
+    }
+    function permalink(event) {
+        let textarea = document.createElement("textarea");
+        textarea.textContent = event.target.href;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand("copy");
+        } catch (e) {}
+        document.body.removeChild(textarea);
+        let cn = q("#copyNotification");
+        cn.style.transition = "none";
+        cn.style["max-height"] = "24px";
+        setTimeout(() => {
+            cn.style.transition = "0.7s ease-out";
+            setTimeout(() => {
+                cn.style["max-height"] = "0px";
+            });
+        }, 1500);
+    }
+</script>
+<!-- TEMPLATE header -->
+<h2>Loading...</h2>
+<p id="externalWarning">This is not a bingo, but is instead a test taken on an external site. <a>Click here to visit that site.</a></p>
+<p>Click squares to mark/unmark them.</p>
+<a id="permalink" href="#" class="linkbutton" onclick="permalink(event)">Permalink to these results</a>
+<div id="copyNotification" class="successDisplay" style="position: fixed; margin-top: 20px; overflow: hidden; line-height: 1; max-height: 0px;">Copied to clipboard!</div>
+<p>Last click: <span id="lastClickCoords"></span></p>
+<div class="egContainer">
+    <img>
+</div>
+<div id="egOverlayContainer">
+</div>
+<!-- TEMPLATE end -->
