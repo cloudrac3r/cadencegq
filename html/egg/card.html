@@ -7,7 +7,7 @@
         q("#fillLink").href = `/egg/card/${cardID}/fill`;
         request("/api/bingo/"+cardID, response => {
             let card = JSON.parse(response.responseText);
-            q(".egContainer img").src = card.url;
+            q(".egSingle img").src = card.url;
             if (card.external) {
                 q("#externalWarning a").href = card.external;
                 q("#externalWarning").style.display = "block";
@@ -19,7 +19,7 @@
 <h2>Ultimate Egg Bingo</h2>
 <div class="linkButtonContainer"><a class="linkbutton" href="/egg">Back to gallery</a><a class="linkbutton" id="fillLink">Fill in this card</a></div>
 <p id="externalWarning">Note that this is not a bingo, but is instead a test taken on an external site. <a>Click here to visit that site.</a></p>
-<div class="egContainer">
+<div class="egSingle">
     <img>
 </div>
 <!-- TEMPLATE end -->

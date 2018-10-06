@@ -13,7 +13,7 @@
                 q("#externalWarning a").href = card.external;
                 q("#externalWarning").style.display = "block";
             } else {
-                let img = q(".egContainer img");
+                let img = q(".egSingle img");
                 img.src = card.url;
                 img.onload = () => {
                     let scale = img.clientWidth/img.naturalWidth;
@@ -104,7 +104,7 @@
 <a id="permalink" href="#" class="linkbutton" onclick="permalink(event)">Permalink to these results</a>
 <div id="copyNotification" class="successDisplay" style="position: fixed; margin-top: 20px; overflow: hidden; line-height: 1; max-height: 0px;">Copied to clipboard!</div>
 <p>Last click: <span id="lastClickCoords"></span></p>
-<div class="egContainer">
+<div class="egSingle">
     <img>
 </div>
 <div id="egOverlayContainer">

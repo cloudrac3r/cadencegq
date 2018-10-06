@@ -16,8 +16,10 @@
     flex-wrap: wrap;
 }
 
-.egContainer > img {
+.egSingle > img {
     max-width: 800px;
+    display: block;
+    margin: 0 auto;
 }
 
 .egItem {
