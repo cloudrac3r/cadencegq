@@ -21,8 +21,8 @@
                         let hash = window.location.hash.replace(/^#/, "");
                         let binary = "";
                         while (hash.length) {
-                            binary += parseInt(hash.padEnd(2, "0").slice(0, 2), 16).toString(2).padStart(8, "0");
-                            hash = hash.slice(2);
+                            binary += parseInt(hash[0], 16).toString(2).padStart(4, "0");
+                            hash = hash.slice(1);
                         }
                         for (let i = 0; i < card.tiles.length; i++) {
                             if (binary[i] == "1") addTileOverlay(card.tiles[i]);
@@ -49,19 +49,24 @@
                         }
                     }
                     function updateHash() {
-                        let hash = "";
+                        let nibbleBuffer = "";
+                        let nibbleStorage = [];
                         let checkedTiles = [...egOverlayContainer.children].map(c => parseInt(c.getAttribute("data-tile")));
                         for (let tile of card.tiles) {
-                            if (checkedTiles.includes(tile.id)) hash += "1";
-                            else hash += "0";
+                            if (checkedTiles.includes(tile.id)) nibbleBuffer += "1";
+                            else nibbleBuffer += "0";
+                            if (nibbleBuffer.length == 4) {
+                                nibbleStorage.push(nibbleBuffer);
+                                nibbleBuffer = "";
+                            }
                         }
-                        let fragments = [];
-                        while (hash.length) {
-                            fragments.push(hash.slice(0, 8).padEnd(8, "0"));
-                            hash = hash.slice(8);
+                        if (nibbleBuffer.length) {
+                            nibbleBuffer = nibbleBuffer.padEnd(4, "0");
+                            nibbleStorage.push(nibbleBuffer);
                         }
-                        for (let f of fragments) {
-                            hash += parseInt(f, 2).toString("16");
+                        let hash = "";
+                        for (let n of nibbleStorage) {
+                            hash += parseInt(n, 2).toString("16").padStart("0", 1);
                         }
                         q("#permalink").href = "#"+hash;
                     }
@@ -105,7 +110,7 @@
 <p id="externalWarning">This is not a bingo, but is instead a test taken on an external site. <a>Click here to visit that site.</a></p>
 <p>Click squares to mark/unmark them.</p>
 <a id="permalink" href="#" class="linkbutton" onclick="permalink(event)">Permalink to these results</a>
-<div id="copyNotification" class="successDisplay" style="position: fixed; margin-top: 20px; overflow: hidden; line-height: 1; max-height: 0px;">Copied to clipboard!</div>
+<div id="copyNotification" class="successDisplay" style="position: absolute; margin-top: 20px; overflow: hidden; line-height: 1; max-height: 0px;">Copied to clipboard!</div>
 <p>Last click: <span id="lastClickCoords"></span></p>
 <div class="egSingle">
     <img>
