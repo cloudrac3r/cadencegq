@@ -31,8 +31,11 @@
                     let clickedOnce = false;
                     let firstCoords = [];
                     img.onclick = event => {
+                        console.log(event);
+                        console.log(img);
+                        console.log("==========");
                         clickedOnce = !clickedOnce;
-                        let coords = [(event.layerX-img.x)*(1/scale), (event.layerY-img.y)*(1/scale)];
+                        let coords = [(event.layerX-img.offsetLeft)*(1/scale), (event.layerY-img.offsetTop)*(1/scale)];
                         if (assignMode) {
                             if (clickedOnce) {
                                 firstCoords = coords;
@@ -65,7 +68,7 @@
                     function addTileOverlay(tileCoords) {
                         let overlay = document.createElement("span");
                         overlay.setAttribute("data-tile", tileCoords.id);
-                        overlay.style = `display: inline-block; background-color: rgba(100, 100, 255, 0.4); position: absolute; left: ${img.x+tileCoords.x1*scale}; top: ${img.y+tileCoords.y1*scale}; width: ${(tileCoords.x2-tileCoords.x1)*scale}; height: ${(tileCoords.y2-tileCoords.y1)*scale};`;
+                        overlay.style = `display: inline-block; background-color: rgba(100, 100, 255, 0.4); position: absolute; left: ${img.offsetLeft+tileCoords.x1*scale}; top: ${img.offsetTop+tileCoords.y1*scale}; width: ${(tileCoords.x2-tileCoords.x1)*scale}; height: ${(tileCoords.y2-tileCoords.y1)*scale};`;
                         overlay.onclick = () => {
                             overlay.parentElement.removeChild(overlay);
                             updateHash();
