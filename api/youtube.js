@@ -40,7 +40,7 @@ module.exports = ({db, resolveTemplates}) => {
                                     `<meta property="og:title" content="${data.title.replace('"', "'")} — CloudTube video" />\n`+
                                     `<meta property="og:type" content="video.movie" />\n`+
                                     `<meta property="og:image" content="https://invidio.us/vi/${fill[0]}/mqdefault.jpg" />\n`+
-                                    `<meta property="og:url" content="https://cadence.gq${req.path}" />\n`+
+                                    `<meta property="og:url" content="https://${req.headers.host}${req.path}" />\n`+
                                     `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                                 page = page.replace("<!-- metaOGTags -->", metaOGTags);
                                 resolve({
@@ -75,7 +75,7 @@ module.exports = ({db, resolveTemplates}) => {
                                     `<meta property="og:title" content="${channelInfo.author.replace('"', "'")} — CloudTube channel" />\n`+
                                     `<meta property="og:type" content="video.movie" />\n`+
                                     `<meta property="og:image" content="${channelInfo.authorBanners[0].url}" />\n`+
-                                    `<meta property="og:url" content="https://cadence.gq${req.path}" />\n`+
+                                    `<meta property="og:url" content="https://${req.headers.host}${req.path}" />\n`+
                                     `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                                 page = page.replace("<!-- metaOGTags -->", metaOGTags);
                                 resolve({
@@ -108,7 +108,7 @@ module.exports = ({db, resolveTemplates}) => {
                                     let metaOGTags =
                                         `<meta property="og:title" content="${params.q} — CloudTube search" />\n`+
                                         `<meta property="og:type" content="video.movie" />\n`+
-                                        `<meta property="og:url" content="https://cadence.gq${req.path}" />\n`+
+                                        `<meta property="og:url" content="https://${req.headers.host}${req.path}" />\n`+
                                         `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                                     page = page.replace("<!-- metaOGTags -->", metaOGTags);
                                     resolve({
@@ -128,7 +128,7 @@ module.exports = ({db, resolveTemplates}) => {
                             let metaOGTags =
                                 `<meta property="og:title" content="CloudTube search" />\n`+
                                 `<meta property="og:type" content="video.movie" />\n`+
-                                `<meta property="og:url" content="https://cadence.gq${req.path}" />\n`+
+                                `<meta property="og:url" content="https://${req.headers.host}${req.path}" />\n`+
                                 `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                             page = page.replace("<!-- metaOGTags -->", metaOGTags);
                             resolve({

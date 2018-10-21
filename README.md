@@ -4,8 +4,10 @@ My website of utilities, including image hosting, URL shortening, and a pastebin
 
 ## TODOs
 
-- Double-check compliance with Do Not Track. Pretty sure I'm good.
+- Add YouTube playlists
+- Update database schema
 - Fix API request ranges. Or remove them entirely. They're probably not necessary until quite a long time in the future.
+- Consider changing cadence.gq to cadence.moe
 
 ## Contributing
 
@@ -28,13 +30,13 @@ If you'd rather not share your thoughts with the entire world, you can talk to m
 
 ## Running your own instance
 
-I recommend Visual Studio Code for editing this code, but of course you may use whatever text editor you like.
+I use Visual Studio Code to create this site, but of course you may use whatever text editor you like.
 
 - Clone the repo
 - `npm install`
 - Create `db/main.db` according to the schema in `db/main-schema.sql`. `db/old.db`, an old version of the database, is also available, but note that modifications would be needed to use it with the current code.
 - Create `auth.json` with the content `{"yt_api_key": "blah"}` replacing `blah` with an actual YouTube API key.
-- If you want to use HTTPS, first obtain a Let's Encrypt certificate, then change `hostname` in `index.js`. If you don't want to use HTTPS or just want to run the site behind a LAN, you don't have to set the hostname.
+- If you want to use HTTPS, first obtain a Let's Encrypt certificate, then change `hostnames` in `index.js`. If you don't want to use HTTPS or just want to run the site behind a LAN, you don't have to change the hostname.
 - Again, for HTTPS only, set your server's IP address at the bottom of `index.js`.
 - Set the ports to use at the top of `index.js`.
 - Change the contact details and crypto address in `html/about/contact.html`. Or don't, if you want people to send money to me instead of to you. Haha, who am I kidding. Nobody will ever send me money.

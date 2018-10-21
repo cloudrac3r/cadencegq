@@ -3,12 +3,13 @@
 const fs = require("fs");
 const http = require("http");
 const https = require("https");
+const tls = require("tls");
 const path = require("path");
 const mime = require("mime");
 const sqlite = require("sqlite");
 const cf = require("./util/common.js");
 
-const hostname = "cadence.gq";
+const hostnames = ["cadence.gq", "cadence.moe"];
 const httpPort = 8080;
 const httpsPort = 8081;
 const apiDir = "api";
@@ -18,13 +19,30 @@ const hitUpdateMin = 10000;
 const encrypt = fs.existsSync("/etc/letsencrypt");
 let options;
 if (encrypt) {
-    options = {
-        key: fs.readFileSync(`/etc/letsencrypt/live/${hostname}/privkey.pem`),
-        cert: fs.readFileSync(`/etc/letsencrypt/live/${hostname}/cert.pem`),
-        ca: [
-            fs.readFileSync(`/etc/letsencrypt/live/${hostname}/fullchain.pem`)
-        ]
-    };
+    function getFiles(hostname) {
+        return {
+            key: fs.readFileSync(`/etc/letsencrypt/live/${hostname}/privkey.pem`),
+            cert: fs.readFileSync(`/etc/letsencrypt/live/${hostname}/cert.pem`),
+            ca: [
+                fs.readFileSync(`/etc/letsencrypt/live/${hostname}/fullchain.pem`)
+            ]
+        };
+    }
+    function getSecureContext(hostname) {
+        return tls.createSecureContext(getFiles(hostname));
+    }
+    let secureContexts = {};
+    for (let hostname of hostnames ) {
+        secureContexts[hostname] = getSecureContext(hostname);
+    }
+    options = getFiles(hostnames[0]);
+    options.SNICallback = function(domain, callback) {
+        if (secureContexts[domain]) {
+            callback(null, secureContexts[domain]);
+        } else {
+            callback(null, Object.values(secureContexts)[0]);
+        }
+    }
 }
 
 const webHandlers = fs.readdirSync(apiDir).map(f => path.join(apiDir, f));
@@ -120,6 +138,7 @@ async function resolveTemplates(page) {
 
 function serverRequest(req, res) {
     req.gmethod = req.method == "HEAD" ? "GET" : req.method;
+    if (!req.headers.host) req.headers.host = hostnames[0];
     let headers = {};
     if (cacheControl.includes(req.url.split(".")[1])) headers["Cache-Control"] = "max-age=604800, public";
     //console.log(">>> "+req.url+" "+req["user-agent"]);
