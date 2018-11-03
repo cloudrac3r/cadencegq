@@ -23,7 +23,7 @@ function makeHeadersWork() {
             });
         });
     });
-    q("#headerExpandMenu").addEventListener("mousedown", () => {
-        q("#header").classList.toggle("hidden");
+    document.querySelector("#headerExpandMenu").addEventListener("mousedown", () => {
+        document.querySelector("#header").classList.toggle("hidden");
     });
 }

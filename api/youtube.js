@@ -24,7 +24,7 @@ function fetchChannel(channelID) {
     });
 }
 
-module.exports = ({db, resolveTemplates}) => {
+module.exports = ({encrypt, cf, db, resolveTemplates}) => {
     return [
         {
             route: "/cloudtube/video/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
@@ -182,6 +182,46 @@ module.exports = ({db, resolveTemplates}) => {
                 channels = channels.sort((a, b) => (a.author.toLowerCase() < b.author.toLowerCase() ? -1 : 1));
                 return [200, {videos, channels}];
             }
+        },
+        {
+            route: "/api/youtube/alternate/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(async resolve => {
+                let ip = req.connection.remoteAddress;
+                let match = ip.match(/(\d+\.){3}\d+/);
+                if (match) ip = match[0];
+                else {
+                    if (encrypt) {
+                        cf.log("Couldn't parse IP "+req.connection.remoteAddress, "warning");
+                        return resolve([200, {error: "Couldn't parse IP "+req.connection.remoteAddress}]);
+                    } else {
+                        let body = await rp("https://ipapi.co/json");
+                        let data = JSON.parse(body);
+                        ip = data.ip;
+                        cf.log("Running locally: obtained IP "+ip, "info");
+                    }
+                }
+                let country = await rp(`https://ipapi.co/${ip}/country`);
+                cf.log("Resolved "+req.connection.remoteAddress+" → "+ip+" → "+country, "info");
+                let server = await db.get("SELECT * FROM InvidiousServers WHERE country = ?", country);
+                if (!server) return resolve([200, {error: "No servers available for your country"}]);
+                cf.log("Using server "+server.prefix, "info");
+                rp(server.prefix+"/api/v1/videos/"+fill[0]).then(body => {
+                    let data = JSON.parse(body);
+                    let result = {};
+                    for (let key of ["error", "adaptiveFormats", "formatStreams"]) if (data[key]) result[key] = data[key];
+                    return resolve([200, result]);
+                }).catch(e => {
+                    let result;
+                    try {
+                        let data = JSON.parse(e.error);
+                        if (data.error) result = data.error;
+                        else result = data;
+                    } catch (no) {
+                        if (e.error) result = e.error;
+                        else result = e;
+                    }
+                    return resolve([200, {error: result}]);
+                });
+            })
         },
         {
             route: "/api/youtube/video/([\\w-]+)", methods: ["GET"], code: ({fill}) => {

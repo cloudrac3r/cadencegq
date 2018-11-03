@@ -86,7 +86,7 @@ let routeHandlers = [];
 sqlite.open("db/main.db").then(db => {
     const extra = require("./util/extra.js")({db});
     webHandlers.forEach(h => {
-        routeHandlers.push(...require(path.join(__dirname, h))({db, extra, resolveTemplates}));
+        routeHandlers.push(...require(path.join(__dirname, h))({encrypt, cf, db, extra, resolveTemplates}));
     });
     cf.log("Loaded API modules", "info");
 });
@@ -171,12 +171,16 @@ function serverRequest(req, res) {
                         try {
                             data = JSON.parse(body);
                         } catch (e) {};
-                        h.code({req, reqPath, fill, params, body, data}).then(resolve);
+                        h.code({req, reqPath, res, fill, params, body, data}).then(resolve);
                     });
                 } else {
-                    h.code({req, reqPath, fill, params}).then(resolve);
+                    h.code({req, reqPath, res, fill, params}).then(resolve);
                 }
             }).then(result => {
+                if (result === null) {
+                    cf.log("Ignoring null response for request "+reqPath, "info");
+                    return;
+                }
                 if (result.constructor.name == "Array") {
                     let newResult = {statusCode: result[0], content: result[1]};
                     if (typeof(newResult.content) == "number") newResult.content = {code: newResult.content};

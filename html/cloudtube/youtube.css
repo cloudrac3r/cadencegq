@@ -310,6 +310,11 @@ input, button {
     display: none;
     line-height: 1.4;
 }
+#playbackErrorContainer {
+    border-color: #b98627;
+    border-width: 3px;
+    display: block;
+}
 
 #loading {
     text-align: center;

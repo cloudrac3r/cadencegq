@@ -19,6 +19,7 @@
         return output.join(":");
     }
 
+    let videoID;
     let formats;
     let allFormats;
     let bestAudioURL;
@@ -223,6 +224,41 @@
         }
     }
 
+    function switchServers(remember) {
+        if (remember) localStorage.setItem("automaticSourceSwitch", "1");
+        q("#playbackErrorContainer").innerText = "Please wait, requesting new sources...";
+        request("/api/youtube/alternate/"+videoID, body => {
+            let data = JSON.parse(body.responseText);
+            if (data.error == "No servers available for your country") {
+                q("#playbackErrorContainer").innerHTML =
+                "There are no Invidious servers in your country."+
+                "<a href='/about/contact' target='_blank'>Please contact me with your country and I'll try to set up a server.</a><br>"+
+                "For now, you should just watch the video on regular YouTube.";
+            } else if (data.error) {
+                q("#playbackErrorContainer").innerHTML = "An error occurred. <a href='/about/contact' target='_blank'>Please report this.</a><br><br><code>"+body.responseText+"</code>";
+                q("#playbackErrorContainer").style["word-break"] = "break-all";
+            } else {
+                let qualitySelect = q("#qualitySelect");
+                let child;
+                while (child = qualitySelect.children[0]) {
+                    child.parentElement.removeChild(child);
+                }
+                allFormats = data.formatStreams.concat(data.adaptiveFormats);
+                formats = allFormats.filter(f => f.type.includes("video") && f.qualityLabel);
+                for (let i = 0; i < formats.length; i++) {
+                    let f = formats[i];
+                    f.label = (f.qualityLabel || f.resolution) + " " + f.container + (f.index ? " ꜝ" : "") ;
+                    let option = document.createElement("option");
+                    option.setAttribute("value", i);
+                    option.innerText = f.label;
+                    qualitySelect.appendChild(option);
+                }
+                chooseFormat(formats.findIndex(f => f.container == "mp4") || 0);
+                q("#playbackErrorContainer").style.display = "none";
+            }
+        });
+    }
+
     function bodyLoad() {
         let video = q("video");
         let audio = q("audio");
@@ -234,6 +270,16 @@
             audio.addEventListener(eventName, playbackIntervention);
         }
         video.manualPaused = true;
+        let ignorePlaybackError = false;
+        video.addEventListener("error", event => {
+            if (ignorePlaybackError) return;
+            console.log(event, video);
+            if (localStorage.getItem("automaticSourceSwitch") == "1") {
+                switchServers();
+            }
+            q("#playbackErrorContainer").style.display = "";
+        });
+        window.addEventListener("beforeunload", () => ignorePlaybackError = true);
         q("#speedSliderContainer").children[0].addEventListener("mousewheel", event => {
             let offset = 50 * Math.sign(event.deltaY) * Math.sign(-event.shiftKey + 0.5);
             q("#speedSlider").value = q("#speedSlider").value - offset;
@@ -243,11 +289,27 @@
         video.waitingTimeout = new BetterTimeout();
         audio.waitingTimeout = new BetterTimeout();
         let data = "<!-- videoInfo -->";
-        let videoID = data.videoId;
+        videoID = data.videoId;
+        // Set buttons below video
+        getLoginDetails(details => {
+            if (details && details.subscriptions) {
+                updateLocalStorage();
+                let subscriptionsString = "";
+                for (let s of details.subscriptions) subscriptionsString += s+",";
+                localStorage.setItem("subscriptions", subscriptionsString);
+                updateSubscribeButton();
+            } else {
+                updateSubscribeButton();
+            }
+        });
+        q("#youtubeLink").setAttribute("href", `https://youtube.com/watch?v=${videoID}&feature=cloudtube`);
+        q("#invidiousLink").setAttribute("href", `https://invidio.us/watch?v=${videoID}&feature=cloudtube`);
+        q("#hooktubeLink").setAttribute("href", `https://hooktube.com/watch?v=${videoID}&feature=cloudtube`);
+        q("#legacyLink").setAttribute("href", `/legacy/${videoID}`);
         // Load video
         //formats = allFormats.filter(f => usefulFormats.includes(f.itag)/* && f.audioEncoding*/);
         allFormats = data.formatStreams.concat(data.adaptiveFormats);
-        formats = allFormats.filter(f => f.type.includes("video"));
+        formats = allFormats.filter(f => f.type.includes("video") && f.qualityLabel);
         for (let i = 0; i < formats.length; i++) {
             let f = formats[i];
             f.label = (f.qualityLabel || f.resolution) + " " + f.container + (f.index ? " ꜝ" : "") ;
@@ -285,22 +347,6 @@
             ne.href = rv.videoId;
             q("#relatedVideosContainer").appendChild(ne);
         }
-        // Set buttons below video
-        getLoginDetails(details => {
-            if (details && details.subscriptions) {
-                updateLocalStorage();
-                let subscriptionsString = "";
-                for (let s of details.subscriptions) subscriptionsString += s+",";
-                localStorage.setItem("subscriptions", subscriptionsString);
-                updateSubscribeButton();
-            } else {
-                updateSubscribeButton();
-            }
-        });
-        q("#youtubeLink").setAttribute("href", `https://youtube.com/watch?v=${videoID}&feature=cloudtube`);
-        q("#invidiousLink").setAttribute("href", `https://invidio.us/watch?v=${videoID}&feature=cloudtube`);
-        q("#hooktubeLink").setAttribute("href", `https://hooktube.com/watch?v=${videoID}&feature=cloudtube`);
-        q("#legacyLink").setAttribute("href", `/legacy/${videoID}`);
         // Fix description
         [...q("#eow-description").children].filter(c => c.tagName == "A").forEach(c => {
             if (c.innerText.startsWith("#")) {
@@ -401,6 +447,20 @@
             </div>
         </div>
         <audio preload="auto"></audio>
+        <div class="belowButtonContainer infoBox" id="playbackErrorContainer" style="display: none;">
+            <div>
+                <span>
+                    <div>
+                        Looks like the video stream can't be played.<br>
+                        This issue can probably be fixed by rerouting you to a different Invidious server,
+                        but this involves sending your IP address to an external API.
+                    </div>
+                    <div>
+                        <button onclick="switchServers(false)">Use another server</button><button onclick="switchServers(true)">Do this automatically from now on</button>
+                    </div>
+                </span>
+            </div>
+        </div>
         <div class="belowButtonContainer">
             <button id="subscribe" onclick="toggleSubscription()">Subscribe</button>
             <select id="qualitySelect" oninput="chooseFormat(event.target.selectedIndex)"></select>

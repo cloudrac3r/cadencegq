@@ -254,9 +254,9 @@ function createAccount(username, password, callback) {
 
 function makeInfoBoxesWork() {
     if (!localStorage.getItem("ibdismiss")) localStorage.setItem("ibdismiss", "");
+    let dismissed = localStorage.getItem("ibdismiss");
     for (let box of document.querySelectorAll(".infoBox")) {
-        let dismissed = localStorage.getItem("ibdismiss");
-        if (!dismissed.includes(box.getAttribute("ibid"))) {
+        if (box.getAttribute("ibid") && !dismissed.includes(box.getAttribute("ibid"))) {
             let closeButton = document.createElement("img");
             closeButton.src = "/fonts/cross.svg";
             closeButton.onclick = function() {
