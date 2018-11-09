@@ -30,12 +30,10 @@
 
     function bodyLoad() {
         let subsObject = {};
-        if (localStorage.getItem("token")) subsObject.token = localStorage.getItem("token");
-        else {
-            let subscriptionsString = localStorage.getItem("subscriptions") || "";
-            let subscriptions = [];
-            for (let s of subscriptionsString.split(",")) if (s) subscriptions.push(s);
-            subsObject.subscriptions = subscriptions;
+        if (lsm.get("token")) {
+            subsObject.token = lsm.get("token");
+        } else {
+            subsObject.subscriptions = lsm.array("subscriptions").array;
         }
         request(`/api/youtube/subscriptions`, result => {
             q("#loadingProgress").innerText = "Subscriptions list";
@@ -43,7 +41,6 @@
             q("#subManageContainer").style.display = "block";
             let data = JSON.parse(result.responseText);
             let {channels, videos} = data;
-            if (!localStorage.getItem("watchedVideos")) localStorage.setItem("watchedVideos", "");
             for (let i = 0; i < videos.length; i++) {
                 let video = videos[i];
                 let ne = q("#searchItemStorage").children[0].cloneNode(true);
@@ -51,8 +48,8 @@
                 ne.children[1].children[1].innerText = video.author+" • "+humaniseDate(video.published);
                 ne.children[1].children[2].innerHTML = video.descriptionHtml;
                 ne.children[0].children[0].src = `https://invidio.us/vi/${video.videoId}/mqdefault.jpg`;
-                if (localStorage.getItem("trackWatchedVideos") == "1") {
-                    ne.children[0].children[0].classList.add(localStorage.getItem("watchedVideos").includes(video.videoId) ? "read" : "unread");
+                if (lsm.get("trackWatchedVideos") == "1") {
+                    ne.children[0].children[0].classList.add(lsm.array("watchedVideos").array.includes(video.videoId) ? "read" : "unread");
                     q("#trackWatchedCheckbox").checked = true;
                 }
                 document.styleSheets[1].insertRule(`.searchItem:nth-child(${i+1}) > div:first-child::before { content: "${prettySeconds(video.lengthSeconds)}"; }`);
@@ -63,11 +60,9 @@
                         img.classList.toggle("read");
                         img.classList.toggle("unread");
                         if (img.classList.contains("read")) {
-                            if (!localStorage.getItem("watchedVideos").includes(video.videoId)) localStorage.setItem("watchedVideos", localStorage.getItem("watchedVideos")+video.videoId+",");
+                            lsm.array("watchedVideos").add(video.videoId, true);
                         } else {
-                            if (localStorage.getItem("watchedVideos").includes(video.videoId)) {
-                                localStorage.setItem("watchedVideos", localStorage.getItem("watchedVideos").replace(video.videoId+",", ""));
-                            }
+                            lsm.array("watchedVideos").remove(video.videoId);
                         }
                         event.preventDefault();
                     }
@@ -105,7 +100,7 @@
         let channelID = tr.getAttribute("data-channelid");
         let button = event.path.find(e => e.tagName == "BUTTON");
         let tbody = event.path.find(e => e.tagName == "TBODY");
-        let token = localStorage.getItem("token");
+        let token = lsm.get("token");
         if (token) {
             button.style.width = button.offsetWidth;
             button.innerText = "...";
@@ -123,14 +118,14 @@
         } else con();
         function con() {
             tbody.removeChild(tr);
-            localStorage.setItem("subscriptions", (localStorage.getItem("subscriptions") || "").replace(channelID+",", ""));
+            lsm.array("subscriptions").remove(channelID);
             updateSubCount();
         }
     }
 
     function toggleTracking(event) {
-        localStorage.setItem("trackWatchedVideos", ""+(+event.target.checked));
-        if (!event.target.checked) localStorage.setItem("watchedVideos", "");
+        lsm.set("trackWatchedVideos", ""+(+event.target.checked));
+        if (!event.target.checked) lsm.set("watchedVideos", "");
         window.location.reload();
     }
 

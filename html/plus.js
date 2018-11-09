@@ -26,6 +26,76 @@ function request(url, callback, body, method) {
     console.log(method, url, body);
 }
 
+const lsmDefaults = {
+    "subscriptions": "",
+    "watchedVideos": "",
+    "trackWatchedVideos": "0"
+}
+
+const lsm = {
+    get: function(key, replace) {
+        if (replace === undefined) replace = lsmDefaults[key];
+        if (replace) lsm.setup(key, replace);
+        return localStorage.getItem(key);
+    },
+    set: function(key, value) {
+        localStorage.setItem(key, value);
+    },
+    array: function(key) {
+        return lsm.arrayStorage[key] || (lsm.arrayStorage[key] = new LSMArray(key, lsm.get(key)));
+    },
+    arrayStorage: {},
+    setup: function(key, value) {
+        if (localStorage.getItem(key) == null) lsm.set(key, value);
+    }
+}
+
+class LSMArray {
+    constructor(key, string) {
+        this.separator = ",";
+        this.key = key;
+        this.read(string);
+    }
+    read(string) {
+        if (string.endsWith(this.separator)) string = string.slice(0, -1);
+        if (string.startsWith(this.separator)) string = string.slice(1);
+        this.string = string;
+        this.array = string.split(this.separator);
+    }
+    write() {
+        this.string = this.array.join(this.separator);
+        lsm.set(this.key, this.string);
+    }
+    add(item, singular) {
+        if (singular && this.array.includes(item)) {
+            return false;
+        } else {
+            this.array.push(item);
+            this.write();
+            return true;
+        }
+    }
+    remove(item) {
+        let index = this.array.indexOf(item);
+        if (index != -1) {
+            this.array.splice(index, 1);
+            this.write();
+            return true;
+        } else {
+            return false;
+        }
+    }
+    clear() {
+        this.array.length = 0;
+        this.write();
+    }
+}
+
+
+for (let key of Object.keys(lsmDefaults)) {
+    lsm.setup(key, lsmDefaults[key]);
+}
+
 /* Usable functions */
 
 function loadPaste(pasteID, callback) {
@@ -269,8 +339,8 @@ function makeInfoBoxesWork() {
     }
 }
 
-if (document.readyState == "loading") {
-    document.addEventListener("DOMContentLoaded", postLoad);
+if (document.readyState != "complete") {
+    window.onload = postLoad;
 } else {
     postLoad();
 }
