@@ -178,8 +178,7 @@
     }
 
     function checkSubscribedStatus() {
-        if (localStorage.getItem("subscriptions") == null) localStorage.setItem("subscriptions", "");
-        return localStorage.getItem("subscriptions").includes(q("#videoAuthor").getAttribute("data-channelid")+",");
+        return lsm.array("subscriptions").array.includes(q("#videoAuthor").getAttribute("data-channelid"));
     }
 
     function updateSubscribeButton() {
@@ -188,7 +187,7 @@
 
     function toggleSubscription() {
         let channelID = q("#videoAuthor").getAttribute("data-channelid");
-        let token = localStorage.getItem("token");
+        let token = lsm.get("token");
         if (token) {
             let s = q("#subscribe");
             s.style.width = s.offsetWidth;
@@ -215,17 +214,15 @@
     }
     function updateLocalStorage() {
         let channelID = q("#videoAuthor").getAttribute("data-channelid");
-        let commaString = channelID+",";
-        let subscriptionsString = localStorage.getItem("subscriptions");
         if (checkSubscribedStatus()) {
-            localStorage.setItem("subscriptions", subscriptionsString.replace(commaString, ""));
+            lsm.array("subscriptions").remove(channelID);
         } else {
-            localStorage.setItem("subscriptions", subscriptionsString+commaString);
+            lsm.array("subscriptions").add(channelID);
         }
     }
 
     function switchServers(remember) {
-        if (remember) localStorage.setItem("automaticSourceSwitch", "1");
+        if (remember) lsm.set("automaticSourceSwitch", "1");
         q("#playbackErrorContainer").innerText = "Please wait, requesting new sources...";
         request("/api/youtube/alternate/"+videoID, body => {
             let data = JSON.parse(body.responseText);
@@ -274,7 +271,7 @@
         video.addEventListener("error", event => {
             if (ignorePlaybackError) return;
             console.log(event, video);
-            if (localStorage.getItem("automaticSourceSwitch") == "1") {
+            if (lsm.get("automaticSourceSwitch") == "1") {
                 switchServers();
             }
             q("#playbackErrorContainer").style.display = "";
@@ -296,7 +293,7 @@
                 updateLocalStorage();
                 let subscriptionsString = "";
                 for (let s of details.subscriptions) subscriptionsString += s+",";
-                localStorage.setItem("subscriptions", subscriptionsString);
+                lsm.array("subscriptions").read(subscriptionsString);
                 updateSubscribeButton();
             } else {
                 updateSubscribeButton();
@@ -364,10 +361,9 @@
             }
         });
         // Record video as watched in localStorage
-        if (localStorage.getItem("trackWatchedVideos")) {
+        if (lsm.get("trackWatchedVideos")) {
             let videoID = window.location.href.match("/video/([\\w-]+)")[1];
-            let watchedVideos = localStorage.getItem("watchedVideos") || "";
-            if (!watchedVideos.includes(videoID+",")) localStorage.setItem("watchedVideos", watchedVideos+videoID+",");
+            lsm.array("watchedVideos").add(videoID);
         }
     }
 
