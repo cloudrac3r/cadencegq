@@ -279,11 +279,11 @@ input, button {
 }
 #subManageButtonContainer h2 {
     margin-top: 0px;
+    margin-right: 40px;
     display: inline-block;
 }
 #subManageButtonContainer button {
     display: none;
-    margin-left: 40px;
 }
 #subManageContainer {
     display: none;

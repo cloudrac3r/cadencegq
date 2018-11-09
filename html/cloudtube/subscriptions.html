@@ -37,7 +37,7 @@
         }
         request(`/api/youtube/subscriptions`, result => {
             q("#loadingProgress").innerText = "Subscriptions list";
-            q("#subManageButtonContainer button").style.display = "inline-block";
+            for (let button of document.querySelectorAll("#subManageButtonContainer button")) button.style.display = "inline-block";
             q("#subManageContainer").style.display = "block";
             let data = JSON.parse(result.responseText);
             let {channels, videos} = data;
@@ -129,6 +129,19 @@
         window.location.reload();
     }
 
+    function toggleHideWatched(event) {
+        let shouldHide = event.target.innerText == "Hide watched videos";
+        for (let item of q("#searchResultsContainer").children) {
+            if (shouldHide) {
+                if (item.children[0].children[0].classList.contains("read")) item.style.display = "none";
+                else item.style.display = "";
+            } else {
+                item.style.display = "";
+            }
+        }
+        event.target.innerText = shouldHide ? "Show all videos" : "Hide watched videos";
+    }
+
     function search() {
         window.location.assign("/cloudtube/search?q="+encodeURIComponent(q("#search").value)+"&sort_by="+q("select").selectedOptions[0].value);
     }
@@ -150,7 +163,9 @@
     </div>
 </div>
 <div id="subManageButtonContainer">
-    <h2 id="loadingProgress">Loading subscriptions...</h2><button onclick="toggleSubManage()">Manage subscriptions</button>
+    <h2 id="loadingProgress">Loading subscriptions...</h2>
+    <button onclick="toggleSubManage()">Manage subscriptions</button>
+    <button onclick="toggleHideWatched(event)">Hide watched videos</button>
 </div>
 <div id="subManageContainer">
     <div id="subManageList">
