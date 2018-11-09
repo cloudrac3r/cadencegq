@@ -205,8 +205,8 @@
                 q("#videoAuthor").innerText = "Uploaded by "+data.author.name;
                 q("#videoAuthor").href = "/legacy/channel/"+data.author.id;
                 q("#videoDescription").innerText = data.description;
-                let commaViewCount = data.view_count;
-                for (let i = 1; i < data.view_count.length/3; i++) {
+                let commaViewCount = data.player_response.videoDetails.viewCount;
+                for (let i = 1; i < data.player_response.videoDetails.viewCount.length/3; i++) {
                     let invi = commaViewCount.length - i*3 - i + 1;
                     commaViewCount = commaViewCount.slice(0, invi) + "," + commaViewCount.slice(invi);
                 }
