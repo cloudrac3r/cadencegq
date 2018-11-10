@@ -1,6 +1,7 @@
 <!-- TEMPLATE pre -->
 <link rel="stylesheet" type="text/css" href="/cloudtube/youtube.css">
 <title>Subscriptions — CloudTube</title>
+<script src="/cloudtube/cloudtube.js"></script>
 <style>
     .unread {
         padding-left: 20px;
@@ -41,6 +42,12 @@
             q("#subManageContainer").style.display = "block";
             let data = JSON.parse(result.responseText);
             let {channels, videos} = data;
+            let filterReturn = filterVideos(videos, "feed");
+            videos = filterReturn[0];
+            if (filterReturn[1]) {
+                q("#blockedWarning").style.display = "";
+                q("#blockedWarning span").innerText = filterReturn[1];
+            }
             for (let i = 0; i < videos.length; i++) {
                 let video = videos[i];
                 let ne = q("#searchItemStorage").children[0].cloneNode(true);
@@ -166,7 +173,9 @@
     <h2 id="loadingProgress">Loading subscriptions...</h2>
     <button onclick="toggleSubManage()">Manage subscriptions</button>
     <button onclick="toggleHideWatched(event)">Hide watched videos</button>
+    <a class="linkbutton" href="/cloudtube/settings">More settings</a>
 </div>
+<div id="blockedWarning" style="display: none;"><span></span> videos have been blocked based on your preferences. <a href="/cloudtube/settings">Edit preferences</a></div>
 <div id="subManageContainer">
     <div id="subManageList">
         <span>You are subscribed to <span id="subCount">placeholder channels</span>.</span>

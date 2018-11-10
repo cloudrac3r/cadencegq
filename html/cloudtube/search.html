@@ -1,6 +1,7 @@
 <!-- TEMPLATE pre -->
 <link rel="stylesheet" type="text/css" href="/cloudtube/youtube.css">
 <title></title>
+<script src="/cloudtube/cloudtube.js"></script>
 <script type="text/javascript">
     function prettySeconds(seconds) {
         let minutes = Math.floor(seconds / 60);
@@ -24,6 +25,12 @@
     function bodyLoad() {
         if (searchTerms) {
             let data = "<!-- searchResults -->";
+            let filterReturn = filterVideos(data, "feed");
+            data = filterReturn[0];
+            if (filterReturn[1]) {
+                q("#blockedWarning").style.display = "";
+                q("#blockedWarning span").innerText = filterReturn[1];
+            }
             // Set search results
             if (data.length) {
                 for (let i = 0; i < data.length; i++) {
@@ -65,6 +72,7 @@
         </select>
         <button id="searchButton" onclick="search()">Search</button>
     </div>
+    <div id="blockedWarning" style="margin-bottom: 12px; display: none;"><span></span> videos have been blocked based on your preferences. <a href="/cloudtube/settings">Edit preferences</a></div>
     <div id="searchResultsContainer"></div>
 </div>
 <div id="searchItemStorage" style="display:none;">

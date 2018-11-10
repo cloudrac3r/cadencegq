@@ -68,6 +68,7 @@ const pageHandlers = [
     {web: "/legacy/[\\w-]+", local: "legacy/video.html"},
     {web: "/legacy/channel/[\\w-]+", local: "legacy/search.html"},
     {web: "/cloudtube/subscriptions", local: "cloudtube/subscriptions.html"},
+    {web: "/cloudtube/settings", local: "cloudtube/settings.html"},
     {web: "/misc/discord.io", local: "misc/discordio.html"},
     {web: "/misc/godmaster", local: "misc/godmaster.html"},
     {web: "/egg", local: "/egg/browse.html"},

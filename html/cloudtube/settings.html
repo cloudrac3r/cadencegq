@@ -1,0 +1,84 @@
+<!-- TEMPLATE pre -->
+<link rel="stylesheet" type="text/css" href="/cloudtube/youtube.css">
+<title>Settings — CloudTube</title>
+<script src="/cloudtube/cloudtube.js"></script>
+<script>
+    const typeMap = [
+        {
+            key: "blockedTitles",
+            text: "Video title"
+        },{
+            key: "blockedAuthors",
+            text: "Author name"
+        },{
+            key: "blockedVideos",
+            text: "Video ID"
+        },{
+            key: "blockedAuthorIDs",
+            text: "Author ID"
+        }
+    ];
+    function manageKeypress(event) {
+        if (event.key == "Enter") {
+            addTag();
+        }
+    }
+    function addTag(value, type) {
+        if (!type) {
+            type = q("#tagTypeSelection").selectedOptions[0].value;
+            value = q("#tagInput").value.trim();
+            q("#tagInput").value = "";
+        }
+        lsm.array(type).add(value, true);
+        let ne = q("#subStorage").children[0].cloneNode(true);
+        ne.children[0].innerText = value;
+        ne.children[1].innerText = typeMap.find(t => t.key == type).text;
+        ne.children[1].setAttribute("data-type", type);
+        q("#tagVisible").appendChild(ne);
+    }
+    function removeTag(event) {
+        if (!event.path) event.path = event.composedPath();
+        let tr = event.path.find(e => e.tagName == "TR");
+        lsm.array(tr.children[1].getAttribute("data-type")).remove(tr.children[0].innerText.trim());
+        let tbody = event.path.find(e => e.tagName == "TBODY");
+        tbody.removeChild(tr);
+    }
+    function bodyLoad() {
+        let select = q("select");
+        for (let type of typeMap) {
+            let option = document.createElement("option");
+            option.innerText = type.text;
+            option.value = type.key;
+            select.appendChild(option);
+            for (let setting of lsm.array(type.key).array) {
+                addTag(setting, type.key);
+            }
+        }
+    }
+</script>
+<!-- TEMPLATE header -->
+<h1>CloudTube settings</h1>
+<h2>Subscriptions</h2>
+<a href="/cloudtube/subscriptions">Go here to manage subscriptions.</a>
+<h2>Blocked content</h2>
+<p>Author names and IDs that exactly match items in this list will be blocked. Video titles that contain fragments in this list will be blocked.</p>
+<div class="tagInputContainer">
+    <input type="text" id="tagInput" onkeypress="manageKeypress(event)" placeholder="New item" style="width: 200px;">
+    <select id="tagTypeSelection"></select>
+    <button onclick="addTag()">Add item</button>
+</div>
+<div>
+    <table>
+        <tbody id="tagVisible"></tbody>
+    </table>
+</div>
+<table style="display: none;">
+    <tbody id="subStorage">
+        <tr>
+            <td>Thing</td>
+            <td>Type</td>
+            <td><button onclick="removeTag(event)"><img src="/fonts/cross.svg"></button></td>
+        </tr>
+    </tbody>
+</table>
+<!-- TEMPLATE end -->

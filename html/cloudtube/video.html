@@ -1,6 +1,7 @@
 <!-- TEMPLATE pre -->
 <link rel="stylesheet" type="text/css" href="/cloudtube/youtube.css">
 <title></title>
+<script src="/cloudtube/cloudtube.js"></script>
 <!-- metaOGTags -->
 <script type="text/javascript">
     function prettySeconds(seconds) {
@@ -232,7 +233,7 @@
                 "<a href='/about/contact' target='_blank'>Please contact me with your country and I'll try to set up a server.</a><br>"+
                 "For now, you should just watch the video on regular YouTube.";
             } else if (data.error) {
-                q("#playbackErrorContainer").innerHTML = "An error occurred. <a href='/about/contact' target='_blank'>Please report this.</a><br><br><code>"+body.responseText+"</code>";
+                q("#playbackErrorContainer").innerHTML = "An error occurred. Try reloading the page. If you still see this error, <a href='/about/contact' target='_blank'>please report it.</a><br><br><code>"+body.responseText+"</code>";
                 q("#playbackErrorContainer").style["word-break"] = "break-all";
             } else {
                 let qualitySelect = q("#qualitySelect");
@@ -334,6 +335,8 @@
         q("#videoRatingBar").style.background = `linear-gradient(to right, #208819 ${percentRating}%, #ccc ${percentRating}%)`;
         // Set related videos
         let relatedVideos = data.recommendedVideos.filter(rv => rv.title && rv.author && rv.videoId && rv.lengthSeconds);
+        let filterReturn = filterVideos(relatedVideos, "related");
+        relatedVideos = filterReturn[0];
         for (let i = 0; i < relatedVideos.length; i++) {
             let rv = relatedVideos[i];
             let ne = q("#relatedVideosStorage").children[0].cloneNode(true);
@@ -343,6 +346,11 @@
             document.styleSheets[1].insertRule(`.relatedVideo:nth-child(${i+2}) > div:first-child::before { content: "${prettySeconds(rv.lengthSeconds)}"; }`);
             ne.href = rv.videoId;
             q("#relatedVideosContainer").appendChild(ne);
+        }
+        if (filterReturn[1]) {
+            q("#blockedWarning").parentElement.appendChild(q("#blockedWarning"));
+            q("#blockedWarning").style.display = "";
+            q("#blockedWarning span").innerText = filterReturn[1];
         }
         // Fix description
         [...q("#eow-description").children].filter(c => c.tagName == "A").forEach(c => {
@@ -475,6 +483,7 @@
     </div>
     <div id="relatedVideosContainer">
         <div>Related videos</div>
+        <div id="blockedWarning" style="display: none;"><span></span> videos blocked. <a href="/cloudtube/settings">Edit preferences</a></div>
     </div>
 </div>
 <div id="relatedVideosStorage" style="display:none;">

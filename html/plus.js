@@ -57,10 +57,13 @@ class LSMArray {
         this.read(string);
     }
     read(string) {
-        if (string.endsWith(this.separator)) string = string.slice(0, -1);
-        if (string.startsWith(this.separator)) string = string.slice(1);
+        string = string.replace(/^,|,$/g, "");
+        if (string) {
+            this.array = string.split(this.separator);
+        } else {
+            this.array = [];
+        }
         this.string = string;
-        this.array = string.split(this.separator);
     }
     write() {
         this.string = this.array.join(this.separator);

@@ -316,6 +316,16 @@ input, button {
     display: block;
 }
 
+.tagInputContainer {
+    display: flex;
+}
+.tagInputContainer input {
+    width: 240px;
+}
+#tagVisible td:not(:last-child) {
+    min-width: 197px;
+}
+
 #loading {
     text-align: center;
 }
