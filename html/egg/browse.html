@@ -2,6 +2,14 @@
 <link rel="stylesheet" type="text/css" href="/egg/egg.css">
 <title>Egg Central</title>
 <script>
+    function filter(text) {
+        let words = text.split(" ");
+        for (let item of q(".egContainer").children) {
+            let tags = [...item.children[1].children[1].children].map(tag => tag.innerText);
+            if (words.every(w => tags.some(t => t.startsWith(w)))) item.style.display = "";
+            else item.style.display = "none";
+        }
+    }
     function bodyLoad() {
         request("/api/bingo", response => {
             let cards = JSON.parse(response.responseText);
@@ -22,7 +30,7 @@
 </script>
 <!-- TEMPLATE header -->
 <h1>Available cards</h1>
-<input type="text" placeholder="Filter by tags">
+<input type="text" placeholder="Filter by tags" oninput="filter(event.target.value);">
 <div class="egContainer">
 </div>
 <div id="egItemStorage">
