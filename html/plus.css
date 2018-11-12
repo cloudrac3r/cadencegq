@@ -146,7 +146,8 @@ a.linkbutton, a.linkbutton:visited {
     text-decoration: none;
     border: 1px solid grey;
     font-size: 16px;
-    line-height: 1;
+    line-height: 1.3;
+    margin: 4px;
 }
 
 pre {
