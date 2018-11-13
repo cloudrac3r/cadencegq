@@ -5,26 +5,57 @@ const rp = require("request-promise");
 const fs = require("fs");
 const fxp = require("fast-xml-parser");
 
-function fetchChannel(channelID) {
-    return new Promise(resolve => {
-        Promise.all([
-            rp(`https://invidio.us/api/v1/channels/${channelID}`),
-            rp(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelID}`)
-        ]).then(([body, xml]) => {
-            let data = JSON.parse(body);
-            let feedItems = fxp.parse(xml).feed.entry;
-            data.latestVideos.forEach(v => {
-                v.author = data.author;
-                let feedItem = feedItems.find(i => i["yt:videoId"] == v.videoId);
-                if (feedItem) v.published = new Date(feedItem.published).getTime();
-                else v.published = v.published * 1000;
-            });
-            resolve(data);
-        }).catch(resolve);
-    });
-}
+const channelCacheTimeout = 4*60*60*1000;
 
 module.exports = ({encrypt, cf, db, resolveTemplates}) => {
+    let channelCache = new Map();
+
+    function refreshCache() {
+        for (let e of channelCache.entries()) {
+            if (Date.now()-e[1].refreshed > channelCacheTimeout) channelCache.delete(e[0]);
+        }
+    }
+
+    function fetchChannel(channelID, ignoreCache) {
+        refreshCache();
+        let cache = channelCache.get(channelID);
+        if (cache && !ignoreCache) {
+            if (cache.constructor.name == "Promise") {
+                //cf.log("Waiting on promise for "+channelID, "info");
+                return cache;
+            } else {
+                //cf.log("Using cache for "+channelID+", expires in "+Math.floor((channelCacheTimeout-Date.now()+cache.refreshed)/1000/60)+" minutes", "spam");
+                return Promise.resolve(cache.data);
+            }
+        } else {
+            //cf.log("Setting new cache for "+channelID, "spam");
+            let promise = new Promise(resolve => {
+                Promise.all([
+                    rp(`https://invidio.us/api/v1/channels/${channelID}`),
+                    rp(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelID}`)
+                ]).then(([body, xml]) => {
+                    let data = JSON.parse(body);
+                    if (data.error) throw new Error("Couldn't refresh "+channelID+": "+data.error);
+                    let feedItems = fxp.parse(xml).feed.entry;
+                    data.latestVideos.forEach(v => {
+                        v.author = data.author;
+                        let feedItem = feedItems.find(i => i["yt:videoId"] == v.videoId);
+                        if (feedItem) v.published = new Date(feedItem.published).getTime();
+                        else v.published = v.published * 1000;
+                    });
+                    channelCache.set(channelID, {refreshed: Date.now(), data: data});
+                    //cf.log("Set new cache for "+channelID, "spam");
+                    resolve(data);
+                }).catch(error => {
+                    cf.log(error, "error");
+                    return [];
+                });
+            });
+            channelCache.set(channelID, promise);
+            return promise;
+        }
+    }
+
     return [
         {
             route: "/cloudtube/video/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
@@ -60,21 +91,16 @@ module.exports = ({encrypt, cf, db, resolveTemplates}) => {
         },
         {
             route: "/cloudtube/channel/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
-                Promise.all([
-                    rp(`https://invidio.us/api/v1/channels/${fill[0]}`),
-                    fetchChannel(fill[0])
-                ]).then(([channelInfo, data]) => {
+                fetchChannel(fill[0]).then(data => {
                     try {
-                        channelInfo = JSON.parse(channelInfo);
-                        let channelVideos = data.latestVideos;
                         fs.readFile("html/cloudtube/channel.html", {encoding: "utf8"}, (err, page) => {
                             resolveTemplates(page).then(page => {
-                                page = page.replace('"<!-- channelInfo -->"', JSON.stringify([channelInfo, channelVideos]));
-                                page = page.replace("<title></title>", `<title>${channelInfo.author} — CloudTube channel</title>`);
+                                page = page.replace('"<!-- channelInfo -->"', JSON.stringify(data));
+                                page = page.replace("<title></title>", `<title>${data.author} — CloudTube channel</title>`);
                                 let metaOGTags =
-                                    `<meta property="og:title" content="${channelInfo.author.replace('"', "'")} — CloudTube channel" />\n`+
+                                    `<meta property="og:title" content="${data.author.replace('"', "'")} — CloudTube channel" />\n`+
                                     `<meta property="og:type" content="video.movie" />\n`+
-                                    `<meta property="og:image" content="${channelInfo.authorBanners[0].url}" />\n`+
+                                    `<meta property="og:image" content="${data.authorBanners[0].url}" />\n`+
                                     `<meta property="og:url" content="https://${req.headers.host}${req.path}" />\n`+
                                     `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                                 page = page.replace("<!-- metaOGTags -->", metaOGTags);
@@ -170,17 +196,22 @@ module.exports = ({encrypt, cf, db, resolveTemplates}) => {
                     if (data.subscriptions && data.subscriptions.constructor.name == "Array" && data.subscriptions.every(i => typeof(i) == "string")) subscriptions = data.subscriptions;
                     else return [400, 4];
                 }
-                let videos = [];
-                let channels = [];
-                await Promise.all(subscriptions.map(s => new Promise(async resolve => {
-                    let data = await fetchChannel(s);
-                    videos = videos.concat(data.latestVideos);
-                    channels.push({author: data.author, authorID: data.authorId});
-                    resolve();
-                })));
-                videos = videos.sort((a, b) => (b.published - a.published)).slice(0, 60);
-                channels = channels.sort((a, b) => (a.author.toLowerCase() < b.author.toLowerCase() ? -1 : 1));
-                return [200, {videos, channels}];
+                if (data.force) {
+                    for (let channelID of subscriptions) channelCache.delete(channelID);
+                    return [204, ""];
+                } else {
+                    let videos = [];
+                    let channels = [];
+                    await Promise.all(subscriptions.map(s => new Promise(async resolve => {
+                        let data = await fetchChannel(s);
+                        videos = videos.concat(data.latestVideos);
+                        channels.push({author: data.author, authorID: data.authorId});
+                        resolve();
+                    })));
+                    videos = videos.sort((a, b) => (b.published - a.published)).slice(0, 60);
+                    channels = channels.sort((a, b) => (a.author.toLowerCase() < b.author.toLowerCase() ? -1 : 1));
+                    return [200, {videos, channels}];
+                }
             }
         },
         {

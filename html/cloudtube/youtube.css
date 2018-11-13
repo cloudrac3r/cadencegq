@@ -275,6 +275,7 @@ input, button {
 
 #subManageButtonContainer {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
 }
 #subManageButtonContainer h2 {

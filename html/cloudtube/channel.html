@@ -21,7 +21,8 @@
     }
 
     function bodyLoad() {
-        let [channelInfo, channelVideos] = "<!-- channelInfo -->";
+        let data = "<!-- channelInfo -->";
+        let channelVideos = data.latestVideos;
         let filterReturn = filterVideos(channelVideos, "feed");
         channelVideos = filterReturn[0];
         if (filterReturn[1]) {
@@ -32,7 +33,7 @@
             let video = channelVideos[i];
             let ne = q("#searchItemStorage").children[0].cloneNode(true);
             ne.children[1].children[0].innerText = video.title;
-            ne.children[1].children[1].innerText = channelInfo.author+" • "+humaniseDate(video.published);
+            ne.children[1].children[1].innerText = video.author+" • "+humaniseDate(video.published);
             ne.children[1].children[2].innerHTML = video.descriptionHtml;
             ne.children[0].children[0].src = `https://invidio.us/vi/${video.videoId}/mqdefault.jpg`;
             document.styleSheets[1].insertRule(`.searchItem:nth-child(${i+1}) > div:first-child::before { content: "${prettySeconds(video.lengthSeconds)}"; }`);
@@ -40,14 +41,19 @@
             q("#searchResultsContainer").appendChild(ne);
         }
     }
-    function search() {
-        window.location.assign("/cloudtube/search?q="+encodeURIComponent(q("#search").value)+"&order="+q("select").selectedOptions[0].value);
-    }
-    function keypress(event) {
-        if (event.keyCode == 13) search();
+
+    function forceRefresh(event) {
+        event.target.style.width = event.target.offsetWidth;
+        event.target.innerText = "...";
+        event.target.disabled = true;
+        let channelID = window.location.pathname.split("/").slice(-1)[0];
+        request("/api/youtube/subscriptions", () => window.location.reload(), {force: true, subscriptions: [channelID]});
     }
 </script>
 <!-- TEMPLATE header -->
+<div style="margin-bottom: 12px;">
+    <button onclick="forceRefresh(event)">Force refresh</button>
+</div>
 <div id="blockedWarning" style="margin-bottom: 12px; display: none;"><span></span> videos have been blocked based on your preferences. <a href="/cloudtube/settings">Edit preferences</a></div>
 <div id="mainSearchContainer">
     <div id="searchResultsContainer"></div>
