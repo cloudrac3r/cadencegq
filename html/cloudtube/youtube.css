@@ -211,7 +211,6 @@ input, button {
     flex-grow: 1;
     display: flex;
     line-height: 36px;
-    height: 36px;
     margin: 0px 2px;
 }
 #speedSliderContainer > span {
