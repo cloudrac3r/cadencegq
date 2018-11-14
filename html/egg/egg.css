@@ -62,3 +62,34 @@
     border-radius: 6px;
     font-size: 90%;
 }
+
+.newCard input {
+    width: 400px;
+    display: block;
+}
+
+.newCard img {
+    /*border: 1px dashed #aaa;
+    padding: 2px;
+    background-color: #111;*/
+}
+
+#tagSelection {
+    column-count: 2;
+    display: inline-block;
+}
+
+#tagSelection span {
+    display: block;
+}
+
+#toReveal {
+    padding: 1px 10px 12px 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+    background-color: rgba(225, 220, 230, 0.08);
+}
+
+#toReveal > * {
+    margin-left: 4px;
+}

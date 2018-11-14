@@ -73,7 +73,8 @@ const pageHandlers = [
     {web: "/misc/godmaster", local: "misc/godmaster.html"},
     {web: "/egg", local: "/egg/browse.html"},
     {web: "/egg/card/[0-9]+", local: "/egg/card.html"},
-    {web: "/egg/card/[0-9]+/fill", local: "/egg/fill.html"}
+    {web: "/egg/card/[0-9]+/fill", local: "/egg/fill.html"},
+    {web: "/egg/upload", local: "/egg/upload.html"}
 ];
 const cacheControl = [
     "ttf", "png", "jpg", "svg"
