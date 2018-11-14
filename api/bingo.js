@@ -46,7 +46,7 @@ module.exports = ({db, extra}) => {
                 if (missing) return [400, "Missing coordinate data key "+missing];
                 if (!data.username) data.username = null;
                 // Actually do stuff
-                await db.run("INSERT INTO BingoCards VALUES (NULL, ?, ?, NULL)", [data.title, data.url]);
+                await db.run("INSERT INTO BingoCards VALUES (NULL, ?, ?, NULL, ?)", [data.title, data.url, data.username]);
                 let {seq: newID} = await db.get("SELECT seq FROM sqlite_sequence WHERE name = 'BingoCards'");
                 await db.run("BEGIN TRANSACTION");
                 let promises = data.tags.map(t => db.run("INSERT INTO BingoTagsMap VALUES (?, ?)", [newID, t]));
