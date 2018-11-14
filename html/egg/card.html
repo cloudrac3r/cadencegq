@@ -10,7 +10,7 @@
             q("h2").innerText = card.name;
             q(".egSingle img").src = card.url;
             if (card.author) {
-                q("#author").innerText = card.author;
+                q("#author").innerText = "Uploaded by "+card.author;
                 q("#author").style.display = "";
             }
             if (card.external) {
