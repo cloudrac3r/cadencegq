@@ -47,8 +47,10 @@ module.exports = ({encrypt, cf, db, resolveTemplates}) => {
                     //cf.log("Set new cache for "+channelID, "spam");
                     resolve(data);
                 }).catch(error => {
+                    cf.log("Error while refreshing "+channelID, "error");
                     cf.log(error, "error");
-                    return [];
+                    channelCache.delete(channelID);
+                    resolve(null);
                 });
             });
             channelCache.set(channelID, promise);
@@ -204,8 +206,10 @@ module.exports = ({encrypt, cf, db, resolveTemplates}) => {
                     let channels = [];
                     await Promise.all(subscriptions.map(s => new Promise(async resolve => {
                         let data = await fetchChannel(s);
-                        videos = videos.concat(data.latestVideos);
-                        channels.push({author: data.author, authorID: data.authorId});
+                        if (data) {
+                            videos = videos.concat(data.latestVideos);
+                            channels.push({author: data.author, authorID: data.authorId});
+                        }
                         resolve();
                     })));
                     videos = videos.sort((a, b) => (b.published - a.published)).slice(0, 60);
