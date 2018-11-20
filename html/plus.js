@@ -42,6 +42,7 @@ const lsm = {
         localStorage.setItem(key, value);
     },
     array: function(key) {
+        lsm.setup(key, "");
         return lsm.arrayStorage[key] || (lsm.arrayStorage[key] = new LSMArray(key, lsm.get(key)));
     },
     arrayStorage: {},
@@ -64,6 +65,7 @@ class LSMArray {
             this.array = [];
         }
         this.string = string;
+        this.write();
     }
     write() {
         this.string = this.array.join(this.separator);
@@ -274,6 +276,8 @@ function getLoginDetails(callback) {
                 try {
                     if (result.status == 200) {
                         loginDetails = JSON.parse(result.responseText);
+                        lsm.array("subscriptions").array = loginDetails.subscriptions;
+                        lsm.array("subscriptions").write();
                         con();
                     } else {
                         localStorage.removeItem("token");

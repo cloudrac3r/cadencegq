@@ -197,9 +197,8 @@
             request(`/api/youtube/subscribe`, result => {
                 if (result.status == 200) {
                     let data = JSON.parse(result.responseText);
-                    if (checkSubscribedStatus() != data.nowSubscribed) {
-                        updateLocalStorage();
-                    }
+                    if (data.nowSubscribed) lsm.array("subscriptions").add(channelID, true);
+                    else lsm.array("subscriptions").remove(channelID);
                     s.style.width = "";
                     updateSubscribeButton();
                 } else {
@@ -209,16 +208,9 @@
                 s.disabled = false;
             }, {token, channelID});
         } else {
-            updateLocalStorage();
+            if (checkSubscribedStatus()) lsm.array("subscriptions").remove(channelID);
+            else lsm.array("subscriptions").add(channelID, true);
             updateSubscribeButton();
-        }
-    }
-    function updateLocalStorage() {
-        let channelID = q("#videoAuthor").getAttribute("data-channelid");
-        if (checkSubscribedStatus()) {
-            lsm.array("subscriptions").remove(channelID);
-        } else {
-            lsm.array("subscriptions").add(channelID);
         }
     }
 
@@ -289,17 +281,6 @@
         let data = "<!-- videoInfo -->";
         videoID = data.videoId;
         // Set buttons below video
-        getLoginDetails(details => {
-            if (details && details.subscriptions) {
-                updateLocalStorage();
-                let subscriptionsString = "";
-                for (let s of details.subscriptions) subscriptionsString += s+",";
-                lsm.array("subscriptions").read(subscriptionsString);
-                updateSubscribeButton();
-            } else {
-                updateSubscribeButton();
-            }
-        });
         q("#youtubeLink").setAttribute("href", `https://youtube.com/watch?v=${videoID}&feature=cloudtube`);
         q("#invidiousLink").setAttribute("href", `https://invidio.us/watch?v=${videoID}&feature=cloudtube`);
         q("#hooktubeLink").setAttribute("href", `https://hooktube.com/watch?v=${videoID}&feature=cloudtube`);
@@ -333,6 +314,9 @@
         q("#videoUploaded").innerText = "Uploaded "+humaniseDate(data.published*1000);
         let percentRating = data.rating/5*100;
         q("#videoRatingBar").style.background = `linear-gradient(to right, #208819 ${percentRating}%, #ccc ${percentRating}%)`;
+        getLoginDetails(details => {
+            updateSubscribeButton();
+        });
         // Set related videos
         let relatedVideos = data.recommendedVideos.filter(rv => rv.title && rv.author && rv.videoId && rv.lengthSeconds);
         let filterReturn = filterVideos(relatedVideos, "related");
