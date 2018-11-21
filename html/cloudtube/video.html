@@ -327,12 +327,12 @@
             ne.children[1].children[0].innerText = rv.title;
             ne.children[1].children[1].innerText = rv.author+" • "+rv.viewCountText;
             ne.children[0].children[0].src = `https://invidio.us/vi/${rv.videoId}/mqdefault.jpg`;
-            document.styleSheets[1].insertRule(`.relatedVideo:nth-child(${i+3}) > div:first-child::before { content: "${prettySeconds(rv.lengthSeconds)}"; }`);
+            document.styleSheets[1].insertRule(`.relatedVideo:nth-child(${i+2}) > div:first-child::before { content: "${prettySeconds(rv.lengthSeconds)}"; }`);
             ne.href = rv.videoId;
             q("#relatedVideosContainer").appendChild(ne);
         }
+        q("#blockedWarning").parentElement.appendChild(q("#blockedWarning"));
         if (filterReturn[1]) {
-            q("#blockedWarning").parentElement.appendChild(q("#blockedWarning"));
             q("#blockedWarning").style.display = "";
             q("#blockedWarning span").innerText = filterReturn[1];
         }
