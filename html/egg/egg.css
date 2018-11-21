@@ -63,6 +63,11 @@
     font-size: 90%;
 }
 
+.fillControls {
+    display: flex;
+    margin-bottom: 15px;
+}
+
 .newCard input {
     width: 400px;
     display: block;
