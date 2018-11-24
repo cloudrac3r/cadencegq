@@ -38,7 +38,9 @@
         }
         request(`/api/youtube/subscriptions`, result => {
             q("#loadingProgress").innerText = "Subscriptions list";
-            for (let button of document.querySelectorAll("#subManageButtonContainer button")) button.style.display = "inline-block";
+            for (let button of document.querySelectorAll("#subManageButtonContainer button")) {
+                if (!(button.id == "hideWatchedButton" && lsm.get("trackWatchedVideos") != "1")) button.style.display = "inline-block";
+            }
             q("#subManageContainer").style.display = "block";
             let data = JSON.parse(result.responseText);
             let {channels, videos} = data;
@@ -185,7 +187,7 @@
 <div id="subManageButtonContainer">
     <h2 id="loadingProgress">Loading subscriptions...</h2>
     <button onclick="toggleSubManage()">Manage subscriptions</button>
-    <button onclick="toggleHideWatched(event)">Hide watched videos</button>
+    <button id="hideWatchedButton" onclick="toggleHideWatched(event)">Hide watched videos</button>
     <button onclick="forceRefresh(event)">Force refresh all</button>
     <a class="linkbutton" href="/cloudtube/settings">More settings</a>
 </div>
