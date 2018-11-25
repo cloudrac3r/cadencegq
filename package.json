@@ -15,7 +15,7 @@
     "prettier-bytes": "^1.0.4",
     "request-promise": "^4.2.2",
     "simple-git": "^1.96.0",
-    "sqlite": "^2.9.2",
+    "sqlite": "^2.9.3",
     "youtube-search": "^1.1.1",
     "ytdl-core": "^0.25.2"
   }
