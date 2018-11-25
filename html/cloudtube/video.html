@@ -43,10 +43,11 @@
                     return new Promise(resolve => {
                         let audio = document.createElement("audio");
                         audio.src = f.url;
-                        audio.addEventListener("loadeddata", () => {
+                        audio.onloadeddata = () => {
                             console.log(f.bitrate, f.type, audio.duration);
                             resolve({f, audio});
-                        });
+                        }
+                        q("body").appendChild(audio);
                     });
                 })).then(results => {
                     let lengths = [];
@@ -451,7 +452,7 @@
         </div>
         <div class="belowButtonContainer">
             <button id="subscribe" onclick="toggleSubscription()">Subscribe</button>
-            <select id="qualitySelect" oninput="chooseFormat(event.target.selectedIndex)"></select>
+            <select id="qualitySelect" onchange="chooseFormat(event.target.selectedIndex)"></select>
             <span id="speedSliderContainer"><span><span class="speedText">Speed:</span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" list="speeds" id="speedSlider" min="100" max="5000" value="1000" step="1" oninput="adjustSpeedSlider()"></span></span>
         </div>
         <div class="belowButtonContainer">

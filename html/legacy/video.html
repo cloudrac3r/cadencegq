@@ -256,7 +256,7 @@
         <audio preload="auto"></audio>
         <div class="belowButtonContainer">
             <button onclick='window.location.assign("search")'><img src="/fonts/search.svg" style="position: relative; top: 2px; margin-right: 8px;">Search</button>
-            <select id="qualitySelect" oninput="chooseFormat(event.target.selectedIndex)"></select>
+            <select id="qualitySelect" onchange="chooseFormat(event.target.selectedIndex)"></select>
             <button onclick='window.location.assign("https://youtu.be/"+videoID)'>Watch on YouTube</button>
             <button onclick='window.location.assign("https://hooktube.com/"+videoID)'>Watch on HookTube</button>
         </div>

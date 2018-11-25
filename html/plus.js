@@ -101,6 +101,18 @@ for (let key of Object.keys(lsmDefaults)) {
     lsm.setup(key, lsmDefaults[key]);
 }
 
+for (let object of [HTMLCollection.prototype, NodeList.prototype]) {
+    if (!object[Symbol.iterator]) {
+        object[Symbol.iterator] = function() { return this };
+        object.next = function() {
+            if (this._index == undefined) this._index = 0;
+            if (this[this._index]) return {done: false, value: this[this._index++]};
+            this._index = 0;
+            return {done: true, value: undefined};
+        }
+    }
+}
+
 /* Usable functions */
 
 function loadPaste(pasteID, callback) {

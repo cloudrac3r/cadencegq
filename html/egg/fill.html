@@ -35,7 +35,7 @@
                         console.log(img);
                         console.log("==========");
                         clickedOnce = !clickedOnce;
-                        let coords = [(event.layerX-img.offsetLeft)*(1/scale), (event.layerY-img.offsetTop)*(1/scale)];
+                        let coords = [(event.pageX-img.offsetLeft)*(1/scale), (event.pageY-img.offsetTop)*(1/scale)];
                         if (assignMode) {
                             if (clickedOnce) {
                                 firstCoords = coords;

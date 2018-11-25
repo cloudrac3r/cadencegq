@@ -223,7 +223,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates}) => {
                 let ip = req.connection.remoteAddress;
                 let match = ip.match(/(\d+\.){3}\d+/);
                 if (match) ip = match[0];
-                else {
+                if (!match || ip == "127.0.0.1") {
                     if (encrypt) {
                         cf.log("Couldn't parse IP "+req.connection.remoteAddress, "warning");
                         return resolve([200, {error: "Couldn't parse IP "+req.connection.remoteAddress}]);
