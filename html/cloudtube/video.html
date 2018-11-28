@@ -2,6 +2,7 @@
 <link rel="stylesheet" type="text/css" href="/cloudtube/youtube.css">
 <title></title>
 <script src="/cloudtube/cloudtube.js"></script>
+<script src="/color-thief.min.js"></script> <!-- https://github.com/lokesh/color-thief/ -->
 <!-- metaOGTags -->
 <script type="text/javascript">
     function prettySeconds(seconds) {
@@ -355,9 +356,102 @@
         });
         // Record video as watched in localStorage
         if (lsm.get("trackWatchedVideos")) {
-            let videoID = window.location.href.match("/video/([\\w-]+)")[1];
             lsm.array("watchedVideos").add(videoID);
         }
+        // Manage end cards
+        request("/api/youtube/get_endscreen?v="+videoID, result => {
+            // already defined: video
+            let cardData = JSON.parse(result.responseText);
+            const knownStyles = ["VIDEO", "CHANNEL", "WEBSITE"];
+            cardData.elements = cardData.elements.filter(element => knownStyles.includes(element.endscreenElementRenderer.style));
+            for (let i = 0; i < cardData.elements.length; i++) {
+                let element = cardData.elements[i];
+                let e = document.createElement("a");
+                element.e = e;
+                e.style.display = "none";
+                q("#videoEndCardContainer").appendChild(e);
+                if (element.endscreenElementRenderer.style == "VIDEO") {
+                    e.classList.add("endcard-video");
+                    e.href = element.endscreenElementRenderer.endpoint.urlEndpoint.url.split("=")[1];
+                    document.styleSheets[1].insertRule(`#videoEndCardContainer > *:nth-child(${i+1})::before { content: "${element.endscreenElementRenderer.videoDuration.runs[0].text}"; }`);
+                    let img = document.createElement("img");
+                    img.src = "https://invidio.us/vi/"+element.endscreenElementRenderer.endpoint.urlEndpoint.url.split("=")[1]+"/mqdefault.jpg";
+                    e.appendChild(img);
+                    let span = document.createElement("span");
+                    span.innerText = element.endscreenElementRenderer.title.simpleText;
+                    e.appendChild(span);
+                } else if (element.endscreenElementRenderer.style == "CHANNEL") {
+                    e.classList.add("endcard-channel");
+                    let img = document.createElement("img");
+                    img.src = element.endscreenElementRenderer.image.thumbnails.sort((a, b) => (b.width - a.width))[0].url;
+                    e.appendChild(img);
+                } else if (element.endscreenElementRenderer.style == "WEBSITE") {
+                    e.classList.add("endcard-website");
+                    e.href = element.endscreenElementRenderer.endpoint.urlEndpoint.url;
+                    let img = document.createElement("img");
+                    e.target = "_blank";
+                    e.appendChild(img);
+                    let span = document.createElement("span");
+                    e.appendChild(span);
+                    let title = document.createElement("div");
+                    title.classList.add("endcard-website-title");
+                    title.innerText = element.endscreenElementRenderer.title.simpleText;
+                    span.appendChild(title);
+                    let sitename = document.createElement("div");
+                    sitename.classList.add("endcard-website-sitename");
+                    sitename.innerText = element.endscreenElementRenderer.metadata.simpleText;
+                    span.appendChild(sitename);
+                    let id = Math.random().toString().split(".")[1];
+                    img.onload = () => {
+                        try { // canvas fingerprint protection might break the whole script
+                            let colorThief = new ColorThief();
+                            let color = colorThief.getColor(img);
+                            let sum = color.reduce((p, c) => (p + c));
+                            const limit = 380;
+                            if (sum > limit) {
+                                let ratioOver = sum/limit;
+                                color = color.map(v => Math.floor(v/ratioOver));
+                            }
+                            sitename.style.color = "#"+color.map(v => v.toString(16).padStart(2, "0")).join("");
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    }
+                    img.src = element.endscreenElementRenderer.image.thumbnails.sort((a, b) => (b.width - a.width))[0].url;
+                }
+            }
+            let endCardUpdateFunction = () => {
+                let vd = {
+                    offset: {
+                        x: Math.max((video.clientWidth-((video.clientHeight/video.videoHeight)*video.videoWidth))/2, 0),
+                        y: Math.max((video.clientHeight-((video.clientWidth/video.videoWidth)*video.videoHeight))/2, 0)
+                    }
+                }
+                vd.base = {
+                    x: video.offsetLeft,
+                    y: video.offsetTop,
+                    width: video.clientWidth-vd.offset.x*2,
+                    height: video.clientHeight-vd.offset.y*2
+                }
+                for (let element of cardData.elements) {
+                    let e = element.e;
+                    if (video.currentTime*1000 >= element.endscreenElementRenderer.startMs && video.currentTime*1000 <= element.endscreenElementRenderer.endMs) {
+                        e.style.display = "";
+                        e.style.left = vd.base.width*element.endscreenElementRenderer.left+vd.base.x+vd.offset.x;
+                        e.style.top = vd.base.height*element.endscreenElementRenderer.top+vd.base.y+vd.offset.y;
+                        let img = e.children[0];
+                        img.style.width = Math.ceil(vd.base.width*element.endscreenElementRenderer.width)+"px";
+                        if (element.endscreenElementRenderer.style == "WEBSITE") {
+                            e.style.width = Math.ceil(vd.base.width*element.endscreenElementRenderer.width)+"px";
+                        }
+                    } else {
+                        e.style.display = "none";
+                    }
+                }
+            }
+            setInterval(endCardUpdateFunction, 250);
+            window.addEventListener("resize", endCardUpdateFunction);
+        });
     }
 
     document.addEventListener("keydown", event => {
@@ -424,6 +518,7 @@
         <div class="videoContainer">
             <video controls preload="auto" ondurationchange="loadLastTime()"></video>
         </div>
+        <div id="videoEndCardContainer"></div>
         <div class="videoInfoBox">
             <div>
                 <span id="videoTitle">Placeholder title</span>

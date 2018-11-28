@@ -326,6 +326,84 @@ input, button {
     min-width: 197px;
 }
 
+.endcard-video, .endcard-channel, .endcard-website {
+    position: absolute;
+    display: inline-block;
+}
+.endcard-video span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    display: inline-block;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.9) 5px, transparent);
+    padding: 8px 8px 20px;
+    line-height: 1.2;
+    color: white;
+    font-size: 1.2vw;
+}
+.endcard-video img {
+    transition: filter 0.4s ease-out;
+}
+.endcard-video:hover img {
+    filter: brightness(40%) grayscale(20%);
+    transition: filter 1s cubic-bezier(0, 0, 0.2, 1);
+}
+.endcard-video::before {
+    content: "Time";
+    position: absolute;
+    display: inline-block;
+    border-radius: 3px;
+    background-color: rgba(10, 10, 10, 0.9);
+    z-index: 1;
+    right: 4%;
+    bottom: 4%;
+    font-size: 1vw;
+    padding: 0.25vw 0.4vw;
+}
+
+.endcard-channel img {
+    border-radius: 50%;
+}
+
+.endcard-website {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+}
+.endcard-website img {
+    z-index: 1; /* not sure why this works, but I'll take it */
+}
+.endcard-website > img {
+    transform: translateY(0px);
+    transition: 0.15s ease-in;
+}
+.endcard-website:hover > img {
+    transform: translateY(-20px);
+    transition: 0.2s ease-out;
+}
+.endcard-website > span {
+    opacity: 0;
+    transform: translateY(-32px);
+    transition: 0.15s ease-in;
+    background-color: #999;
+    color: black;
+    line-height: 1.1;
+    padding: 6px;
+}
+.endcard-website:hover > span {
+    opacity: 1;
+    transform: translateY(-22px);
+    transition: 0.2s ease-out;
+    background-color: white;
+}
+.endcard-website .endcard-website-title {
+    font-size: 1.2vw;
+}
+.endcard-website .endcard-website-sitename {
+    font-size: 0.94vw;
+}
+
 #loading {
     text-align: center;
 }
