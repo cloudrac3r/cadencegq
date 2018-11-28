@@ -277,7 +277,12 @@ module.exports = ({encrypt, cf, db, resolveTemplates}) => {
                         }
                     }
                     await Promise.all(promises);
-                    return [200, json];
+                    return {
+                        statusCode: 200,
+                        content: json,
+                        contentType: "application/json",
+                        headers: {"Access-Control-Allow-Origin": "*"}
+                    }
                 } catch (e) {
                     return [500, "Couldn't parse endscreen data\n\n"+data];
                 }
