@@ -6,3 +6,4 @@ auth.json
 api/amanda.js
 .vscode/csak-timelog.json
 *.bak
+/html/rtw-edit
