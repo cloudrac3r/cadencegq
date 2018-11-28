@@ -54,12 +54,21 @@
                 addTag(setting, type.key);
             }
         }
+        q("#endCardsEnabled").checked = lsm.get("disableEndCards") != "1";
+        q("#endCardsCanvas").checked = lsm.get("disableEndCardsCanvas") != "1";
+    }
+    function updateEndCardSettings() {
+        lsm.set("disableEndCards", +!q("#endCardsEnabled").checked);
+        lsm.set("disableEndCardsCanvas", +!q("#endCardsCanvas").checked);
     }
 </script>
 <!-- TEMPLATE header -->
 <h1>CloudTube settings</h1>
 <h2>Subscriptions</h2>
 <a href="/cloudtube/subscriptions">Go here to manage subscriptions.</a>
+<h2>End cards</h2>
+<div><input id="endCardsEnabled" onchange="updateEndCardSettings()" type="checkbox" checked><label for="endCardsEnabled">Display end cards</label></div>
+<div><input id="endCardsCanvas" onchange="updateEndCardSettings()" type="checkbox" checked><label for="endCardsCanvas">Use canvas to enhance end card display</label></div>
 <h2>Blocked content</h2>
 <p>Author names and IDs that exactly match items in this list will be blocked. Video titles that contain fragments in this list will be blocked.</p>
 <div class="tagInputContainer">
