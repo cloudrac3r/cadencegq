@@ -385,7 +385,7 @@ input, button {
 .endcard-website > span {
     opacity: 0;
     transform: translateY(-32px);
-    transition: 0.15s ease-in;
+    transition: transform 0.15s ease-in;
     background-color: #999;
     color: black;
     line-height: 1.1;
@@ -394,7 +394,7 @@ input, button {
 .endcard-website:hover > span {
     opacity: 1;
     transform: translateY(-22px);
-    transition: 0.2s ease-out;
+    transition: transform 0.2s ease-out;
     background-color: white;
 }
 .endcard-website .endcard-website-title {
