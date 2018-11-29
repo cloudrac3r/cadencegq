@@ -142,11 +142,14 @@ function serverRequest(req, res) {
     req.gmethod = req.method == "HEAD" ? "GET" : req.method;
     if (!req.headers.host) req.headers.host = hostnames[0];
     let headers = {};
-    if (cacheControl.includes(req.url.split(".").slice(-1)[0])) headers["Cache-Control"] = "max-age=604800, public";
-    //console.log(">>> "+req.url+" "+req["user-agent"]);
-    while (req.url.match(/%[0-9A-Fa-f]{2}/)) {
-        req.url = req.url.replace(/%[0-9A-Fa-f]{2}/, Buffer.from(req.url.match(/%([0-9A-Fa-f]{2})/)[1], "hex").toString("utf8"));
+    try {
+        req.url = decodeURI(req.url);
+    } catch (e) {
+        res.writeHead(400, {"Content-Type": "text/plain"});
+        res.end("Malformed URI");
+        return;
     }
+    if (cacheControl.includes(req.url.split(".").slice(-1)[0])) headers["Cache-Control"] = "max-age=604800, public";
     let [reqPath, paramString] = req.url.split("?");
     if (reqPath.length > 5) reqPath = reqPath.replace(/\/+$/, "");
     let params = {};

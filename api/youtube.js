@@ -128,7 +128,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates}) => {
                     resolveTemplates(page).then(page => {
                         if (params.q) { // search terms were entered
                             let sort_by = params.sort_by || "relevance";
-                            rp(`https://invidio.us/api/v1/search?q=${params.q}&sort_by=${sort_by}`).then(body => {
+                            rp(`https://invidio.us/api/v1/search?q=${encodeURIComponent(params.q)}&sort_by=${sort_by}`).then(body => {
                                 try {
                                     // json.parse?
                                     page = page.replace('"<!-- searchResults -->"', body);
