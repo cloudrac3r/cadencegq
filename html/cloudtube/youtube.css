@@ -326,6 +326,13 @@ input, button {
     min-width: 197px;
 }
 
+.timestamp-active {
+    background-color: #eee;
+    color: black;
+    padding: 0px 2px;
+    border-radius: 3px;
+}
+
 .endcard-video, .endcard-channel, .endcard-website {
     position: absolute;
     display: inline-block;
