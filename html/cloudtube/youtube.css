@@ -138,7 +138,9 @@ textarea, input, button, pre, select {
     background-color: rgba(225, 220, 230, 0.08);
     padding: 10px;
     border-radius: 4px;
+    position: relative;
 }
+
 #eow-description {
     margin: 0;
     padding: 0;
@@ -327,10 +329,19 @@ input, button {
 }
 
 .timestamp-active {
-    background-color: #eee;
-    color: black;
-    padding: 0px 2px;
-    border-radius: 3px;
+    text-decoration-color: #c9c9c9;
+}
+
+.timestamp-active::after {
+    content: "←";
+    position: absolute;
+    left: 0;
+    right: 0;
+    background-color: #656669;
+    z-index: -1;
+    text-align: right;
+    padding-right: 6px;
+    color: #bbb;
 }
 
 .endcard-video, .endcard-channel, .endcard-website {
