@@ -1,14 +1,15 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"todo-tree.grouped": false,
-		"todo-tree.expanded": false,
-		"todo-tree.flat": false,
-		"editor.insertSpaces": true,
-		"editor.detectIndentation": false
-	}
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "todo-tree.grouped": false,
+        "todo-tree.expanded": false,
+        "todo-tree.flat": false,
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false,
+        "editor.tabSize": 4
+    }
 }
