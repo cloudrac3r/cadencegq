@@ -226,15 +226,16 @@ module.exports = ({encrypt, cf, db, resolveTemplates}) => {
                 if (!match || ip == "127.0.0.1") {
                     if (encrypt) {
                         cf.log("Couldn't parse IP "+req.connection.remoteAddress, "warning");
-                        return resolve([200, {error: "Couldn't parse IP "+req.connection.remoteAddress}]);
+                        return resolve([200, {error: "Couldn't parse IP: "+req.connection.remoteAddress}]);
                     } else {
-                        let body = await rp("https://ipapi.co/json");
-                        let data = JSON.parse(body);
-                        ip = data.ip;
-                        cf.log("Running locally: obtained IP "+ip, "info");
+                        let body = await rp("http://ip2c.org/self");
+                        var country = body.split(";")[1];
+                        cf.log("Running locally: obtained country "+country, "info");
                     }
+                } else {
+                    let body = await rp("https://ip2c.org/"+ip);
+                    var country = body.split(";")[1];
                 }
-                let country = await rp(`https://ipapi.co/${ip}/country`);
                 cf.log("Resolved "+req.connection.remoteAddress+" → "+ip+" → "+country, "info");
                 let server = await db.get("SELECT * FROM InvidiousServers WHERE country = ?", country);
                 if (!server) return resolve([200, {error: "No servers available for your country"}]);
