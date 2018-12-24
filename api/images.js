@@ -17,6 +17,9 @@ module.exports = ({db, extra}) => {
                 return {
                     statusCode: 200,
                     contentType: mime.getType(image.extension),
+                    headers: {
+                        "Cache-Control": "max-age=2592000, public"
+                    },
                     content: content
                 }
             }
