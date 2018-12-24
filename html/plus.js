@@ -345,15 +345,16 @@ function makeInfoBoxesWork() {
     if (!localStorage.getItem("ibdismiss")) localStorage.setItem("ibdismiss", "");
     let dismissed = localStorage.getItem("ibdismiss");
     for (let box of document.querySelectorAll(".infoBox")) {
-        if (box.getAttribute("ibid") && !dismissed.includes(box.getAttribute("ibid"))) {
+        if (box.getAttribute("ibid") && !dismissed.includes(box.getAttribute("ibid")) && box.getAttribute("complete") != "1") {
             let closeButton = document.createElement("img");
             closeButton.src = "/fonts/cross.svg";
             closeButton.onclick = function() {
                 box.parentElement.removeChild(box);
-                localStorage.setItem("ibdismiss", localStorage.getItem("ibdismiss")+box.getAttribute("ibid")+",");
+                if (box.getAttribute("ibid") != "null") localStorage.setItem("ibdismiss", localStorage.getItem("ibdismiss")+box.getAttribute("ibid")+",");
             }
             box.children[0].appendChild(closeButton);
             box.style.display = "block";
+            box.setAttribute("complete", "1");
         }
     }
 }
