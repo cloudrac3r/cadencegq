@@ -48,13 +48,7 @@ module.exports = ({db, extra}) => {
         },
         {
             route: "/api/urls", methods: ["GET"], code: async ({params}) => {
-                let maxLimit = 100;
-                ["limit"].forEach(k => {
-                    params[k] = parseInt(params[k]);
-                    if (isNaN(params[k])) delete params[k];
-                });
-                let limit = (params.limit ? Math.min(params.limit, maxLimit) : maxLimit);
-                let dbr = await db.all("SELECT URLs.*, Accounts.username FROM URLs LEFT JOIN Accounts ON URLs.author = Accounts.userID ORDER BY creationTime DESC LIMIT ?", limit);
+                let dbr = await db.all("SELECT URLs.*, Accounts.username FROM URLs LEFT JOIN Accounts ON URLs.author = Accounts.userID ORDER BY creationTime DESC");
                 dbr = dbr.map(row => extra.resolveAuthor(row));
                 return [200, dbr];
             }

@@ -133,21 +133,21 @@ function loadImageDetails(imageID, callback) {
 
 function loadPasteList(args, callback) {
     if (!callback) callback = new Function();
-    request(`/api/pastes?start=${args.start}&end=${args.end}&limit=${args.limit}&preview=${args.preview}`, result => {
+    request(`/api/pastes?preview=${args.preview}`, result => {
         callback(JSON.parse(result.responseText));
     });
 }
 
 function loadImageList(args, callback) {
     if (!callback) callback = new Function();
-    request(`/api/images?limit=${args.limit}`, result => {
+    request(`/api/images`, result => {
         callback(JSON.parse(result.responseText));
     });
 }
 
 function loadURLList(args, callback) {
     if (!callback) callback = new Function();
-    request(`/api/urls?limit=${args.limit}`, result => {
+    request(`/api/urls`, result => {
         callback(JSON.parse(result.responseText));
     });
 }

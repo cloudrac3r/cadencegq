@@ -58,25 +58,15 @@ module.exports = ({db, extra}) => {
         },
         {
             route: "/api/pastes", methods: ["GET"], code: async ({params}) => {
-                let maxLimit = 100;
-                let maxPreview = 10000;
-                ["start", "end", "limit", "preview"].forEach(k => {
-                    params[k] = parseInt(params[k]);
-                    if (isNaN(params[k])) delete params[k];
-                });
-                let start = parseInt(params.start);
-                let end = parseInt(params.end);
-                let limit = (params.limit ? Math.min(params.limit, maxLimit) : maxLimit);
-                let preview = (params.preview ? Math.min(params.preview, maxPreview) : 400);
-                let promise;
-                if (!start && !end) {
-                    promise = db.all("SELECT Pastes.*, Accounts.username FROM Pastes LEFT JOIN Accounts ON Pastes.author = Accounts.userID ORDER BY creationTime DESC LIMIT ?", limit);
-                } else {
-                    if (!start) start = 0;
-                    if (!end) end = Infinity; // Hope this doesn't break anything
-                    promise = db.all("SELECT Pastes.*, Accounts.username FROM Pastes LEFT JOIN Accounts ON Pastes.author = Accounts.userID WHERE pasteID >= ? AND pasteID <= ? ORDER BY pasteID ASC LIMIT ?", [start, end, limit]);
+                let maxPreview = 5000;
+                let preview = 400;
+                if (typeof(params.preview) != "undefined") {
+                    params.preview = parseInt(params.preview);
+                    if (!isNaN(params.preview)) {
+                        preview = Math.max(Math.min(params.preview, maxPreview), 0);
+                    }
                 }
-                let dbr = await promise;
+                let dbr = await db.all("SELECT Pastes.*, Accounts.username FROM Pastes LEFT JOIN Accounts ON Pastes.author = Accounts.userID ORDER BY pasteID DESC");
                 dbr = dbr.map(row => {
                     if (preview <= 0) delete row.content;
                     else row.content = row.content.slice(0, preview);

@@ -6,8 +6,8 @@ My website of utilities, including image hosting, URL shortening, and a pastebin
 
 - Add YouTube playlists
 - Update database schema
-- Fix API request ranges. Or remove them entirely. They're probably not necessary until quite a long time in the future.
 - Consider changing cadence.gq to cadence.moe
+- Add API request ranges
 
 ## Contributing
 
