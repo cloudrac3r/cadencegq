@@ -239,13 +239,13 @@ option {
     margin: 20px 0px;
     display: none;
 }
-.infoBox div {
+.infoBox > div {
     display: flex;
 }
-.infoBox div span {
+.infoBox > div span {
     flex: 1;
 }
-.infoBox div img {
+.infoBox > div img {
     padding: 6px;
     margin-left: 6px;
     cursor: pointer;
