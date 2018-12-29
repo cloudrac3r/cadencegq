@@ -1,4 +1,5 @@
-a, a:visited {
+a.searchItem, a.relatedVideo, #subManageList a
+{
     color: inherit;
 }
 
@@ -74,6 +75,7 @@ textarea, input, button, pre, select {
     padding: 3px 5px;
     border-radius: 4px;
     background-color: rgba(20, 20, 20, 0.9);
+    color: inherit;
     z-index: 1;
     right: 13;
     bottom: 3;
@@ -169,6 +171,7 @@ textarea, input, button, pre, select {
     padding: 3px 5px;
     border-radius: 4px;
     background-color: rgba(20, 20, 20, 0.9);
+    color: inherit;
     z-index: 1;
     right: 18;
     bottom: 3;
