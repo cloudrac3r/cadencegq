@@ -71,6 +71,7 @@ const pageHandlers = [
     {web: "/cloudtube/settings", local: "cloudtube/settings.html"},
     {web: "/misc/discord.io", local: "misc/discordio.html"},
     {web: "/misc/godmaster", local: "misc/godmaster.html"},
+    {web: "/misc/ccc", local: "misc/ccc.html"},
     {web: "/egg", local: "/egg/browse.html"},
     {web: "/egg/card/[0-9]+", local: "/egg/card.html"},
     {web: "/egg/card/[0-9]+/fill", local: "/egg/fill.html"},
