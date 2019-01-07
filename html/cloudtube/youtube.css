@@ -1,4 +1,4 @@
-a.searchItem, a.relatedVideo, #subManageList a
+a.searchItem, a.relatedVideo, #subManageList a, #videoEndCardContainer a
 {
     color: inherit;
 }
