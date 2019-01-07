@@ -18,6 +18,21 @@
             text: "Author ID"
         }
     ];
+    const flagMap = [
+        {
+            element: "endCardsEnabled",
+            lsm: "disableEndCards",
+            invert: true
+        },{
+            element: "endCardsCanvas",
+            lsm: "disableEndCardsCanvas",
+            invert: true
+        },{
+            element: "legacyEnabled",
+            lsm: "enableLegacyLinks",
+            invert: false,
+        }
+    ];
     function manageKeypress(event) {
         if (event.key == "Enter") {
             addTag();
@@ -54,21 +69,26 @@
                 addTag(setting, type.key);
             }
         }
-        q("#endCardsEnabled").checked = lsm.get("disableEndCards") != "1";
-        q("#endCardsCanvas").checked = lsm.get("disableEndCardsCanvas") != "1";
+        for (let flag of flagMap) {
+            let checkbox = q("#"+flag.element);
+            checkbox.onchange = updateFlags;
+            checkbox.checked = (lsm.get(flag.lsm) == "1") ^ flag.invert;
+        }
     }
-    function updateEndCardSettings() {
-        lsm.set("disableEndCards", +!q("#endCardsEnabled").checked);
-        lsm.set("disableEndCardsCanvas", +!q("#endCardsCanvas").checked);
+    function updateFlags() {
+        for (let flag of flagMap) {
+            lsm.set(flag.lsm, +(flag.invert ^ q("#"+flag.element).checked));
+        }
     }
 </script>
 <!-- TEMPLATE header -->
 <h1>CloudTube settings</h1>
+<div>Changes take effect after you reload the page.</div>
 <h2>Subscriptions</h2>
 <a href="/cloudtube/subscriptions">Go here to manage subscriptions.</a>
 <h2>End cards</h2>
-<div><input id="endCardsEnabled" onchange="updateEndCardSettings()" type="checkbox" checked><label for="endCardsEnabled">Display end cards</label></div>
-<div><input id="endCardsCanvas" onchange="updateEndCardSettings()" type="checkbox" checked><label for="endCardsCanvas">Use canvas to enhance end card display</label></div>
+<div><input id="endCardsEnabled" type="checkbox" checked><label for="endCardsEnabled">Display end cards</label></div>
+<div><input id="endCardsCanvas" type="checkbox" checked><label for="endCardsCanvas">Use canvas to enhance end card display</label></div>
 <h2>Blocked content</h2>
 <p>Author names and IDs that exactly match items in this list will be blocked. Video titles that contain fragments in this list will be blocked.</p>
 <div class="tagInputContainer">
@@ -81,6 +101,9 @@
         <tbody id="tagVisible"></tbody>
     </table>
 </div>
+<h2>Advanced</h2>
+<div><input id="legacyEnabled" type="checkbox"><label for="legacyEnabled">Show links to the legacy player</label></div>
+<div>I'd quite like to deprecate the legacy player. If you turn this on, please <a href="/about/contact">tell me</a> why you need it.</div>
 <table style="display: none;">
     <tbody id="subStorage">
         <tr>

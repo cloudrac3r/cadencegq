@@ -305,6 +305,7 @@
         q("#invidiousLink").setAttribute("href", `https://invidio.us/watch?v=${videoID}&feature=cloudtube`);
         q("#hooktubeLink").setAttribute("href", `https://hooktube.com/watch?v=${videoID}&feature=cloudtube`);
         q("#legacyLink").setAttribute("href", `/legacy/${videoID}`);
+        if (lsm.get("enableLegacyLinks") == "1") q("#legacyLink").style.display = "";
         // Load video
         //formats = allFormats.filter(f => usefulFormats.includes(f.itag)/* && f.audioEncoding*/);
         allFormats = data.formatStreams.concat(data.adaptiveFormats);
@@ -608,7 +609,7 @@
             <a class="linkbutton" id="youtubeLink">Watch on YouTube</a>
             <a class="linkbutton" id="invidiousLink">Watch on Invidious</a>
             <a class="linkbutton" id="hooktubeLink">Watch on HookTube</a>
-            <a class="linkbutton" id="legacyLink">Watch on legacy</a>
+            <a class="linkbutton" id="legacyLink" style="display: none;">Watch on legacy</a>
         </div>
         <div class="videoDescription">
             Placeholder description
