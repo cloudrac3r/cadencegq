@@ -12,7 +12,7 @@ const filters = [
     },{
         related: video => video.author,
         feed: video => video.author,
-        disallow: name => lsm.array("blockedAuthors").array.includes(name)
+        disallow: name => lsm.array("blockedAuthors").array.some(setting => setting.toLowerCase() == name.toLowerCase())
     },{
         feed: video => video.authorId,
         disallow: id => lsm.array("blockedAuthorIDs").array.includes(id)
