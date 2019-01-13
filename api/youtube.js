@@ -290,6 +290,63 @@ module.exports = ({encrypt, cf, db, resolveTemplates}) => {
             }
         },
         {
+            route: "/api/youtube/archive/channels", methods: ["POST"], code: async ({data}) => {
+                if (!data) return [400, 4];
+                if (data.constructor.name != "Array") return [400, 5];
+                if (data.some(item => typeof(item) != "string")) return [400, 5];
+
+                class Channel {
+                    constructor(name) {
+                        this.errors = false;
+                        this.name = name;
+                        this.ucid = null;
+                        this.inserted = null;
+                        this.promise = new Promise(resolve => {
+                            if (this.name.match(/^UC[\w-]{22}$/)) {
+                                this.ucid = this.name;
+                                resolve(this);
+                            } else {
+                                rp({
+                                    url: "https://invidio.us/api/v1/channels/"+this.name,
+                                    json: true
+                                }).then(json => {
+                                    this.ucid = json.authorId;
+                                    resolve(this);
+                                }).catch(() => {
+                                    this.errors = true;
+                                    resolve(this);
+                                });
+                            }
+                        });
+                    }
+                    status() {
+                        if (this.errors) return "channel not found!";
+                        else if (this.inserted === true) return "newly added!";
+                        else if (this.inserted === false) return "already added";
+                        else return "still pending";
+                    }
+                }
+
+                let channels = await Promise.all(data.map(item => new Channel(item).promise));
+
+                let request = await rp({
+                    url: "https://archive.omar.yt/api/channels/submit",
+                    method: "POST",
+                    json: true,
+                    body: {channels: channels.filter(c => !c.errors).map(c => c.ucid)}
+                });
+
+                let result = {};
+                for (let c of channels) {
+                    if (request.inserted.includes(c.ucid)) c.inserted = true;
+                    else c.inserted = false;
+                    result[c.name] = c.status();
+                }
+
+                return [200, result];
+            }
+        },
+        {
             route: "/api/youtube/video/([\\w-]+)", methods: ["GET"], code: ({fill}) => {
                 return new Promise(resolve => {
                     ytdl.getInfo(fill[0]).then(info => {
