@@ -54,6 +54,46 @@ module.exports = function ({db}) {
             }
             data.username = data.username.toString().slice(0, 30);
             return [true, data];
+        },
+        LockManager: class LockManager {
+            constructor(limit, debug) {
+                this.limit = limit;
+                this.debug = debug;
+                this.locked = 0;
+                this.queue = [];
+            }
+            log(message) {
+                if (this.debug) console.log(message);
+            }
+            waitForUnlock(callback) {
+                this.log("WAIT FOR UNLOCK CALLED");
+                if (this.locked < this.limit) {
+                    this.log("PROCEEDING");
+                    this.lock();
+                    callback();
+                } else {
+                    this.log("WAITING");
+                    this.queue.push(() => {
+                        this.log("WAIT OVER, RETRYING");
+                        this.waitForUnlock(callback);
+                    });
+                }
+            }
+            lock() {
+                this.log("LOCKED");
+                this.locked++;
+            }
+            unlock() {
+                this.log("UNLOCKED");
+                this.locked--;
+                if (this.queue.length) {
+                    this.log("STARTING QUEUE");
+                    setImmediate(() => this.queue.shift()());
+                }
+            }
+            promise() {
+                return new Promise(resolve => this.waitForUnlock(resolve));
+            }
         }
     };
     return extra;

@@ -18,6 +18,7 @@
             return c;
         });
         channels = channels.filter(c => c);
+        if (channels.length > 1000) return alert("Max 1000 channels at a time, please! If you've got a massive number of things to add, please tell me about them via the 'contact me' page rather than using this form.");
         q("#iChannelName").value = "";
         q("#iChannelName").focus();
         if (!channels[0]) return;
@@ -25,15 +26,32 @@
         let insertBeforeMarker = q("#tLog").firstChild;
         for (let object of objects) {
             object.tr = document.createElement("tr");
-            object.tr.innerHTML = `<td>${object.text}</td><td>pending...</td>`;
+            object.tr.innerHTML = `<td>${object.text}</td><td></td>`;
             q("#tLog").insertBefore(object.tr, insertBeforeMarker);
         }
+        doSubmit(objects);
+    }
+
+    let waitingRequestQueue = [];
+    function doSubmit(objects) {
+        waitingRequestQueue.push(objects);
+        if (waitingRequestQueue.length == 1) {
+            emptyQueue();
+        } else {
+            for (let object of objects) object.tr.children[1].innerText = "waiting...";
+        }
+    }
+    function emptyQueue() {
+        let objects = waitingRequestQueue[0];
+        for (let object of objects) object.tr.children[1].innerText = "submitting...";
         request("/api/youtube/archive/channels", response => {
             let data = JSON.parse(response.responseText);
             for (let object of objects) {
                 object.tr.children[1].innerText = data[object.text];
             }
-        }, channels);
+            waitingRequestQueue.shift();
+            if (waitingRequestQueue.length) emptyQueue();
+        }, objects.map(i => i.text));
     }
 </script>
 <style>

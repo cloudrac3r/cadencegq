@@ -7,8 +7,9 @@ const fxp = require("fast-xml-parser");
 
 const channelCacheTimeout = 4*60*60*1000;
 
-module.exports = ({encrypt, cf, db, resolveTemplates}) => {
+module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
     let channelCache = new Map();
+    let aslm = new extra.LockManager(100);
 
     function refreshCache() {
         for (let e of channelCache.entries()) {
@@ -295,32 +296,41 @@ module.exports = ({encrypt, cf, db, resolveTemplates}) => {
                 if (data.constructor.name != "Array") return [400, 5];
                 if (data.some(item => typeof(item) != "string")) return [400, 5];
 
+                let total = 0;
+
                 class Channel {
                     constructor(name) {
-                        this.errors = false;
+                        this.errors = "";
                         this.name = name;
                         this.ucid = null;
                         this.inserted = null;
                         this.promise = new Promise(resolve => {
-                            if (this.name.match(/^UC[\w-]{22}$/)) {
+                            if (++total > 1000) {
+                                this.errors = "rate limited! max 1000 entries at a time, please!";
+                                resolve(this);
+                            } else if (this.name.match(/^UC[\w-]{22}$/)) {
                                 this.ucid = this.name;
                                 resolve(this);
                             } else {
-                                rp({
-                                    url: "https://invidio.us/api/v1/channels/"+this.name,
-                                    json: true
-                                }).then(json => {
-                                    this.ucid = json.authorId;
-                                    resolve(this);
-                                }).catch(() => {
-                                    this.errors = true;
-                                    resolve(this);
+                                aslm.promise().then(() => {
+                                    rp({
+                                        url: "https://invidio.us/api/v1/channels/"+this.name,
+                                        json: true
+                                    }).then(json => {
+                                        aslm.unlock();
+                                        this.ucid = json.authorId;
+                                        resolve(this);
+                                    }).catch(() => {
+                                        aslm.unlock();
+                                        this.errors = "channel not found!";
+                                        resolve(this);
+                                    });
                                 });
                             }
                         });
                     }
                     status() {
-                        if (this.errors) return "channel not found!";
+                        if (this.errors) return this.errors;
                         else if (this.inserted === true) return "newly added!";
                         else if (this.inserted === false) return "already added";
                         else return "still pending";
