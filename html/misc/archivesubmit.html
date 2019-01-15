@@ -2,70 +2,16 @@
 <link rel="stylesheet" type="text/css" href="/cloudtube/youtube.css">
 <title>YouTube annotations archive channel submitter</title>
 <script src="/cloudtube/cloudtube.js"></script>
-<script>
-    function keydown(event) {
-        if (event.key == "Enter" && event.ctrlKey) submitToArchive();
-    }
-
-    function submitToArchive() {
-        let channels = q("#iChannelName").value.split("\n");
-        channels = channels.map(c => {
-            if (c.startsWith("http")) {
-                let fragments = c.split("/");
-                while (["home", "videos", "playlists", "community", "channels", "about"].includes(fragments.slice(-1)[0])) fragments.pop();
-                return fragments.slice(-1)[0];
-            }
-            return c;
-        });
-        channels = channels.filter(c => c);
-        if (channels.length > 1000) return alert("Max 1000 channels at a time, please! If you've got a massive number of things to add, please tell me about them via the 'contact me' page rather than using this form.");
-        q("#iChannelName").value = "";
-        q("#iChannelName").focus();
-        if (!channels[0]) return;
-        let objects = channels.map(text => ({text}));
-        let insertBeforeMarker = q("#tLog").firstChild;
-        for (let object of objects) {
-            object.tr = document.createElement("tr");
-            object.tr.innerHTML = `<td>${object.text}</td><td></td>`;
-            q("#tLog").insertBefore(object.tr, insertBeforeMarker);
-        }
-        doSubmit(objects);
-    }
-
-    let waitingRequestQueue = [];
-    function doSubmit(objects) {
-        waitingRequestQueue.push(objects);
-        if (waitingRequestQueue.length == 1) {
-            emptyQueue();
-        } else {
-            for (let object of objects) object.tr.children[1].innerText = "waiting...";
-        }
-    }
-    function emptyQueue() {
-        let objects = waitingRequestQueue[0];
-        for (let object of objects) object.tr.children[1].innerText = "submitting...";
-        request("/api/youtube/archive/channels", response => {
-            let data = JSON.parse(response.responseText);
-            for (let object of objects) {
-                object.tr.children[1].innerText = data[object.text];
-            }
-            waitingRequestQueue.shift();
-            if (waitingRequestQueue.length) emptyQueue();
-        }, objects.map(i => i.text));
-    }
-</script>
-<style>
-    #iChannelName {
-        width: 550px;
-        height: 227px;
-        font-family: 'Liberation Mono',monospace;
-        font-size: 13px;
-    }
-    table {
-        margin-top: 10px;
-    }
-</style>
 <!-- TEMPLATE header -->
+<div class="infoBox warning" ibid="null" style="border: 3px solid #b98627">
+    <div>
+        <span>
+            The deadline has passed and annotations have been deleted.<br>
+            You can no longer submit anything to the archive.<br>
+            This page will remain here so that links don't break, but it has no purpose beyond that. All functionality has been removed.
+        </span>
+    </div>
+</div>
 <h1>YouTube annotations archive channel submitter</h1>
 <h2>What is this?</h2>
 <p>YouTube will be deleting all annotations on January 15th.</p>
@@ -85,17 +31,6 @@
 <h2>How do I submit channels?</h2>
 <p>If there's a creator that you are a fan of, enter their YouTube username, channel ID, or channel URL here, and they'll be added to the archive.</p>
 <p>One ID/name per line. Use Ctrl-Enter to submit.</p>
-<div><textarea id="iChannelName" autofocus placeholder="Type some channels here" onkeydown="keydown(event)"></textarea></div>
-<button onclick="submitToArchive()">Submit</button>
-<table>
-    <thead>
-        <tr>
-            <td style="min-width: 250px;">Channel</td>
-            <td style="min-width: 150px;">Status</td>
-        </tr>
-    </thead>
-    <tbody id="tLog">
-    </tbody>
-</table>
-<div style="height: 25%;"></div>
+<div><textarea disabled></textarea></div>
+<button disabled>Submit</button>
 <!-- TEMPLATE end -->
