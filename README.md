@@ -5,7 +5,6 @@ My website of utilities, including image hosting, URL shortening, and a pastebin
 ## TODOs
 
 - Add YouTube playlists
-- Update database schema
 - Consider changing cadence.gq to cadence.moe
 - Add API request ranges
 
