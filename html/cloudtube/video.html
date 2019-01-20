@@ -487,8 +487,8 @@
                     let e = element.e;
                     if (video.currentTime*1000 >= element.endscreenElementRenderer.startMs && video.currentTime*1000 <= element.endscreenElementRenderer.endMs) {
                         e.style.display = "";
-                        e.style.left = vd.base.width*element.endscreenElementRenderer.left+vd.base.x+vd.offset.x;
-                        e.style.top = vd.base.height*element.endscreenElementRenderer.top+vd.base.y+vd.offset.y;
+                        e.style.left = Math.round(vd.base.width*element.endscreenElementRenderer.left+vd.base.x+vd.offset.x);
+                        e.style.top = Math.round(vd.base.height*element.endscreenElementRenderer.top+vd.base.y+vd.offset.y);
                         let img = e.children[0];
                         img.style.width = Math.ceil(vd.base.width*element.endscreenElementRenderer.width)+"px";
                         if (element.endscreenElementRenderer.style == "WEBSITE") {
