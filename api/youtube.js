@@ -122,6 +122,17 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
             })
         },
         {
+            route: "/cloudtube/playlist/([\\w-]+)", methods: ["GET"], code: async ({fill}) => {
+                return {
+                    statusCode: 200,
+                    contentType: "text/html",
+                    content:
+                        `CloudTube playlists aren't implemented yet! For now, you can <a href="https://invidio.us/playlist?list=${fill[0]}">view this playlist on Invidious,</a> `+
+                        `or you could send me an email to remind me to work on them.`
+                }
+            }
+        },
+        {
             route: "/cloudtube/search", methods: ["GET"], code: ({req, params}) => new Promise(resolve => {
                 fs.readFile("html/cloudtube/search.html", {encoding: "utf8"}, (err, page) => {
                     if (err) throw err;

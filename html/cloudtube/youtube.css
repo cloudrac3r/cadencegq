@@ -331,10 +331,6 @@ input, button {
     min-width: 197px;
 }
 
-.timestamp-active {
-    text-decoration-color: #c9c9c9;
-}
-
 .timestamp-active::after {
     content: "←";
     position: absolute;
@@ -347,27 +343,31 @@ input, button {
     color: #bbb;
 }
 
-.endcard-video, .endcard-channel, .endcard-website {
+.endcard-video, .endcard-channel, .endcard-website, .endcard-playlist {
     position: absolute;
     display: inline-block;
 }
-.endcard-video span {
+.endcard-video, .endcard-playlist {
+    border: 1px solid rgba(255,255,255,0.7);
+    box-shadow: black 0px 1px 3px;
+}
+.endcard-video span, .endcard-playlist span {
     position: absolute;
     left: 0;
     right: 0;
     top: 0;
     display: inline-block;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.9) 5px, transparent);
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 5px, rgba(0, 0, 0, 0.6) 70%, transparent);
     padding: 8px 8px 20px;
     line-height: 1.2;
     color: white;
-    font-size: 1.2vw;
+    font-size: 1.15vw;
 }
-.endcard-video img {
+.endcard-video img, .endcard-playlist img {
     transition: filter 0.4s ease-out;
 }
-.endcard-video:hover img {
-    filter: brightness(40%) grayscale(20%);
+.endcard-video:hover img, .endcard-playlist:hover img {
+    filter: brightness(40%);
     transition: filter 1s cubic-bezier(0, 0, 0.2, 1);
 }
 .endcard-video::before {
@@ -383,8 +383,13 @@ input, button {
     padding: 0.25vw 0.4vw;
 }
 
+.endcard-playlist img {
+    object-fit: cover;
+}
+
 .endcard-channel img {
     border-radius: 50%;
+    box-shadow: black 0px 1px 3px;
 }
 
 .endcard-website {

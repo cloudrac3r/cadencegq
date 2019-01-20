@@ -398,7 +398,7 @@
         if (lsm.get("disableEndCards") != "1") request("/api/youtube/get_endscreen?v="+videoID, result => {
             // already defined: video
             let cardData = JSON.parse(result.responseText);
-            const knownStyles = ["VIDEO", "CHANNEL", "WEBSITE"];
+            const knownStyles = ["VIDEO", "CHANNEL", "WEBSITE", "PLAYLIST"];
             cardData.elements = cardData.elements.filter(element => knownStyles.includes(element.endscreenElementRenderer.style));
             for (let i = 0; i < cardData.elements.length; i++) {
                 let element = cardData.elements[i];
@@ -420,8 +420,23 @@
                     let span = document.createElement("span");
                     span.innerText = element.endscreenElementRenderer.title.simpleText;
                     e.appendChild(span);
+                } else if (element.endscreenElementRenderer.style == "PLAYLIST") {
+                    // Playlist link
+                    e.classList.add("endcard-playlist");
+                    e.href = "/cloudtube/playlist/"+element.endscreenElementRenderer.endpoint.urlEndpoint.url.split("list=")[1];
+                    // Playlist thumbnail
+                    let img = document.createElement("img");
+                    img.src = element.endscreenElementRenderer.image.thumbnails.sort((a, b) => (b.width - a.width))[0].url;
+                    e.appendChild(img);
+                    // Playlist title
+                    let span = document.createElement("span");
+                    span.innerText = element.endscreenElementRenderer.title.simpleText+"\nPlaylist: "+element.endscreenElementRenderer.playlistLength.runs[0].text;
+                    e.appendChild(span);
                 } else if (element.endscreenElementRenderer.style == "CHANNEL") {
                     e.classList.add("endcard-channel");
+                    // Channel link
+                    e.href = "/cloudtube/channel/"+element.endscreenElementRenderer.endpoint.browseEndpoint.browseId;
+                    e.title = element.endscreenElementRenderer.title.simpleText;
                     // Channel image
                     let img = document.createElement("img");
                     img.src = element.endscreenElementRenderer.image.thumbnails.sort((a, b) => (b.width - a.width))[0].url;
@@ -429,10 +444,12 @@
                 } else if (element.endscreenElementRenderer.style == "WEBSITE") {
                     // Website link
                     e.classList.add("endcard-website");
-                    e.href = element.endscreenElementRenderer.endpoint.urlEndpoint.url;
+                    let url = element.endscreenElementRenderer.endpoint.urlEndpoint.url;
+                    if (url.startsWith("/redirect")) url = new URLSearchParams(url).get("q");
+                    e.href = url;
+                    e.target = "_blank";
                     // Website icon
                     let img = document.createElement("img");
-                    e.target = "_blank";
                     e.appendChild(img);
                     // Website words container
                     let span = document.createElement("span");
@@ -490,9 +507,13 @@
                         e.style.left = Math.round(vd.base.width*element.endscreenElementRenderer.left+vd.base.x+vd.offset.x);
                         e.style.top = Math.round(vd.base.height*element.endscreenElementRenderer.top+vd.base.y+vd.offset.y);
                         let img = e.children[0];
-                        img.style.width = Math.ceil(vd.base.width*element.endscreenElementRenderer.width)+"px";
+                        let width = Math.ceil(vd.base.width*element.endscreenElementRenderer.width);
+                        img.style.width = width+"px";
                         if (element.endscreenElementRenderer.style == "WEBSITE") {
-                            e.style.width = Math.ceil(vd.base.width*element.endscreenElementRenderer.width)+"px";
+                            e.style.width = width+"px";
+                        }
+                        if (element.endscreenElementRenderer.style == "PLAYLIST") {
+                            img.style.height = Math.round(width/element.endscreenElementRenderer.aspectRatio);
                         }
                     } else {
                         e.style.display = "none";
