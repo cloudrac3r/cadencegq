@@ -252,7 +252,8 @@
                         option.innerText = f.label;
                         qualitySelect.appendChild(option);
                     }
-                    chooseFormat(formats.findIndex(f => f.container == "mp4") || 0);
+                    let preferredContainer = lsm.get("preferWebm") == "1" ? "webm" : "mp4";
+                    chooseFormat(formats.findIndex(f => f.container == preferredContainer) || 0);
                     q("#playbackErrorContainer").style.display = "none";
                 }
             });
@@ -318,7 +319,8 @@
             option.innerText = f.label;
             q("#qualitySelect").appendChild(option);
         }
-        chooseFormat(formats.findIndex(f => f.container == "mp4") || 0);
+        let preferredContainer = lsm.get("preferWebm") == "1" ? "webm" : "mp4";
+        chooseFormat(formats.findIndex(f => f.container == preferredContainer) || 0);
         // Set video elements
         q("#videoTitle").innerText = data.title;
         q("#videoAuthor").innerText = "Uploaded by "+data.author;

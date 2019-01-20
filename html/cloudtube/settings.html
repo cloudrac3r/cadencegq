@@ -31,6 +31,10 @@
             element: "legacyEnabled",
             lsm: "enableLegacyLinks",
             invert: false,
+        },{
+            element: "webmPreferred",
+            lsm: "preferWebm",
+            invert: false
         }
     ];
     function manageKeypress(event) {
@@ -101,7 +105,9 @@
         <tbody id="tagVisible"></tbody>
     </table>
 </div>
-<h2>Advanced</h2>
+<h2>Other</h2>
+<div><input id="webmPreferred" type="checkbox"><label for="webmPreferred">Prefer webm format over mp4</label></div>
+<div>Useful if your browser has problems with mp4 playback.</div>
 <div><input id="legacyEnabled" type="checkbox"><label for="legacyEnabled">Show links to the legacy player</label></div>
 <div>I'd quite like to deprecate the legacy player. If you turn this on, please <a href="/about/contact">tell me</a> why you need it.</div>
 <table style="display: none;">
