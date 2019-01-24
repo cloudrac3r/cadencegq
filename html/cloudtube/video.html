@@ -30,6 +30,7 @@
     let sourceSwitchAttempts = 0;
 
     function chooseFormat(index) {
+        if (index < 0) index = 0;
         let format = formats[index];
         let video = q("video");
         video.preload = "auto";
