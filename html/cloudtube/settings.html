@@ -18,25 +18,43 @@
             text: "Author ID"
         }
     ];
-    const flagMap = [
-        {
-            element: "endCardsEnabled",
-            lsm: "disableEndCards",
-            invert: true
-        },{
-            element: "endCardsCanvas",
-            lsm: "disableEndCardsCanvas",
-            invert: true
-        },{
-            element: "legacyEnabled",
-            lsm: "enableLegacyLinks",
-            invert: false,
-        },{
-            element: "webmPreferred",
-            lsm: "preferWebm",
-            invert: false
-        }
-    ];
+    const sections = {
+        "endcards": [
+            {
+                label: "Enable end cards",
+                comment: "End cards are interactive overlays to other videos, channels, playlists, and websites at the end of videos.",
+                lsm: "disableEndCards",
+                invert: true
+            },{
+                label: "Use canvas to enhance end cards",
+                comment:
+                    "HTML canvas can be used to make end cards look slightly prettier. No fingerprinting takes place, but if you're "+
+                    "concerned about the possibility, you can turn this off.",
+                lsm: "disableEndCardsCanvas",
+                invert: true
+            }
+        ],
+        "other": [
+            {
+                label: "Prefer webm format over mp4",
+                comment: "Useful if your browser has problems with mp4 playback.",
+                lsm: "preferWebm",
+                invert: false
+            },
+            {
+                label: "Use Invidious to proxy thumbnails",
+                comment: "Using a proxy will be a little slower but more private.",
+                lsm: "disableProxyThumbnails",
+                invert: true
+            },
+            {
+                label: "Show links to the legacy player",
+                comment: `I'd quite like to deprecate the legacy player. If you turn this on, please <a href="/about/contact">tell me</a> why you need it.`,
+                lsm: "enableLegacyLinks",
+                invert: false,
+            }
+        ]
+    };
     function manageKeypress(event) {
         if (event.key == "Enter") {
             addTag();
@@ -73,15 +91,34 @@
                 addTag(setting, type.key);
             }
         }
-        for (let flag of flagMap) {
-            let checkbox = q("#"+flag.element);
-            checkbox.onchange = updateFlags;
-            checkbox.checked = (lsm.get(flag.lsm) == "1") ^ flag.invert;
+        for (let sectionName in sections) {
+            let sectionElement = q(`[data-sectionid="${sectionName}"]`);
+            for (let setting of sections[sectionName]) {
+                let base = document.createElement("div");
+                let checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.id = setting.lsm;
+                checkbox.onchange = updateFlags;
+                checkbox.checked = (lsm.get(setting.lsm) == "1") ^ setting.invert;
+                let label = document.createElement("label");
+                label.setAttribute("for", setting.lsm);
+                label.innerHTML = setting.label;
+                base.appendChild(checkbox);
+                base.appendChild(label);
+                sectionElement.appendChild(base);
+                if (setting.comment) {
+                    let comment = document.createElement("div");
+                    comment.innerHTML = setting.comment;
+                    sectionElement.appendChild(comment);
+                }
+            }
         }
     }
     function updateFlags() {
-        for (let flag of flagMap) {
-            lsm.set(flag.lsm, +(flag.invert ^ q("#"+flag.element).checked));
+        for (let section of Object.values(sections)) {
+            for (let setting of section) {
+                lsm.set(setting.lsm, +(setting.invert ^ q("#"+setting.lsm).checked));
+            }
         }
     }
 </script>
@@ -91,12 +128,7 @@
 <h2>Subscriptions</h2>
 <a href="/cloudtube/subscriptions">Go here to manage subscriptions.</a>
 <h2>End cards</h2>
-<div><input id="endCardsEnabled" type="checkbox" checked><label for="endCardsEnabled">Display end cards</label></div>
-<div>End cards are interactive overlays to other videos, channels, playlists, and websites at the end of videos.</div>
-<div><input id="endCardsCanvas" type="checkbox" checked><label for="endCardsCanvas">Use canvas to enhance end card display</label></div>
-<div>
-    HTML canvas can be used to make end cards look slightly prettier. No fingerprinting takes place, but if you're
-    concerned about the possibility, you can turn this off.
+<div data-sectionid="endcards">
 </div>
 <h2>Blocked content</h2>
 <p>Author names and IDs that exactly match items in this list will be blocked. Video titles that contain fragments in this list will be blocked.</p>
@@ -111,10 +143,7 @@
     </table>
 </div>
 <h2>Other</h2>
-<div><input id="webmPreferred" type="checkbox"><label for="webmPreferred">Prefer webm format over mp4</label></div>
-<div>Useful if your browser has problems with mp4 playback.</div>
-<div><input id="legacyEnabled" type="checkbox"><label for="legacyEnabled">Show links to the legacy player</label></div>
-<div>I'd quite like to deprecate the legacy player. If you turn this on, please <a href="/about/contact">tell me</a> why you need it.</div>
+<div data-sectionid="other"></div>
 <table style="display: none;">
     <tbody id="subStorage">
         <tr>

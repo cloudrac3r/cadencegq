@@ -24,3 +24,10 @@ function filterVideos(feed, source) {
     let result = feed.filter(video => !filters.some(f => f[source] ? f.disallow(f[source](video)) : false));
     return [result, feed.length - result.length];
 }
+
+function thumbnailURL(id, quality) {
+    if (!quality) quality = "mqdefault";
+    let proxyEnabled = lsm.get("disableProxyThumbnails") != "1";
+    if (proxyEnabled) return `https://invidio.us/vi/${id}/${quality}.jpg`;
+    else return `https://i.ytimg.com/vi/${id}/${quality}.jpg`;
+}

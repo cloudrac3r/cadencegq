@@ -350,7 +350,7 @@
             let ne = q("#relatedVideosStorage").children[0].cloneNode(true);
             ne.children[1].children[0].innerText = rv.title;
             ne.children[1].children[1].innerText = rv.author+" • "+rv.viewCountText;
-            ne.children[0].children[0].src = `https://invidio.us/vi/${rv.videoId}/mqdefault.jpg`;
+            ne.children[0].children[0].src = thumbnailURL(rv.videoId);
             document.styleSheets[1].insertRule(`.relatedVideo:nth-child(${i+2}) > div:first-child::before { content: "${prettySeconds(rv.lengthSeconds)}"; }`);
             ne.href = rv.videoId;
             q("#relatedVideosContainer").appendChild(ne);
@@ -417,7 +417,7 @@
                     document.styleSheets[1].insertRule(`#videoEndCardContainer > *:nth-child(${i+1})::before { content: "${element.endscreenElementRenderer.videoDuration.runs[0].text}"; }`);
                     // Video thumbnail
                     let img = document.createElement("img");
-                    img.src = "https://invidio.us/vi/"+element.endscreenElementRenderer.endpoint.urlEndpoint.url.split("=")[1]+"/mqdefault.jpg";
+                    img.src = thumbnailURL(element.endscreenElementRenderer.endpoint.urlEndpoint.url.split("=")[1]);
                     e.appendChild(img);
                     // Video title
                     let span = document.createElement("span");

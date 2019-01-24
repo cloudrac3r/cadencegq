@@ -57,7 +57,7 @@
                 ne.children[1].children[0].innerText = video.title;
                 ne.children[1].children[1].innerText = video.author+" • "+humaniseDate(video.published);
                 ne.children[1].children[2].innerHTML = video.descriptionHtml;
-                ne.children[0].children[0].src = `https://invidio.us/vi/${video.videoId}/mqdefault.jpg`;
+                ne.children[0].children[0].src = thumbnailURL(video.videoId);
                 if (lsm.get("trackWatchedVideos") == "1") {
                     ne.children[0].children[0].classList.add(lsm.array("watchedVideos").array.includes(video.videoId) ? "read" : "unread");
                     q("#trackWatchedCheckbox").checked = true;
