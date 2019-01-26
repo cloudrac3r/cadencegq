@@ -1,5 +1,7 @@
 const crypto = require("crypto");
 
+const tokenExpiryTime = 14*24*60*60*1000;
+
 module.exports = ({db, extra}) => {
     const qe = extra.qe;
     return [
@@ -43,7 +45,7 @@ module.exports = ({db, extra}) => {
                 let {username, password} = data;
                 if (!await extra.verifyPassword(username, password)) return [401, 8];
                 let token = extra.hash(extra.salt());
-                let expires = Date.now()+30*24*60*60*1000;
+                let expires = Date.now()+tokenExpiryTime;
                 await db.run("INSERT INTO AccountTokens VALUES ((SELECT userID FROM Accounts WHERE username = ?), ?, ?)", [username, token, expires]);
                 return [201, {token, expires}];
             }
@@ -64,6 +66,7 @@ module.exports = ({db, extra}) => {
                 if (!token) return [400, 1];
                 let row = await db.get("SELECT username, expires FROM Accounts INNER JOIN AccountTokens ON Accounts.userID = AccountTokens.userID WHERE token = ?", token);
                 if (!row || row.expires <= Date.now()) return [401, 8];
+                db.run("UPDATE AccountTokens SET expires = ? WHERE token = ?", [Date.now()+tokenExpiryTime, token]);
                 row.subscriptions = (await db.all("SELECT channelID FROM AccountSubscriptions INNER JOIN AccountTokens ON AccountTokens.userID = AccountSubscriptions.userID WHERE token = ?", token)).map(r => r.channelID);
                 return [200, row];
             }
