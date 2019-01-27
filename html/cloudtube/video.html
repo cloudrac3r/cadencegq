@@ -5,22 +5,6 @@
 <script src="/color-thief.min.js"></script> <!-- https://github.com/lokesh/color-thief/ -->
 <!-- metaOGTags -->
 <script type="text/javascript">
-    function prettySeconds(seconds) {
-        let minutes = Math.floor(seconds / 60);
-        seconds = seconds % 60;
-        let hours = Math.floor(minutes / 60);
-        minutes = minutes % 60;
-        let output = [];
-        if (hours) {
-            output.push(hours);
-            output.push(minutes.toString().padStart(2, "0"));
-        } else {
-            output.push(minutes);
-        }
-        output.push(seconds.toString().padStart(2, "0"));
-        return output.join(":");
-    }
-
     let videoID;
     let formats;
     let allFormats;
@@ -351,7 +335,7 @@
             ne.children[1].children[0].innerText = rv.title;
             ne.children[1].children[1].innerText = rv.author+" • "+rv.viewCountText;
             ne.children[0].children[0].src = thumbnailURL(rv.videoId);
-            document.styleSheets[1].insertRule(`.relatedVideo:nth-child(${i+2}) > div:first-child::before { content: "${prettySeconds(rv.lengthSeconds)}"; }`);
+            ne.children[0].setAttribute("data-prettyseconds", prettySeconds(rv.lengthSeconds));
             ne.href = rv.videoId;
             q("#relatedVideosContainer").appendChild(ne);
         }
@@ -362,19 +346,22 @@
         }
         // Fix description
         [...q("#eow-description").children].filter(c => c.tagName == "A").forEach(c => {
-            if (c.innerText.startsWith("#")) {
+            if (c.innerText.startsWith("#")) { // hashtags
                 c.removeAttribute("href");
             } else {
                 let href = c.getAttribute("href");
-                if (c.onclick && c.onclick.toString().includes("seekTo")) {
+                if (c.onclick && c.onclick.toString().includes("seekTo")) { // timestamps
                     c.classList.add("timestamp");
                     c.setAttribute("data-timestamp", c.innerText.split(":").reduce((p, c, i, a) => (p + parseInt(c)*60**(a.length-i-1)), 0));
-                } else if (href.startsWith("/redirect")) {
+                } else if (href.startsWith("/redirect")) { // external links
                     href = href.replace(/^.*\?/, "");
                     c.setAttribute("href", new URLSearchParams(href).get("q"));
-                } else if (href.match(/^https?:\/\/(www\.)?youtube\.com\/channel\/([^\/]{12,})/)) {
+                } else if (href.match(/^https?:\/\/(www\.)?youtube\.com\/channel\/([^\/]{12,})/)) { // channel links
                     c.setAttribute("href", href.replace(/.*channel/, "/cloudtube/channel"));
-                } else {
+                } else if (href.match(/^https?:\/\/(www\.)?youtube\.com\/playlist/)) { // playlists
+                    let listParam = new URL(href).searchParams.get("list");
+                    if (listParam) c.setAttribute("href", "/cloudtube/playlist/"+listParam);
+                } else { // videos
                     c.setAttribute("href", href.replace(/^.*=/, ""));
                 }
             }
@@ -414,7 +401,7 @@
                     // Video link
                     e.classList.add("endcard-video");
                     e.href = element.endscreenElementRenderer.endpoint.urlEndpoint.url.split("=")[1];
-                    document.styleSheets[1].insertRule(`#videoEndCardContainer > *:nth-child(${i+1})::before { content: "${element.endscreenElementRenderer.videoDuration.runs[0].text}"; }`);
+                    e.setAttribute("data-prettyseconds", element.endscreenElementRenderer.videoDuration.runs[0].text);
                     // Video thumbnail
                     let img = document.createElement("img");
                     img.src = thumbnailURL(element.endscreenElementRenderer.endpoint.urlEndpoint.url.split("=")[1]);

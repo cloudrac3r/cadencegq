@@ -2,22 +2,6 @@
 <link rel="stylesheet" type="text/css" href="/legacy/youtube.css">
 <title>CloudTube</title>
 <script type="text/javascript">
-    function prettySeconds(seconds) {
-        let minutes = Math.floor(seconds / 60);
-        seconds = seconds % 60;
-        let hours = Math.floor(minutes / 60);
-        minutes = minutes % 60;
-        let output = [];
-        if (hours) {
-            output.push(hours);
-            output.push(minutes.toString().padStart(2, "0"));
-        } else {
-            output.push(minutes);
-        }
-        output.push(seconds.toString().padStart(2, "0"));
-        return output.join(":");
-    }
-
     let url = new URL(window.location.href);
     let searchTerms = url.searchParams.get("q");
     let maxResults = +url.searchParams.get("maxResults") || 20;

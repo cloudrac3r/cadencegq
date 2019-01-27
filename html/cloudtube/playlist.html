@@ -5,18 +5,8 @@
 <!-- metaOGTags -->
 <script type="text/javascript">
     function bodyLoad() {
-        let data = "<!-- channelInfo -->";
-        let channelVideos = data.latestVideos;
-        let filterReturn = filterVideos(channelVideos, "feed");
-        channelVideos = filterReturn[0];
-        if (filterReturn[1]) {
-            q("#blockedWarning").style.display = "";
-            q("#blockedWarning span").innerText = filterReturn[1];
-        }
-        for (let i = 0; i < channelVideos.length; i++) {
-            let video = channelVideos[i];
-            q("#searchResultsContainer").appendChild(generateVideoListItem(video).element);
-        }
+        let info = "<!-- playlistInfo -->";
+        generateVideoList(info, q("#blockedWarning"), q("#searchResultsContainer"), true);
     }
 
     function forceRefresh(event) {
@@ -28,9 +18,6 @@
     }
 </script>
 <!-- TEMPLATE header -->
-<div style="margin-bottom: 12px;">
-    <button onclick="forceRefresh(event)">Force refresh</button>
-</div>
 <div id="blockedWarning" style="margin-bottom: 12px; display: none;"><span></span> videos have been blocked based on your preferences. <a href="/cloudtube/settings">Edit preferences</a></div>
 <div id="mainSearchContainer">
     <div id="searchResultsContainer"></div>

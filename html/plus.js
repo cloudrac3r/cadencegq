@@ -359,6 +359,60 @@ function makeInfoBoxesWork() {
     }
 }
 
+class ElemJS {
+    constructor(type) {
+        this.element = document.createElement(type);
+    }
+    class() {
+        for (let name of arguments) if (name) this.element.classList.add(name);
+        return this;
+    }
+    attribute(name, value) {
+        if (name) this.element.setAttribute(name, value);
+        return this;
+    }
+    style(name, value) {
+        if (name) this.element.style[name] = value;
+        return this;
+    }
+    id(name) {
+        if (name) this.element.id = name;
+        return this;
+    }
+    text(name) {
+        this.element.innerText = name;
+        return this;
+    }
+    html(name) {
+        this.element.innerHTML = name;
+        return this;
+    }
+    child(element, position) {
+        if (typeof(element) == "object") {
+            if (element.element) element = element.element;
+            if (typeof(position) == "number") this.element.insertBefore(element, this.element.children[position]);
+            else this.element.appendChild(element);
+        }
+        return this;
+    }
+}
+
+function prettySeconds(seconds) {
+    let minutes = Math.floor(seconds / 60);
+    seconds = seconds % 60;
+    let hours = Math.floor(minutes / 60);
+    minutes = minutes % 60;
+    let output = [];
+    if (hours) {
+        output.push(hours);
+        output.push(minutes.toString().padStart(2, "0"));
+    } else {
+        output.push(minutes);
+    }
+    output.push(seconds.toString().padStart(2, "0"));
+    return output.join(":");
+}
+
 if (document.readyState != "complete") {
     window.onload = postLoad;
 } else {

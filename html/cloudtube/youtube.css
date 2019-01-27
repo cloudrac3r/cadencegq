@@ -69,7 +69,7 @@ textarea, input, button, pre, select {
     position: relative;
 }
 .relatedVideo > div:first-child::before {
-    content: "Time";
+    content: attr(data-prettyseconds);
     position: absolute;
     display: inline-block;
     padding: 3px 5px;
@@ -161,11 +161,16 @@ textarea, input, button, pre, select {
     position: relative;
     z-index: -1;
 }
-.searchItem > div:first-child {
+
+.searchItem.playlistItem, .searchItem.playlistItem img {
+    height: 100px;
+}
+
+.searchItem > div.itemThumbnailContainer {
     position: relative;
 }
-.searchItem > div:first-child::before {
-    content: "Time";
+.searchItem > div.itemThumbnailContainer::before {
+    content: attr(data-prettyseconds);
     position: absolute;
     display: inline-block;
     padding: 3px 5px;
@@ -343,6 +348,13 @@ input, button {
     color: #bbb;
 }
 
+.playlistIndex {
+    width: 48px;
+    margin: auto 0;
+    text-align: center;
+    font-size: 18px;
+}
+
 .endcard-video, .endcard-channel, .endcard-website, .endcard-playlist {
     position: absolute;
     display: inline-block;
@@ -371,7 +383,7 @@ input, button {
     transition: filter 1s cubic-bezier(0, 0, 0.2, 1);
 }
 .endcard-video::before {
-    content: "Time";
+    content: attr(data-prettyseconds);
     position: absolute;
     display: inline-block;
     border-radius: 3px;

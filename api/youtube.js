@@ -122,15 +122,36 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
             })
         },
         {
-            route: "/cloudtube/playlist/([\\w-]+)", methods: ["GET"], code: async ({fill}) => {
-                return {
-                    statusCode: 200,
-                    contentType: "text/html",
-                    content:
-                        `CloudTube playlists aren't implemented yet! For now, you can <a href="https://invidio.us/playlist?list=${fill[0]}">view this playlist on Invidious,</a> `+
-                        `or you could send me an email to remind me to work on them.`
-                }
-            }
+            route: "/cloudtube/playlist/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
+                rp(`https://invidio.us/api/v1/playlists/${fill[0]}`).then(body => {
+                    try {
+                        let data = JSON.parse(body);
+                        fs.readFile("html/cloudtube/playlist.html", {encoding: "utf8"}, (err, page) => {
+                            resolveTemplates(page).then(page => {
+                                page = page.replace('"<!-- playlistInfo -->"', body);
+                                page = page.replace("<title></title>", `<title>${data.title} — CloudTube playlist</title>`);
+                                while (page.includes("yt.www.watch.player.seekTo")) page = page.replace("yt.www.watch.player.seekTo", "seekTo");
+                                let metaOGTags =
+                                    `<meta property="og:title" content="${data.title.replace(/"/g, '\\"')} — CloudTube video" />\n`+
+                                    `<meta property="og:type" content="video.movie" />\n`+
+                                    `<meta property="og:url" content="https://${req.headers.host}${req.path}" />\n`+
+                                    `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
+                                if (data.videos[0]) metaOGTags += `<meta property="og:image" content="https://invidio.us/vi/${data.videos[0].videoId}/mqdefault.jpg" />\n`;
+                                page = page.replace("<!-- metaOGTags -->", metaOGTags);
+                                resolve({
+                                    statusCode: 200,
+                                    contentType: "text/html",
+                                    content: page
+                                });
+                            });
+                        });
+                    } catch (e) {
+                        resolve([400, "Error parsing data from Invidious"]);
+                    }
+                }).catch(err => {
+                    resolve([500, "Error requesting data from Invidious"]);
+                });
+            })
         },
         {
             route: "/cloudtube/search", methods: ["GET"], code: ({req, params}) => new Promise(resolve => {
@@ -143,9 +164,9 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                                 try {
                                     // json.parse?
                                     page = page.replace('"<!-- searchResults -->"', body);
-                                    page = page.replace("<title></title>", `<title>${params.q} — CloudTube search</title>`);
+                                    page = page.replace("<title></title>", `<title>${decodeURIComponent(params.q)} — CloudTube search</title>`);
                                     let metaOGTags =
-                                        `<meta property="og:title" content="${params.q.replace(/"/g, '\\"')} — CloudTube search" />\n`+
+                                        `<meta property="og:title" content="${decodeURIComponent(params.q).replace(/"/g, '\\"')} — CloudTube search" />\n`+
                                         `<meta property="og:type" content="video.movie" />\n`+
                                         `<meta property="og:url" content="https://${req.headers.host}${req.path}" />\n`+
                                         `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
