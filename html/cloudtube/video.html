@@ -517,6 +517,7 @@
 
     document.addEventListener("keydown", event => {
         if (event.repeat) return;
+        if (event.ctrlKey) return;
         let video = q("video");
         let audio = q("audio");
         let audioSource = audio.src ? audio : video;
