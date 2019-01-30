@@ -17,46 +17,76 @@
         if (index < 0) index = 0;
         let format = formats[index];
         let video = q("video");
+        let audio = q("audio");
         video.preload = "auto";
         let qs = q("#qualitySelect");
        // console.log("saving last time: "+video.currentTime);
         lastCurrentTime = video.currentTime;
         if (format.index) {
             if (bestAudioURL) {
-                q("audio").src = bestAudioURL;
+                audio.src = bestAudioURL;
             } else if (!checkingAudioURLs) { // So apprently sometimes Vivaldi on Linux doesn't load the audio length properly so I pick one that works
                 checkingAudioURLs = true;
-                Promise.all(allFormats.filter(f => f.type.includes("audio")).map(f => {
+                let audioFormats = allFormats.filter(f => f.type.includes("audio"));
+                let completed = 0;
+                let audioLoadingDisplay = q("#audioLoadingDisplay");
+                audioLoadingDisplay.style.display = "block";
+                let setText = text => {
+                    audioLoadingDisplay.children[0].children[0].innerText = text;
+                }
+                let updateAudioDisplay = () => {
+                    setText("Loading audio... ("+completed+"/"+audioFormats.length+")");
+                }
+                updateAudioDisplay();
+                Promise.all(audioFormats.map(f => {
                     return new Promise(resolve => {
                         let audio = document.createElement("audio");
                         audio.src = f.url;
                         audio.onloadeddata = () => {
                             console.log(f.bitrate, f.type, audio.duration);
+                            completed++;
+                            updateAudioDisplay();
                             resolve({f, audio});
                         }
                         audio.onerror = () => {
+                            completed++;
+                            updateAudioDisplay();
                             resolve(); // if audio is unplayable, resolve with nothing
                         }
                         q("body").appendChild(audio);
                     });
                 })).then(results => {
                     results = results.filter(r => r); // filter out unplayable audio
-                    let lengths = [];
-                    for (let r of results) {
-                        if (!lengths.find(l => Math.abs(l-r.audio.duration) < 1)) lengths.push(r.audio.duration);
+                    if (results.length) {
+                        let lengths = [];
+                        for (let r of results) {
+                            if (!lengths.find(l => Math.abs(l-r.audio.duration) < 1)) lengths.push(r.audio.duration);
+                        }
+                        let bestLength = lengths.sort((a, b) => (b - a))[0];
+                        let best = results
+                            .filter(r => Math.abs(bestLength-r.audio.duration) < 1)
+                            .sort((a, b) => (b.f.bitrate - a.f.bitrate))[0];
+                        setText("Setting source...");
+                        bestAudioURL = best.f.url;
+                        checkingAudioURLs = false;
+                        audio.src = bestAudioURL;
+                        setText("Buffering...");
+                        audio.addEventListener("canplay", function() {
+                            audio.removeEventListener("canplay", this);
+                            setText("Audio is ready!");
+                            setTimeout(() => {
+                                audioLoadingDisplay.style.display = "none";
+                            }, 4000);
+                        });
+                    } else {
+                        checkingAudioURLs = false;
+                        setText("No playable sources.");
                     }
-                    let bestLength = lengths.sort((a, b) => (b - a))[0];
-                    let best = results
-                        .filter(r => Math.abs(bestLength-r.audio.duration) < 1)
-                        .sort((a, b) => (b.f.bitrate - a.f.bitrate))[0];
-                    bestAudioURL = best.f.url;
-                    checkingAudioURLs = false;
-                    q("audio").src = bestAudioURL;
                 });
             }
         } else {
-            q("audio").removeAttribute("src");
-            q("audio").pause();
+            audio.removeAttribute("src");
+            audio.pause();
         }
         video.src = format.url;
         for (let option of qs.children) {
@@ -597,6 +627,11 @@
             </div>
         </div>
         <audio preload="auto"></audio>
+        <div id="audioLoadingDisplay" class="infoBox" style="display: none;">
+            <div>
+                <span></span>
+            </div>
+        </div>
         <div class="belowButtonContainer infoBox" id="playbackErrorContainer" style="display: none;">
             <div>
                 <span>
