@@ -430,11 +430,14 @@
                 if (element.endscreenElementRenderer.style == "VIDEO") {
                     // Video link
                     e.classList.add("endcard-video");
-                    e.href = element.endscreenElementRenderer.endpoint.urlEndpoint.url.split("=")[1];
+                    let id = element.endscreenElementRenderer.endpoint.urlEndpoint.url.split("=")[1];
+                    let match = id.match(/[\w-]+/);
+                    if (match) id = match[0];
+                    e.href = id;
                     e.setAttribute("data-prettyseconds", element.endscreenElementRenderer.videoDuration.runs[0].text);
                     // Video thumbnail
                     let img = document.createElement("img");
-                    img.src = thumbnailURL(element.endscreenElementRenderer.endpoint.urlEndpoint.url.split("=")[1]);
+                    img.src = thumbnailURL(id);
                     e.appendChild(img);
                     // Video title
                     let span = document.createElement("span");
