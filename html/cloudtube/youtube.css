@@ -16,10 +16,12 @@ textarea, input, button, pre, select {
 }
 
 .videoContainer {
-    background: black;
     display: flex;
-    max-height: 500px;
     width: 100%;
+}
+#mainContainer .videoContainer {
+    background: black;
+    max-height: 500px;
 }
 .videoContainer video {
     margin-left: auto;
