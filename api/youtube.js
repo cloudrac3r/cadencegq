@@ -70,10 +70,10 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                                 page = page.replace("<title></title>", `<title>${data.title} — CloudTube video</title>`);
                                 while (page.includes("yt.www.watch.player.seekTo")) page = page.replace("yt.www.watch.player.seekTo", "seekTo");
                                 let metaOGTags =
-                                    `<meta property="og:title" content="${data.title.replace(/"/g, '\\"')} — CloudTube video" />\n`+
+                                    `<meta property="og:title" content="${data.title.replace(/&/g, "&amp;").replace(/"/g, "&quot;")} — CloudTube video" />\n`+
                                     `<meta property="og:type" content="video.movie" />\n`+
                                     `<meta property="og:image" content="https://invidio.us/vi/${fill[0]}/mqdefault.jpg" />\n`+
-                                    `<meta property="og:url" content="https://${req.headers.host}${req.path}" />\n`+
+                                    `<meta property="og:url" content="https://${req.headers.host}${req.url}" />\n`+
                                     `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                                 page = page.replace("<!-- metaOGTags -->", metaOGTags);
                                 resolve({
@@ -100,10 +100,10 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                                 page = page.replace('"<!-- channelInfo -->"', JSON.stringify(data));
                                 page = page.replace("<title></title>", `<title>${data.author} — CloudTube channel</title>`);
                                 let metaOGTags =
-                                    `<meta property="og:title" content="${data.author.replace(/"/g, '\\"')} — CloudTube channel" />\n`+
+                                    `<meta property="og:title" content="${data.title.replace(/&/g, "&amp;").replace(/"/g, "&quot;")} — CloudTube channel" />\n`+
                                     `<meta property="og:type" content="video.movie" />\n`+
                                     `<meta property="og:image" content="${data.authorBanners[0].url}" />\n`+
-                                    `<meta property="og:url" content="https://${req.headers.host}${req.path}" />\n`+
+                                    `<meta property="og:url" content="https://${req.headers.host}${req.url}" />\n`+
                                     `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                                 page = page.replace("<!-- metaOGTags -->", metaOGTags);
                                 resolve({
@@ -132,9 +132,9 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                                 page = page.replace("<title></title>", `<title>${data.title} — CloudTube playlist</title>`);
                                 while (page.includes("yt.www.watch.player.seekTo")) page = page.replace("yt.www.watch.player.seekTo", "seekTo");
                                 let metaOGTags =
-                                    `<meta property="og:title" content="${data.title.replace(/"/g, '\\"')} — CloudTube video" />\n`+
+                                    `<meta property="og:title" content="${data.title.replace(/&/g, "&amp;").replace(/"/g, "&quot;")} — CloudTube playlist" />\n`+
                                     `<meta property="og:type" content="video.movie" />\n`+
-                                    `<meta property="og:url" content="https://${req.headers.host}${req.path}" />\n`+
+                                    `<meta property="og:url" content="https://${req.headers.host}${req.url}" />\n`+
                                     `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                                 if (data.videos[0]) metaOGTags += `<meta property="og:image" content="https://invidio.us/vi/${data.videos[0].videoId}/mqdefault.jpg" />\n`;
                                 page = page.replace("<!-- metaOGTags -->", metaOGTags);
