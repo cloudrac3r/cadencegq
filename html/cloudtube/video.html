@@ -236,6 +236,35 @@
         }
     }
 
+    function resizeTheatrePlayer() {
+        let video = q("video");
+        let availableHeight = window.innerHeight-100;
+        let availableWidth = video.parentElement.offsetWidth;
+        let aspectRatio = video.videoWidth/video.videoHeight;
+        let resultWidth = Math.min(availableHeight*aspectRatio, availableWidth);
+        video.style.width = resultWidth;
+        video.style.height = resultWidth/aspectRatio;
+        console.log("Resized player");
+    }
+
+    function toggleTheatre() {
+        let page = q("#page");
+        let video = q("video");
+        if (page.firstChild != video.parentElement) {
+            page.insertBefore(video.parentElement, page.firstChild);
+            window.addEventListener("resize", resizeTheatrePlayer);
+            resizeTheatrePlayer();
+            q("#relatedVideosContainer").style.marginTop = "16px";
+        } else {
+            let defaultLocation = q("#mainContainer").children[0];
+            defaultLocation.insertBefore(video.parentElement, defaultLocation.firstChild);
+            window.removeEventListener("resize", resizeTheatrePlayer);
+            video.style.width = "";
+            video.style.height = "";
+            q("#relatedVideosContainer").style.marginTop = "";
+        }
+    }
+
     function switchServers(remember) {
         if (remember) lsm.set("automaticSourceSwitch", "1");
         if (sourceSwitchAttempts == 0) {
@@ -652,6 +681,7 @@
         </div>
         <div class="belowButtonContainer">
             <button id="subscribe" onclick="toggleSubscription()">Subscribe</button>
+            <button id="theatre" onclick="toggleTheatre()">Theatre</button>
             <select id="qualitySelect" onchange="chooseFormat(event.target.selectedIndex)"></select>
             <span id="speedSliderContainer"><span><span class="speedText">Speed:</span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" list="speeds" id="speedSlider" min="100" max="5000" value="1000" step="1" oninput="adjustSpeedSlider()"></span></span>
         </div>
