@@ -416,6 +416,7 @@
         }
         // Manage end cards
         if (lsm.get("disableEndCards") != "1") request("/api/youtube/get_endscreen?v="+videoID, result => {
+            if (result.status != 200) return;
             // already defined: video
             let cardData = JSON.parse(result.responseText);
             const knownStyles = ["VIDEO", "CHANNEL", "WEBSITE", "PLAYLIST"];
