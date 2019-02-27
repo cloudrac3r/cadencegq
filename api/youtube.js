@@ -292,6 +292,29 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
             })
         },
         {
+            route: "/api/youtube/dash/([\\w-]+)", methods: ["GET"], code: ({fill}) => new Promise(resolve => {
+                let id = fill[0];
+                let sentReq = rp({
+                    url: `https://dev.invidio.us/api/manifest/dash/id/${id}?local=true`,
+                    timeout: 6000
+                });
+                sentReq.catch(err => {
+                    if (err.code == "ETIMEDOUT" || err.code == "ESOCKETTIMEDOUT") resolve([500, "Request to Invidious timed out"]);
+                    else {
+                        console.log(err);
+                        resolve([500, "Unknown request error, check console"]);
+                    }
+                });
+                sentReq.then(body => {
+                    let data = fxp.parse(body, {ignoreAttributes: false});
+                    resolve([200, data]);
+                }).catch(err => {
+                    console.log(err);
+                    resolve([500, "Unknown parse error, check console"]);
+                });
+            })
+        },
+        {
             route: "/api/youtube/get_endscreen", methods: ["GET"], code: async ({params}) => {
                 if (!params.v) return [400, 1];
                 let data = await rp("https://youtube.com/get_endscreen?v="+params.v);

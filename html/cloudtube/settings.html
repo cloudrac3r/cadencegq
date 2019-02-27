@@ -48,6 +48,17 @@
                 invert: true
             },
             {
+                label: "Use Invidious to proxy video streams",
+                comment: " ",
+                lsm: "settingInvidiousDash",
+                options: [
+                    "Never",
+                    "When required",
+                    "Always"
+                ],
+                defaultIndex: 1
+            },
+            {
                 label: "Show links to the legacy player",
                 comment: `I'd quite like to deprecate the legacy player. If you turn this on, please <a href="/about/contact">tell me</a> why you need it.`,
                 lsm: "enableLegacyLinks",
@@ -95,16 +106,31 @@
             let sectionElement = q(`[data-sectionid="${sectionName}"]`);
             for (let setting of sections[sectionName]) {
                 let base = document.createElement("div");
-                let checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.id = setting.lsm;
-                checkbox.onchange = updateFlags;
-                checkbox.checked = (lsm.get(setting.lsm) == "1") ^ setting.invert;
+                if (setting.options) {
+                    var input = document.createElement("select");
+                    input.style.display = "block";
+                    input.id = setting.lsm;
+                    input.onchange = updateFlags;
+                    setting.options.forEach((option, i) => {
+                        let o = document.createElement("option");
+                        o.innerText = option;
+                        input.appendChild(o);
+                        if (option == lsm.get(setting.lsm)) input.selectedIndex = i;
+                    });
+                    if (lsm.get(setting.lsm) === null) input.selectedIndex = setting.defaultIndex;
+                } else {
+                    var input = document.createElement("input");
+                    input.type = "checkbox";
+                    input.id = setting.lsm;
+                    input.onchange = updateFlags;
+                    input.checked = (lsm.get(setting.lsm) == "1") ^ setting.invert;
+                }
                 let label = document.createElement("label");
                 label.setAttribute("for", setting.lsm);
                 label.innerHTML = setting.label;
-                base.appendChild(checkbox);
+                if (input.tagName != "SELECT") base.appendChild(input);
                 base.appendChild(label);
+                if (input.tagName == "SELECT") base.appendChild(input);
                 sectionElement.appendChild(base);
                 if (setting.comment) {
                     let comment = document.createElement("div");
@@ -117,18 +143,27 @@
     function updateFlags() {
         for (let section of Object.values(sections)) {
             for (let setting of section) {
-                lsm.set(setting.lsm, +(setting.invert ^ q("#"+setting.lsm).checked));
+                let input = q("#"+setting.lsm);
+                if (input.tagName == "INPUT") {
+                    var value = +(setting.invert ^ input.checked);
+                } else if (input.tagName == "SELECT") {
+                    var value = input.selectedOptions[0].innerText;
+                }
+                lsm.set(setting.lsm, value);
             }
         }
     }
 </script>
+<style>
+
+</style>
 <!-- TEMPLATE header -->
 <h1>CloudTube settings</h1>
 <div>Changes will be saved instantly, but pages that use them must be reloaded for the changes to take effect.</div>
 <h2>Subscriptions</h2>
 <a href="/cloudtube/subscriptions">Go here to manage subscriptions.</a>
 <h2>End cards</h2>
-<div data-sectionid="endcards">
+<div data-sectionid="endcards" class="settingsDividers">
 </div>
 <h2>Blocked content</h2>
 <p>Author names and IDs that exactly match items in this list will be blocked. Video titles that contain fragments in this list will be blocked.</p>
@@ -143,7 +178,7 @@
     </table>
 </div>
 <h2>Other</h2>
-<div data-sectionid="other"></div>
+<div data-sectionid="other" class="settingsDividers"></div>
 <table style="display: none;">
     <tbody id="subStorage">
         <tr>

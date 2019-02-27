@@ -265,6 +265,71 @@
         }
     }
 
+    function requestDash() {
+        let playbackErrorContainer = q("#playbackErrorContainer");
+        if (lsm.get("settingInvidiousDash") == "Always") playbackErrorContainer.innerText = "Refusing to play streams from YouTube, switching to proxy...";
+        else playbackErrorContainer.innerText = "Streams are unplayable, switching to proxy...";
+        playbackErrorContainer.style.display = "";
+        request("/api/youtube/dash/"+videoID, response => {
+            if (response.status != 200) {
+                playbackErrorContainer.innerHTML = "An error occurred. Try reloading the page. If you still see this error, <a href='/about/contact' target='_blank'>please report it.</a><br><br><code>"+body.status+": "+body.responseText+"</code>";
+                playbackErrorContainer.style["word-break"] = "break-all";
+                return;
+            }
+            let data = JSON.parse(response.responseText);
+            console.log(data);
+            allFormats.length = 0;
+            formats.length = 0;
+            checkingAudioURLs = false;
+            bestAudioURL = undefined;
+            let qualitySelect = q("#qualitySelect");
+            let child;
+            while (child = qualitySelect.children[0]) {
+                child.parentElement.removeChild(child);
+            }
+            for (let set of data.MPD.Period.AdaptationSet) {
+                if (set["@_mimeType"].includes("audio")) {
+                    let rep = set.Representation;
+                    if (rep.constructor.name != "Array") rep = [rep];
+                    rep.forEach((repSingle, i) => {
+                        allFormats.push({
+                            url: "https://dev.invidio.us/"+repSingle.BaseURL,
+                            type: set["@_mimeType"],
+                            container: set["@_mimeType"].split("/")[1],
+                            bitrate: repSingle["@_bitrate"],
+                            itag: repSingle["@_id"]
+                        });
+                    });
+                } else {
+                    let rep = set.Representation;
+                    if (rep.constructor.name != "Array") rep = [rep];
+                    rep.forEach((repSingle, i) => {
+                        let newFormat = {
+                            url: "https://dev.invidio.us/"+repSingle.BaseURL,
+                            resolution: repSingle["@_width"]+"p",
+                            qualityLabel: repSingle["@_width"]+"p",
+                            label: repSingle["@_width"]+"p "+set["@_mimeType"].split("/")[1]+" ꜝ",
+                            container: set["@_mimeType"].split("/")[1],
+                            type: set["@_mimeType"],
+                            bitrate: repSingle["@_bitrate"],
+                            itag: repSingle["@_id"],
+                            index: -1
+                        };
+                        allFormats.push(newFormat);
+                        formats.push(newFormat);
+                        let option = document.createElement("option");
+                        option.setAttribute("value", i);
+                        option.innerText = newFormat.label;
+                        qualitySelect.appendChild(option);
+                    });
+                }
+            }
+            let preferredContainer = lsm.get("preferWebm") == "1" ? "webm" : "mp4";
+            chooseFormat(formats.findIndex(f => f.container == preferredContainer) || 0);
+            playbackErrorContainer.style.display = "none";
+        });
+    }
+
     function switchServers(remember) {
         if (remember) lsm.set("automaticSourceSwitch", "1");
         if (sourceSwitchAttempts == 0) {
@@ -329,7 +394,8 @@
         video.addEventListener("error", event => {
             if (ignorePlaybackError) return;
             console.log(event, video);
-            if (lsm.get("automaticSourceSwitch") == "1") {
+            if (lsm.get("settingInvidiousDash") == "When required" || lsm.get("settingInvidiousDash") === null) requestDash();
+            else if (lsm.get("automaticSourceSwitch") == "1") {
                 switchServers();
             }
             q("#playbackErrorContainer").style.display = "";
@@ -364,7 +430,8 @@
             q("#qualitySelect").appendChild(option);
         }
         let preferredContainer = lsm.get("preferWebm") == "1" ? "webm" : "mp4";
-        chooseFormat(formats.findIndex(f => f.container == preferredContainer) || 0);
+        if (lsm.get("settingInvidiousDash") != "Always") chooseFormat(formats.findIndex(f => f.container == preferredContainer) || 0);
+        else setTimeout(requestDash, 0);
         // Set video elements
         q("#videoTitle").innerText = data.title;
         q("#videoAuthor").innerText = "Uploaded by "+data.author;

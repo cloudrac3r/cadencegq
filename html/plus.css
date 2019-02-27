@@ -250,3 +250,13 @@ option {
     margin-left: 6px;
     cursor: pointer;
 }
+
+.settingsDividers > *:nth-child(odd) {
+    padding-top: 10px;
+    margin-top: 10px;
+    border-top: 1px solid;
+    border-image: linear-gradient(to right, #696c72 200px, transparent 400px);
+    border-image-slice: 1;
+}
+.settings-dividers > *:first-child {
+}
