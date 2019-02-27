@@ -100,9 +100,9 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                                 page = page.replace('"<!-- channelInfo -->"', JSON.stringify(data));
                                 page = page.replace("<title></title>", `<title>${data.author} — CloudTube channel</title>`);
                                 let metaOGTags =
-                                    `<meta property="og:title" content="${data.title.replace(/&/g, "&amp;").replace(/"/g, "&quot;")} — CloudTube channel" />\n`+
+                                    `<meta property="og:title" content="${data.author.replace(/&/g, "&amp;").replace(/"/g, "&quot;")} — CloudTube channel" />\n`+
                                     `<meta property="og:type" content="video.movie" />\n`+
-                                    `<meta property="og:image" content="${data.authorBanners[0].url}" />\n`+
+                                    `<meta property="og:image" content="${data.authorThumbnails[0].url.split("=")[0]}" />\n`+
                                     `<meta property="og:url" content="https://${req.headers.host}${req.url}" />\n`+
                                     `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                                 page = page.replace("<!-- metaOGTags -->", metaOGTags);
