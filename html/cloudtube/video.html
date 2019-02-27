@@ -272,7 +272,7 @@
         playbackErrorContainer.style.display = "";
         request("/api/youtube/dash/"+videoID, response => {
             if (response.status != 200) {
-                playbackErrorContainer.innerHTML = "An error occurred. Try reloading the page. If you still see this error, <a href='/about/contact' target='_blank'>please report it.</a><br><br><code>"+body.status+": "+body.responseText+"</code>";
+                playbackErrorContainer.innerHTML = "An error occurred. Try reloading the page. If you still see this error, <a href='/about/contact' target='_blank' style='margin: 0'>please report it</a> as soon as possible, along with the exact time of day at which it occurred.<br><br><code>"+response.status+": "+response.responseText+"</code>";
                 playbackErrorContainer.style["word-break"] = "break-all";
                 return;
             }

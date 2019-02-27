@@ -309,8 +309,11 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                     let data = fxp.parse(body, {ignoreAttributes: false});
                     resolve([200, data]);
                 }).catch(err => {
-                    console.log(err);
-                    resolve([500, "Unknown parse error, check console"]);
+                    if (err.code == "ETIMEDOUT" || err.code == "ESOCKETTIMEDOUT") resolve([500, "Request to Invidious timed out"]);
+                    else {
+                        console.log(err);
+                        resolve([500, "Unknown parse error, check console"]);
+                    }
                 });
             })
         },
