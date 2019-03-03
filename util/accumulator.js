@@ -4,7 +4,7 @@ module.exports = {
     AccumulatorManager: class AccumulatorManager {
         constructor(db, interval) {
             Object.assign(this, {db, interval});
-            this.lastWrite = Date.now();
+            this.lastWrite = 0;
             this.controls = new Map();
             this.processing = false;
         }
@@ -44,7 +44,7 @@ module.exports = {
             }
         }
         execute() {
-            log("HitAcc: hits");
+            log("HitAcc: "+this.map.size+" items updated in "+this.table, "spam");
             if (this.map.size == 0) return Promise.resolve();
             let map = this.map;
             this.map = new Map();
