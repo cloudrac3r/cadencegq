@@ -1,4 +1,4 @@
-const log = require("./util/common.js").log;
+const log = require("./common.js").log;
 
 module.exports = {
     AccumulatorManager: class AccumulatorManager {
