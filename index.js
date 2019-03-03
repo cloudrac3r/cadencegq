@@ -8,6 +8,7 @@ const path = require("path");
 const mime = require("mime");
 const sqlite = require("sqlite");
 const cf = require("./util/common.js");
+const accu = require("./util/accumulator.js");
 
 const hostnames = ["cadence.gq", "cadence.moe"];
 const httpPort = 8080;
@@ -82,9 +83,10 @@ const cacheControl = [
     "ttf", "png", "jpg", "svg"
 ];
 
-let lastHitsUpdate = 0;
-let pendingHitUpdates = {};
-let hitUpdatesAllowed = true;
+// 2,373,711 hits collected before adding domain logging
+let hitManager = new accu.AccumulatorManager(sqlite, 10000);
+new accu.AccumulatorControl("pathHit", hitManager, "Hits", "url", "hits");
+new accu.AccumulatorControl("domainHit", hitManager, "DomainHits", "domain", "hits");
 
 let routeHandlers = [];
 sqlite.open("db/main.db").then(db => {
@@ -141,6 +143,7 @@ async function resolveTemplates(page) {
 }
 
 function serverRequest(req, res) {
+    if (req.headers.host) hitManager.add("domainHit", req.headers.host);
     req.gmethod = req.method == "HEAD" ? "GET" : req.method;
     if (!req.headers.host) req.headers.host = hostnames[0];
     let headers = {};
@@ -200,7 +203,7 @@ function serverRequest(req, res) {
                 res.writeHead(result.statusCode, Object.assign({"Content-Type": result.contentType}, headers, result.headers, globalHeaders));
                 res.write(result.content);
                 res.end();
-                if (result.statusCode == 200) addHit(reqPath);
+                if (result.statusCode == 200) hitManager.add("pathHit", reqPath);
             });
             return true;
         }
@@ -222,7 +225,7 @@ function serverRequest(req, res) {
                         } else {
                             res.write(page, () => {
                                 res.end();
-                                addHit(reqPath);
+                                hitManager.add("pathHit", reqPath);
                             });
                         }
                     });
@@ -253,7 +256,7 @@ function serverRequest(req, res) {
                         res.writeHead(ranged.statusCode, Object.assign({"Content-Type": mimeType(reqPath)}, ranged.headers, headers, globalHeaders));
                         res.write(ranged.result);
                         res.end();
-                        addHit(reqPath);
+                        hitManager.add("pathHit", reqPath);
                     });
                 } else {
                     cf.log("Using file directly for "+reqPath+" (stream)", "spam");
@@ -294,39 +297,6 @@ function serverRequest(req, res) {
             });
         }
     }
-}
-
-async function addHit(url) {
-    if (!encrypt) return;
-    if (url.includes("account")) return;
-    pendingHitUpdates[url] = pendingHitUpdates[url] ? pendingHitUpdates[url]+1 : 1;
-    if (Date.now()-lastHitsUpdate < hitUpdateMin || !hitUpdatesAllowed || !sqlite.driver.open) return;
-    const db = sqlite;
-    hitUpdatesAllowed = false;
-    lastHitsUpdate = Date.now();
-    let allHits = await sqlite.all("SELECT * FROM Hits");
-    await db.run("BEGIN TRANSACTION");
-    Promise.all(Object.keys(pendingHitUpdates).map(key => {
-        let promise;
-        if (key != 0) {
-            let row = allHits.find(row => row.url == key);
-            if (row) {
-                promise = db.run("UPDATE Hits SET hits = ? WHERE url = ?", [row.hits+pendingHitUpdates[key], key]);
-            } else {
-                promise = db.run("INSERT INTO Hits VALUES (?, ?)", [key, pendingHitUpdates[key]]);
-            }
-        }
-        delete pendingHitUpdates[key];
-        return promise;
-    })).then(async () => {
-        await db.run("END TRANSACTION");
-        hitUpdatesAllowed = true;
-        cf.log("Updated hit counts", "spam");
-    }).catch(async err => {
-        cf.log("Error while updating hit counts\n"+err, "error");
-        await db.run("ROLLBACK");
-        hitUpdatesAllowed = true;
-    });
 }
 
 function secureRedirect(req, res) {
