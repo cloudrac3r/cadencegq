@@ -5,6 +5,8 @@ const rp = require("request-promise");
 const fs = require("fs");
 const fxp = require("fast-xml-parser");
 
+const invidiousHost = "http://localhost:3000";
+
 const channelCacheTimeout = 4*60*60*1000;
 
 module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
@@ -31,7 +33,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
             //cf.log("Setting new cache for "+channelID, "spam");
             let promise = new Promise(resolve => {
                 Promise.all([
-                    rp(`https://invidio.us/api/v1/channels/${channelID}`),
+                    rp(`${invidiousHost}/api/v1/channels/${channelID}`),
                     rp(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelID}`)
                 ]).then(([body, xml]) => {
                     let data = JSON.parse(body);
@@ -61,7 +63,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
     return [
         {
             route: "/cloudtube/video/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
-                rp(`https://invidio.us/api/v1/videos/${fill[0]}`).then(body => {
+                rp(`${invidiousHost}/api/v1/videos/${fill[0]}`).then(body => {
                     try {
                         let data = JSON.parse(body);
                         fs.readFile("html/cloudtube/video.html", {encoding: "utf8"}, (err, page) => {
@@ -123,7 +125,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
         },
         {
             route: "/cloudtube/playlist/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
-                rp(`https://invidio.us/api/v1/playlists/${fill[0]}`).then(body => {
+                rp(`${invidiousHost}/api/v1/playlists/${fill[0]}`).then(body => {
                     try {
                         let data = JSON.parse(body);
                         fs.readFile("html/cloudtube/playlist.html", {encoding: "utf8"}, (err, page) => {
@@ -160,7 +162,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                     resolveTemplates(page).then(page => {
                         if (params.q) { // search terms were entered
                             let sort_by = params.sort_by || "relevance";
-                            rp(`https://invidio.us/api/v1/search?q=${encodeURIComponent(decodeURIComponent(params.q))}&sort_by=${sort_by}`).then(body => {
+                            rp(`${invidiousHost}/api/v1/search?q=${encodeURIComponent(decodeURIComponent(params.q))}&sort_by=${sort_by}`).then(body => {
                                 try {
                                     // json.parse?
                                     page = page.replace('"<!-- searchResults -->"', body);
