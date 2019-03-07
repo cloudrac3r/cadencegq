@@ -246,11 +246,13 @@ input, button {
     cursor: default;
     border: none;
     margin: auto 15px auto 12px;
+    background: transparent;
 }
 #speedSliderContainer input:focus {
     outline: none;
     cursor: default;
 }
+/* These sections are duplicated because apparently Chromium doesn't play nice with :: properties that it doesn't know about */
 #speedSliderContainer input::-webkit-slider-runnable-track {
     height: 2px;
     cursor: pointer;
@@ -260,7 +262,30 @@ input, button {
     border: none;
     cursor: default;
 }
+#speedSliderContainer input::-moz-range-track {
+    height: 2px;
+    cursor: pointer;
+    box-shadow: none;
+    background: #999;
+    border-radius: 4px;
+    border: none;
+    cursor: default;
+}
 #speedSliderContainer input::-webkit-slider-thumb {
+    box-shadow: none;
+    border: none;
+    height: 12px;
+    width: 12px;
+    border-radius: 12px;
+    background: #e2e2e2;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin-top: -5px;
+    cursor: default;
+}
+#speedSliderContainer input::-moz-range-thumb {
     box-shadow: none;
     border: none;
     height: 12px;

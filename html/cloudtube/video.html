@@ -185,14 +185,14 @@
 
     function adjustSpeedSlider() {
         let speedSlider = q("#speedSlider");
-        q("video").playbackRate = speedSlider.value/1000;
-        q("audio").playbackRate = speedSlider.value/1000;
-        q("#speedLabel").innerText = Math.floor(speedSlider.value/10)+"%";
+        q("video").playbackRate = speedSlider.value/100;
+        q("audio").playbackRate = speedSlider.value/100;
+        q("#speedLabel").innerText = speedSlider.value+"%";
     }
 
     function resetSpeed() {
         let speedSlider = q("#speedSlider");
-        speedSlider.value = 1000;
+        speedSlider.value = 100;
         adjustSpeedSlider();
     }
 
@@ -401,9 +401,16 @@
             q("#playbackErrorContainer").style.display = "";
         });
         window.addEventListener("beforeunload", () => ignorePlaybackError = true);
-        q("#speedSliderContainer").children[0].addEventListener("mousewheel", event => {
-            let offset = 50 * Math.sign(event.deltaY) * Math.sign(-event.shiftKey + 0.5);
-            q("#speedSlider").value = q("#speedSlider").value - offset;
+        q("#speedSliderContainer").children[0].addEventListener("wheel", event => {
+            let speedSlider = q("#speedSlider");
+            let adjustAmount = 5;
+            let offset = adjustAmount * Math.sign(event.deltaY) * Math.sign(-event.shiftKey + 0.5);
+            if (speedSlider.value % adjustAmount == 0) {
+                speedSlider.value -= offset;
+            } else {
+                speedSlider.value = speedSlider.value - speedSlider.value % 5;
+                if (offset < 0) speedSlider.value -= offset;
+            }
             adjustSpeedSlider();
             event.preventDefault();
         });
@@ -680,10 +687,10 @@
         } else if (event.key == "\\") {
             resetSpeed();
         } else if (event.key == "[") {
-            speedSlider.value -= 100;
+            speedSlider.value -= 10;
             adjustSpeedSlider();
         } else if (event.key == "]") {
-            speedSlider.value -= -100;
+            speedSlider.value -= -10;
             adjustSpeedSlider();
         } else if (!isNaN(+event.key)) {
             video.currentTime = (+event.key)/10*video.duration;
@@ -755,7 +762,7 @@
             <button id="subscribe" onclick="toggleSubscription()">Subscribe</button>
             <button id="theatre" onclick="toggleTheatre()">Theatre</button>
             <select id="qualitySelect" onchange="chooseFormat(event.target.selectedIndex)"></select>
-            <span id="speedSliderContainer"><span><span class="speedText">Speed:</span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" list="speeds" id="speedSlider" min="100" max="5000" value="1000" step="1" oninput="adjustSpeedSlider()"></span></span>
+            <span id="speedSliderContainer"><span><span class="speedText">Speed:</span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" id="speedSlider" min="10" max="500" value="100" step="1" oninput="adjustSpeedSlider()" autocomplete="off"></span></span>
         </div>
         <div class="belowButtonContainer">
             <a class="linkbutton" href="/cloudtube/subscriptions"><img src="/fonts/search.svg" style="position: relative; top: 2px; margin: 0px 8px 0px 4px; width: 16px; height: 16px;">Search</a>
