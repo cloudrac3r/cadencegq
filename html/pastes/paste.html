@@ -10,7 +10,7 @@
                 q("#content").innerText = content;
                 q("#details").innerText = "Created by "+author+" on "+new Date(creationTime).toLocaleString();
                 getLoginDetails(login => {
-                    if (login.username == author) q("#editButton").style.display = "initial";
+                    if (login && login.username == author) q("#editButton").style.display = "initial";
                 });
             });
         } else {

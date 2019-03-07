@@ -4,10 +4,10 @@
     function bodyLoad() {
         loadPasteList({preview: 150}, result => {
             let columns = [
-                {name: "pasteID", align: "right", inject: true, transform: d => `<a href="/pastes/${d}">${d}</a>`},
-                {name: "author", align: "left"},
+                {name: "pasteID", align: "left", inject: true, transform: d => `<a href="/pastes/${d}">${d}</a>`},
+                {name: "author", align: "left", css: "white-space: nowrap; overflow: hidden", transform: d => d.replace(/\s+/g, " ")},
                 {name: "creationTime", align: "left", transform: d => new Date(d).toLocaleString()},
-                {name: "content", align: "left", css: "white-space: nowrap; overflow: hidden; max-width: 700px", transform: d => d.replace(/\n/g, " ").replace(/ +/g, " ")}
+                {name: "content", align: "left", css: "white-space: nowrap; overflow: hidden; max-width: 700px", transform: d => d.replace(/\s+/g, " ")}
             ];
             let output = dataToTable(columns, result);
             output.forEach(tr => {

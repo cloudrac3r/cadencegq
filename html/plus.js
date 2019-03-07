@@ -261,7 +261,7 @@ function dataToTable(columns, rows) {
             else td.innerText = value;
             let style = "text-align: "+c.align+"; ";
             if (c.css) style += c.css;
-            td.setAttribute("style", c.css);
+            td.setAttribute("style", style);
             tr.appendChild(td);
         });
         output.push(tr);

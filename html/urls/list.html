@@ -5,12 +5,12 @@
         loadURLList({}, result => {
             let columns = [
                 {name: "hash", align: "left", inject: true, transform: d => `<a href="javascript:copyURL('${d}')">${d}</a>`},
-                {name: "author", align: "left"},
+                {name: "author", align: "left", css: "white-space: nowrap; overflow: hidden", transform: d => d.replace(/\s+/g, " ")},
                 {name: "creationTime", align: "left", transform: d => new Date(d).toLocaleString()},
                 {name: "target", align: "left", css: "overflow: hidden; max-width: 700px", inject: true, transform: d => {
                     let a = document.createElement("a");
                     a.href = d;
-                    a.innerText = d.slice(0,200).replace("\n", " ").replace(/ +/g, " ");
+                    a.innerText = d.slice(0,200).replace(/\s+/g, " ");
                     return a.outerHTML;
                 }}
             ];
