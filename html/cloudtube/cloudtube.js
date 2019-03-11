@@ -34,6 +34,22 @@ function thumbnailURL(id, quality) {
 
 function generateVideoListItem(video, index) {
     if (video.published && video.published < Date.now()/1000) video.published = video.published * 1000;
+    let authorText = video.author;
+    const addToAuthorText = text => authorText += (authorText ? " • " : "") + text;
+    if (video.viewCount) {
+        addToAuthorText(viewCountText(video.viewCount));
+    }
+    if (video.publishedText && lsm.get("settingApproximateDates") != "1") {
+        let match = video.publishedText.match(/^(\d+) (\w+) ago$/);
+        if (match) {
+            let count = match[1];
+            let unit = match[2];
+            if (count == "1" && unit.endsWith("s")) video.publishedText = count+" "+unit.slice(0, -1)+" ago";
+        }
+        addToAuthorText(video.publishedText);
+    } else if (video.published) {
+        addToAuthorText(humaniseDate(video.published));
+    }
     let ne = new ElemJS("a")
     .attribute("href", "/cloudtube/video/"+video.videoId)
     .attribute("data-lengthseconds", video.lengthSeconds)
@@ -60,7 +76,7 @@ function generateVideoListItem(video, index) {
         )
         .child(
             new ElemJS("span")
-            .text(video.author + (video.published ? " • "+humaniseDate(video.published) : ""))
+            .text(authorText)
         )
         .child(video.descriptionHTML &&
             new ElemJS("span")

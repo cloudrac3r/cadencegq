@@ -413,6 +413,19 @@ function prettySeconds(seconds) {
     return output.join(":");
 }
 
+function viewCountText(count) {
+    const units = ["", "K", "M", "B"];
+    let log = Math.log10(count);
+    let exp = (log - log % 3);
+    let unit = units[exp/3];
+    let value = count / 10**exp;
+    if (Math.floor(value).toString().length == 1) value = value.toFixed(1);
+    else value = Math.floor(value);
+    let viewsPlural = " view";
+    if (count != 1) viewsPlural += "s";
+    return value+unit+viewsPlural;
+}
+
 if (document.readyState != "complete") {
     window.onload = postLoad;
 } else {
