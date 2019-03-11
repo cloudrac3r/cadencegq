@@ -59,10 +59,19 @@
                 defaultIndex: 1
             },
             {
+                label: "Show proper dates instead of time passed since that event",
+                comment:
+                    'The default behaviour (unchecked) is to display dates as "x days ago", "x months ago", etc.<br>'+
+                    'Checking this box will make them instead display as an actual date like "12 March 2019".<br>'+
+                    'However, these dates are still calculated from the "x months ago" text, and will therefore be somewhat inaccurate.',
+                lsm: "settingApproximateDates",
+                invert: false
+            },
+            {
                 label: "Show links to the legacy player",
                 comment: `I'd quite like to deprecate the legacy player. If you turn this on, please <a href="/about/contact">tell me</a> why you need it.`,
                 lsm: "enableLegacyLinks",
-                invert: false,
+                invert: false
             }
         ]
     };
