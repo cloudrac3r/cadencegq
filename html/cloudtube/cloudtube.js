@@ -67,6 +67,7 @@ function generateVideoListItem(video, index) {
         .attribute("data-prettyseconds", prettySeconds(video.lengthSeconds))
         .child(
             new ElemJS("img")
+            .attribute("alt", "")
             .attribute("src", thumbnailURL(video.videoId))
         )
     )

@@ -1,6 +1,6 @@
 <!-- TEMPLATE pre -->
 <title>Account</title>
-<script type="text/javascript">
+<script>
     function bodyLoad() {
         getLoginDetails(login => {
             if (login) {
@@ -49,7 +49,7 @@
     <h2>You are not logged in.</h2>
     <input id="usernameInput" placeholder="Username">
     <input id="passwordInput" placeholder="Password" type="password">
-    <button id="login" onclick="neatLogin()">Log in</button><button id="login" onclick="neatCreate()">Create account</button>
+    <button onclick="neatLogin()">Log in</button><button onclick="neatCreate()">Create account</button>
     <span id="failed" class="errorDisplay">Failed to create account</span>
 </div>
 <div id="detailsDiv" style="display: none">

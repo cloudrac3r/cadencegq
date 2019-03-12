@@ -4,7 +4,7 @@
 <script src="/cloudtube/cloudtube.js"></script>
 <script src="/color-thief.min.js"></script> <!-- https://github.com/lokesh/color-thief/ -->
 <!-- metaOGTags -->
-<script type="text/javascript">
+<script>
     let videoID;
     let formats;
     let allFormats;
@@ -765,7 +765,7 @@
             <span id="speedSliderContainer"><span><span class="speedText">Speed:</span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" id="speedSlider" min="10" max="500" value="100" step="1" oninput="adjustSpeedSlider()" autocomplete="off"></span></span>
         </div>
         <div class="belowButtonContainer">
-            <a class="linkbutton" href="/cloudtube/subscriptions"><img src="/fonts/search.svg" style="position: relative; top: 2px; margin: 0px 8px 0px 4px; width: 16px; height: 16px;">Search</a>
+            <a class="linkbutton" href="/cloudtube/subscriptions"><img src="/fonts/search.svg" style="position: relative; top: 2px; margin: 0px 8px 0px 4px; width: 16px; height: 16px;" alt="">Search</a>
             <a class="linkbutton" id="youtubeLink">Watch on YouTube</a>
             <a class="linkbutton" id="invidiousLink">Watch on Invidious</a>
             <a class="linkbutton" id="legacyLink" style="display: none;">Watch on legacy</a>
@@ -782,7 +782,7 @@
 <div id="relatedVideosStorage" style="display:none;">
     <a href="#" class="relatedVideo">
         <div>
-            <img>
+            <img alt="">
         </div>
         <div>
             <span>Placeholder name</span>

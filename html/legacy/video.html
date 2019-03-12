@@ -1,7 +1,7 @@
 <!-- TEMPLATE pre -->
 <link rel="stylesheet" type="text/css" href="/legacy/youtube.css">
 <title>CloudTube</title>
-<script type="text/javascript">
+<script>
     const usefulFormats = ["38", "37", "22", "18", "46", "45", "44", "43", "5", "6", "34", "35", "298", "302"];
 
     let videoID;
@@ -239,12 +239,12 @@
         </div>
         <audio preload="auto"></audio>
         <div class="belowButtonContainer">
-            <button onclick='window.location.assign("search")'><img src="/fonts/search.svg" style="position: relative; top: 2px; margin-right: 8px;">Search</button>
+            <button onclick='window.location.assign("search")'><img src="/fonts/search.svg" style="position: relative; top: 2px; margin-right: 8px;" alt="">Search</button>
             <select id="qualitySelect" onchange="chooseFormat(event.target.selectedIndex)"></select>
             <button onclick='window.location.assign("https://youtu.be/"+videoID)'>Watch on YouTube</button>
         </div>
         <div class="belowButtonContainer" id="speedSliderContainer">
-            Adjust speed <span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" list="speeds" id="speedSlider" min="100" max="5000" value="1000" step="1" oninput="adjustSpeedSlider()"></span>
+            Adjust speed <span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" autocomplete="off" id="speedSlider" min="100" max="5000" value="1000" step="1" oninput="adjustSpeedSlider()"></span>
         </div>
         <div id="videoDescription">
             Placeholder description
@@ -257,7 +257,7 @@
 <div id="relatedVideosStorage" style="display:none;">
     <a href="#" class="relatedVideo">
         <div>
-            <img>
+            <img alt="">
         </div>
         <div>
             <span>Placeholder name</span>

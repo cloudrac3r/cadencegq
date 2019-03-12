@@ -1,7 +1,7 @@
 <!-- TEMPLATE pre -->
 <link rel="stylesheet" type="text/css" href="/legacy/youtube.css">
 <title>CloudTube</title>
-<script type="text/javascript">
+<script>
     let url = new URL(window.location.href);
     let searchTerms = url.searchParams.get("q");
     let maxResults = +url.searchParams.get("maxResults") || 20;
@@ -85,7 +85,7 @@
 <div id="searchItemStorage" style="display:none;">
     <a href="#" class="searchItem">
         <div>
-            <img>
+            <img alt="">
         </div>
         <div>
             <span>Placeholder name</span>

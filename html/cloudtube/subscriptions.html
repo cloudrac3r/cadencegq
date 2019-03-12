@@ -12,7 +12,7 @@
         background: left url(/fonts/read.svg) no-repeat;
     }
 </style>
-<script type="text/javascript">
+<script>
     function bodyLoad() {
         let subsObject = {};
         if (lsm.get("token")) {
@@ -162,7 +162,7 @@
     }
 </script>
 <!-- TEMPLATE header -->
-<div id="mainSearchContainer">
+<div>
     <div id="searchContainer">
         <input autofocus type="text" id="search" placeholder="Search for something?" onkeypress="keypress(event)">
         <select>
@@ -202,12 +202,12 @@
         <tbody id="subStorage">
             <tr>
                 <td><a>Channel name</a></td>
-                <td><button onclick="unsubChannel(event)"><img src="/fonts/cross.svg"></button></td>
+                <td><button onclick="unsubChannel(event)"><img src="/fonts/cross.svg" alt="Unsubscribe."></button></td>
             </tr>
         </tbody>
     </table>
 </div>
-<div id="mainSearchContainer">
+<div>
     <div id="searchResultsContainer"></div>
 </div>
 <!-- TEMPLATE end -->
