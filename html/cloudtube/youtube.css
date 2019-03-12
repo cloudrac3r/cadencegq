@@ -171,10 +171,10 @@ textarea, input, button, pre, select {
     height: unset;
 }
 
-.searchItem > div.itemThumbnailContainer {
+.searchItem > .itemThumbnailContainer {
     position: relative;
 }
-.searchItem > div.itemThumbnailContainer::before {
+.searchItem > .itemThumbnailContainer::before {
     content: attr(data-prettyseconds);
     position: absolute;
     display: inline-block;
@@ -186,22 +186,32 @@ textarea, input, button, pre, select {
     right: 18;
     bottom: 3;
     font-size: 13px;
+    color: #ddd;
 }
-.searchItem span {
+.searchItem .videoListDetails > * {
     color: #bbb;
     font-size: 15px;
     display: block;
     margin-bottom: 6px;
 }
-.searchItem span:first-child {
+.searchItem .videoListDetails > .videoListTitle {
     margin-top: 4px;
     font-size: 24px;
     color: #f2f2f2;
+    text-decoration: none;
 }
-.searchItem span:last-child {
+.searchItem .videoListDetails .videoListDescription {
     margin-top: 16px;
     height: 80px;
     overflow: hidden;
+}
+.searchItem .videoListDetails .videoListAuthor {
+    text-decoration: none;
+    color: inherit;
+}
+.searchItem .videoListDetails .videoListAuthor:hover {
+    color: #ddd;
+    text-decoration: underline;
 }
 
 #mainSearchContainer {

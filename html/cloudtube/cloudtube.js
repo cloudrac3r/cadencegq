@@ -34,8 +34,8 @@ function thumbnailURL(id, quality) {
 
 function generateVideoListItem(video, index) {
     if (video.published && video.published < Date.now()/1000) video.published = video.published * 1000;
-    let authorText = video.author;
-    const addToAuthorText = text => authorText += (authorText ? " • " : "") + text;
+    let authorText = "";
+    const addToAuthorText = text => authorText += " • " + text;
     if (video.viewCount) {
         addToAuthorText(viewCountText(video.viewCount));
     }
@@ -52,8 +52,7 @@ function generateVideoListItem(video, index) {
             addToAuthorText(humaniseDate(video.published));
         }
     }
-    let ne = new ElemJS("a")
-    .attribute("href", "/cloudtube/video/"+video.videoId)
+    let ne = new ElemJS("div")
     .attribute("data-lengthseconds", video.lengthSeconds)
     .class("searchItem", index != undefined && "playlistItem")
     .child(index != undefined &&
@@ -62,7 +61,8 @@ function generateVideoListItem(video, index) {
         .text(index+1)
     )
     .child(
-        new ElemJS("div")
+        new ElemJS("a")
+        .attribute("href", "/cloudtube/video/"+video.videoId)
         .class("itemThumbnailContainer")
         .attribute("data-prettyseconds", prettySeconds(video.lengthSeconds))
         .child(
@@ -72,17 +72,30 @@ function generateVideoListItem(video, index) {
     )
     .child(
         new ElemJS("div")
+        .class("videoListDetails")
         .child(
-            new ElemJS("span")
+            new ElemJS("a")
+            .class("videoListTitle")
+            .attribute("href", "/cloudtube/video/"+video.videoId)
             .text(video.title)
         )
         .child(
             new ElemJS("span")
-            .text(authorText)
+            .child(
+                new ElemJS("a")
+                .class("videoListAuthor")
+                .text(video.author)
+                .attribute("href", "/cloudtube/channel/"+video.authorId)
+            )
+            .child(
+                new ElemJS("span")
+                .text(authorText)
+            )
         )
-        .child(video.descriptionHTML &&
+        .child(video.descriptionHtml &&
             new ElemJS("span")
-            .text(video.descriptionHTML)
+            .class("videoListDescription")
+            .html(video.descriptionHtml)
         )
     )
     return ne;
