@@ -96,7 +96,7 @@ body, button, input {
     content: "";
     padding-bottom: 0px;
     border-bottom: 1px solid #999;
-    display: inline-block;
+    display: block;
     width: 100%;
     position: relative;
     top: 21px;

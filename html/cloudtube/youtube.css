@@ -79,8 +79,8 @@ textarea, input, button, pre, select {
     background-color: rgba(20, 20, 20, 0.9);
     color: inherit;
     z-index: 1;
-    right: 13;
-    bottom: 3;
+    right: 13px;
+    bottom: 6px;
     font-size: 13px;
 }
 .relatedVideo span:first-child {
@@ -183,8 +183,8 @@ textarea, input, button, pre, select {
     background-color: rgba(20, 20, 20, 0.9);
     color: inherit;
     z-index: 1;
-    right: 18;
-    bottom: 3;
+    right: 18px;
+    bottom: 3px;
     font-size: 13px;
     color: #ddd;
 }
