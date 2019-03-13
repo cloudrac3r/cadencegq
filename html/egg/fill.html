@@ -73,7 +73,7 @@
                     function addTileOverlay(tileCoords) {
                         let overlay = document.createElement("span");
                         overlay.setAttribute("data-tile", tileCoords.id);
-                        overlay.style = `display: inline-block; background-color: rgba(100, 100, 255, 0.4); position: absolute; left: ${img.offsetLeft+tileCoords.x1*scale}; top: ${img.offsetTop+tileCoords.y1*scale}; width: ${(tileCoords.x2-tileCoords.x1)*scale}; height: ${(tileCoords.y2-tileCoords.y1)*scale};`;
+                        overlay.style = `display: inline-block; background-color: rgba(100, 100, 255, 0.4); position: absolute; left: ${img.offsetLeft+tileCoords.x1*scale}px; top: ${img.offsetTop+tileCoords.y1*scale}px; width: ${(tileCoords.x2-tileCoords.x1)*scale}px; height: ${(tileCoords.y2-tileCoords.y1)*scale}px;`;
                         overlay.onclick = () => {
                             overlay.parentElement.removeChild(overlay);
                             updateHash();
@@ -124,7 +124,7 @@
 </div>
 <p style="display: none;">Last click: <span id="lastClickCoords"></span></p>
 <div class="egSingle">
-    <img>
+    <img alt="Bingo card. If you want accessible text added here, please contact me either @Cadence#3263 or with other details from the contact page.">
 </div>
 <div id="egOverlayContainer">
 </div>

@@ -61,7 +61,7 @@
                 for (let x = 0; x < dimX; x++) {
                     let overlay = q(`#egOverlayContainer span[data-tile="${x+y*dimX}"]`);
                     let selectable = (y == 0 || x == 0) && (y <= 1 && x <= 1);
-                    overlay.style = `display: inline-block; background-color: ${!selectable ? "rgba(255, 100, 100, 0.3)" : overlay == selectedTile ? "rgba(0, 0, 255, 0.6)" : "rgba(100, 100, 255, 0.4)"}; position: absolute; left: ${img.offsetLeft+(startX+x*(width+spaceX))*scale}; top: ${img.offsetTop+(startY+y*(height+spaceY))*scale}; width: ${width*scale}; height: ${height*scale};`;
+                    overlay.style = `display: inline-block; background-color: ${!selectable ? "rgba(255, 100, 100, 0.3)" : overlay == selectedTile ? "rgba(0, 0, 255, 0.6)" : "rgba(100, 100, 255, 0.4)"}; position: absolute; left: ${img.offsetLeft+(startX+x*(width+spaceX))*scale}px; top: ${img.offsetTop+(startY+y*(height+spaceY))*scale}px; width: ${width*scale}px; height: ${height*scale}px;`;
                 }
             }
         }
@@ -165,7 +165,7 @@
     If you are unable to properly cover every bingo square with a tile, please <a href="/about/contact">contact me</a> with a link to the card you want to add and a screenshot of your best attempt.
 </p>
 <div style="margin-bottom: 40px;" class="egSingle newCard">
-    <img src="#">
+    <img src="#" alt="Bingo card.">
 </div>
 <h2>Username</h2>
 <div class="newCard">

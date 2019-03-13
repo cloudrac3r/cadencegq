@@ -614,6 +614,7 @@
                 }
             }
             let endCardUpdateFunction = () => {
+                //if (video.paused) return;
                 let vd = {
                     offset: {
                         x: Math.max((video.clientWidth-((video.clientHeight/video.videoHeight)*video.videoWidth))/2, 0),
@@ -630,8 +631,8 @@
                     let e = element.e;
                     if (video.currentTime*1000 >= element.endscreenElementRenderer.startMs && video.currentTime*1000 <= element.endscreenElementRenderer.endMs) {
                         e.style.display = "";
-                        e.style.left = Math.round(vd.base.width*element.endscreenElementRenderer.left+vd.base.x+vd.offset.x);
-                        e.style.top = Math.round(vd.base.height*element.endscreenElementRenderer.top+vd.base.y+vd.offset.y);
+                        e.style.left = Math.round(vd.base.width*element.endscreenElementRenderer.left+vd.base.x+vd.offset.x)+"px";
+                        e.style.top = Math.round(vd.base.height*element.endscreenElementRenderer.top+vd.base.y+vd.offset.y)+"px";
                         let img = e.children[0];
                         let width = Math.ceil(vd.base.width*element.endscreenElementRenderer.width);
                         img.style.width = width+"px";
@@ -639,7 +640,7 @@
                             e.style.width = width+"px";
                         }
                         if (element.endscreenElementRenderer.style == "PLAYLIST") {
-                            img.style.height = Math.round(width/element.endscreenElementRenderer.aspectRatio);
+                            img.style.height = Math.round(width/element.endscreenElementRenderer.aspectRatio)+"px";
                         }
                     } else {
                         e.style.display = "none";
