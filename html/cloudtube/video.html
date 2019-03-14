@@ -242,8 +242,8 @@
         let availableWidth = video.parentElement.offsetWidth;
         let aspectRatio = video.videoWidth/video.videoHeight;
         let resultWidth = Math.min(availableHeight*aspectRatio, availableWidth);
-        video.style.width = resultWidth;
-        video.style.height = resultWidth/aspectRatio;
+        video.style.width = resultWidth+"px";
+        video.style.height = resultWidth/aspectRatio+"px";
         console.log("Resized player");
     }
 
