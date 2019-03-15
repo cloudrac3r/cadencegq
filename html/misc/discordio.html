@@ -25,7 +25,11 @@
 <p>If you don't know which release version to pick, it doesn't matter. I went with "current". Neither should give you any problems.</p>
 <h2>2. Install discord.io</h2>
 <p>Create a folder to put your bot's files in, then open a terminal and <code>cd</code> to that folder.</p>
-<p>Run <code>npm init</code>. You'll be prompted for some details; just press Enter to skip prompts that you don't understand.</p>
+<p>
+    Run <code>npm init -y</code>. This creates a file that holds information about your project's dependencies.
+    The file is saved to <code>package.json</code>.
+    If you want, you can also open the file in a text editor and (carefully) edit it to add more information about your project.
+</p>
 <p>Run <code>npm install https://github.com/woor/discord.io/tarball/gateway_v6</code>. This installs the discord.io library.</p>
 <h2>3. Create a bot account</h2>
 <p>Go here: <a href="https://discordapp.com/developers/applications/">https://discordapp.com/developers/applications/</a></p>
