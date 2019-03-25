@@ -3,6 +3,7 @@
 <title>Egg Central</title>
 <script>
     function filter(text) {
+        text = text.toLowerCase();
         let words = text.split(" ");
         for (let item of q(".egContainer").children) {
             let tags = [...item.children[1].children[1].children].map(tag => tag.innerText);
