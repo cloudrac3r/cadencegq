@@ -17,6 +17,7 @@
 }
 
 .egSingle > img {
+    width: 100%;
     max-width: 800px;
     display: block;
     margin: 0 auto;

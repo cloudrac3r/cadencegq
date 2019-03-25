@@ -188,6 +188,9 @@ textarea, input, button, pre, select {
     font-size: 13px;
     color: #ddd;
 }
+.searchItem .videoListDetails {
+    overflow: hidden;
+}
 .searchItem .videoListDetails > * {
     color: #bbb;
     font-size: 15px;
@@ -202,8 +205,6 @@ textarea, input, button, pre, select {
 }
 .searchItem .videoListDetails .videoListDescription {
     margin-top: 16px;
-    height: 80px;
-    overflow: hidden;
 }
 .searchItem .videoListDetails .videoListAuthor {
     text-decoration: none;
@@ -220,12 +221,14 @@ textarea, input, button, pre, select {
 }
 
 #searchContainer {
-    margin-left: auto;
-    margin-right: auto;
+    display: flex;
+    flex-wrap: wrap;
+    width: 800px;
+    max-width: 100%;
+    margin: 0 auto 40px;
 }
 #search {
-    width: 600px;
-    margin-bottom: 40px;
+    flex: 1;
 }
 
 input, button {
@@ -482,6 +485,22 @@ input, button {
 }
 .endcard-website .endcard-website-sitename {
     font-size: 0.94vw;
+}
+
+@media screen and (max-width: 700px) {
+    .searchItem {
+        flex-wrap: wrap;
+        height: auto;
+    }
+    .searchItem a {
+        margin: 0 auto;
+    }
+    .searchItem * {
+        text-align: center;
+    }
+    .searchItem .videoListDescription {
+        display: none;
+    }
 }
 
 #loading {
