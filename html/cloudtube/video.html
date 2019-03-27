@@ -514,7 +514,7 @@
         }, 1000);
         // Record video as watched in localStorage
         if (lsm.get("trackWatchedVideos")) {
-            lsm.array("watchedVideos").add(videoID);
+            lsm.array("watchedVideos").add(videoID, true);
         }
         // Manage end cards
         if (lsm.get("disableEndCards") != "1") request("/api/youtube/get_endscreen?v="+videoID, result => {
