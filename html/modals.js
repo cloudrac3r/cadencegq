@@ -25,6 +25,31 @@ class Modal extends ElemJS {
     }
 }
 
+class MessageModal extends Modal {
+    constructor(titleText, bodyText, buttonText = "OK") {
+        super(titleText);
+        this.bodyText = bodyText;
+        this.buttonText = buttonText;
+        this.render();
+    }
+    render() {
+        this.generateBase();
+        this.body.child(
+            new ElemJS("div")
+            .class("modal-expand")
+            .text(this.bodyText)
+        ).child(
+            new ElemJS("div")
+            .class("modal-buttons")
+            .child(
+                new ElemJS("button")
+                .text(this.buttonText)
+                .direct("onclick", this.dismiss.bind(this))
+            )
+        )
+    }
+}
+
 class ExportTypeModal extends Modal {
     constructor(callback) {
         super("Select export format");

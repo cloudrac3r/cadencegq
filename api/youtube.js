@@ -253,6 +253,24 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
             }
         },
         {
+            route: "/api/youtube/subscriptions/import", methods: ["POST"], code: async ({data}) => {
+                if (!data) return [400, 3];
+                if (!typeof(data) == "object") return [400, 5];
+                if (!data.token) return [401, 8];
+                let userRow = await db.get("SELECT userID FROM AccountTokens WHERE token = ?", data.token);
+                if (!userRow || userRow.expires <= Date.now()) return [401, 8];
+                if (!data.subscriptions) return [400, 4];
+                if (!data.subscriptions.every(v => typeof(v) == "string")) return [400, 5];
+                await db.run("BEGIN TRANSACTION");
+                await db.run("DELETE FROM AccountSubscriptions WHERE userID = ?", userRow.userID);
+                await Promise.all(data.subscriptions.map(v =>
+                    db.run("INSERT OR IGNORE INTO AccountSubscriptions VALUES (?, ?)", [userRow.userID, v])
+                ))
+                await db.run("END TRANSACTION");
+                return [204, ""];
+            }
+        },
+        {
             route: "/api/youtube/alternate/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(async resolve => {
                 let ip = req.connection.remoteAddress;
                 let match = ip.match(/(\d+\.){3}\d+/);

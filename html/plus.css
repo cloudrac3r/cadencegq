@@ -286,7 +286,8 @@ option {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: 10px 10px 0px 0px;
+    border-radius: 10px 10px 0px 0px;
+    font-size: 21px;
 }
 .modal .modal-body {
 	background-color: #3d3f42;
@@ -294,7 +295,7 @@ option {
 	border-radius: 0px 0px 10px 10px;
 	padding: 10px;
 	overflow: auto;
-    font-size: 14pt;
+    font-size: 17px;
     display: flex;
     flex-direction: column;
 }
