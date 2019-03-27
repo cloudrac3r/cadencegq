@@ -143,7 +143,6 @@ async function resolveTemplates(page) {
 }
 
 function serverRequest(req, res) {
-    if (req.headers.host) hitManager.add("domainHit", req.headers.host);
     req.gmethod = req.method == "HEAD" ? "GET" : req.method;
     if (!req.headers.host) req.headers.host = hostnames[0];
     let headers = {};
@@ -204,6 +203,7 @@ function serverRequest(req, res) {
                 res.write(result.content);
                 res.end();
                 if (result.statusCode == 200) hitManager.add("pathHit", reqPath);
+                if (req.headers.host) hitManager.add("domainHit", req.headers.host);
             });
             return true;
         }
@@ -226,6 +226,7 @@ function serverRequest(req, res) {
                             res.write(page, () => {
                                 res.end();
                                 hitManager.add("pathHit", reqPath);
+                                if (req.headers.host) hitManager.add("domainHit", req.headers.host);
                             });
                         }
                     });
@@ -257,6 +258,7 @@ function serverRequest(req, res) {
                         res.write(ranged.result);
                         res.end();
                         hitManager.add("pathHit", reqPath);
+                        if (req.headers.host) hitManager.add("domainHit", req.headers.host);
                     });
                 } else {
                     cf.log("Using file directly for "+reqPath+" (stream)", "spam");
