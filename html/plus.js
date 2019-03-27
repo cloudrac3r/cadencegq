@@ -96,7 +96,6 @@ class LSMArray {
     }
 }
 
-
 for (let key of Object.keys(lsmDefaults)) {
     lsm.setup(key, lsmDefaults[key]);
 }
@@ -362,9 +361,15 @@ function makeInfoBoxesWork() {
 class ElemJS {
     constructor(type) {
         this.element = document.createElement(type);
+        this.element.js = this;
+        this.children = [];
     }
     class() {
         for (let name of arguments) if (name) this.element.classList.add(name);
+        return this;
+    }
+    direct(name, value) {
+        if (name) this.element[name] = value;
         return this;
     }
     attribute(name, value) {
@@ -387,13 +392,21 @@ class ElemJS {
         this.element.innerHTML = name;
         return this;
     }
-    child(element, position) {
-        if (typeof(element) == "object") {
-            if (element.element) element = element.element;
-            if (typeof(position) == "number") this.element.insertBefore(element, this.element.children[position]);
-            else this.element.appendChild(element);
+    child(toAdd, position) {
+        if (typeof(toAdd) == "object") {
+            if (typeof(position) == "number") {
+                this.element.insertBefore(toAdd.element, this.element.children[position]);
+                this.children.splice(position, 0, toAdd);
+            } else {
+                this.element.appendChild(toAdd.element);
+                this.children.push(toAdd);
+            }
         }
         return this;
+    }
+    clearChildren() {
+        this.children.length = 0;
+        while (this.element.lastChild) this.element.removeChild(this.element.lastChild);
     }
 }
 
