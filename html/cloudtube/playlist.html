@@ -8,14 +8,6 @@
         let info = "<!-- playlistInfo -->";
         generateVideoList(info, q("#blockedWarning"), q("#searchResultsContainer"), true);
     }
-
-    function forceRefresh(event) {
-        event.target.style.width = event.target.offsetWidth;
-        event.target.innerText = "...";
-        event.target.disabled = true;
-        let channelID = window.location.pathname.split("/").slice(-1)[0];
-        request("/api/youtube/subscriptions", () => window.location.reload(), {force: true, subscriptions: [channelID]});
-    }
 </script>
 <!-- TEMPLATE header -->
 <div id="blockedWarning" style="margin-bottom: 12px; display: none;"><span></span> videos have been blocked based on your preferences. <a href="/cloudtube/settings">Edit preferences</a></div>
