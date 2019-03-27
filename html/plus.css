@@ -260,3 +260,8 @@ option {
 }
 .settings-dividers > *:first-child {
 }
+
+input + label {
+    margin-left: -4px;
+    padding-left: 4px;
+}
