@@ -171,6 +171,7 @@ function exportData() {
 }
 
 function importData() {
+    let messageModal = new MessageModal("Importing...", "");
     function importUsing(data, format) {
         if (format == "CloudTube") {
             lsm.array("subscriptions").array = data.subscriptions;
@@ -183,29 +184,75 @@ function importData() {
                 lsm.array("watchedVideos").array = data.watch_history;
                 lsm.array("watchedVideos").write();
             }
-            if (lsm.get("token")) request("/api/youtube/subscriptions/import", new Function(), {token: lsm.get("token"), subscriptions: data.subscriptions});
-            return new MessageModal("Import complete", "Your subscriptions and watch history have been replaced with the data you imported. If you are logged in, the imported subscriptions have been synchronised to your account. If you imported watch history, the setting to save it here has automatically been turned on.");
+            new Promise(resolve => {
+                if (lsm.get("token")) {
+                    messageModal.setState({bodyText: "Syncing subscriptions..."});
+                    request("/api/youtube/subscriptions/import", resolve, {token: lsm.get("token"), subscriptions: data.subscriptions});
+                } else resolve();
+            }).then(() => {
+                messageModal.setState({
+                    displayButtons: true,
+                    titleText: "Import complete",
+                    bodyText:
+                        "Your subscriptions and watch history have been replaced with the data you imported. "+
+                        "If you are logged in, the imported subscriptions have been synchronised to your account. "+
+                        "If you imported watch history, the setting to save it on CloudTube has automatically been turned on."
+                });
+            });
+        } else if (format == "NewPipe") {
+            let ids = [];
+            let promises = [];
+            data.subscriptions.forEach(s => {
+                let [mode, part] = s.url.split("/").slice(-2);
+                if (mode == "channel") ids.push(part);
+                else promises.push(new Promise(resolve => {
+                    request(`/api/youtube/channels/${part}/info`, resolve)
+                }));
+            });
+            if (promises.length) messageModal.setState({bodyText: "Resolving channels..."});
+            Promise.all(promises).then(results => {
+                results.forEach(result => {
+                    let json = JSON.parse(result.responseText);
+                    ids.push(json.authorId);
+                });
+                lsm.array("subscriptions").array = ids;
+                lsm.array("subscriptions").write();
+                new Promise(resolve => {
+                    if (lsm.get("token")) {
+                        messageModal.setState({bodyText: "Syncing subscriptions..."});
+                        request("/api/youtube/subscriptions/import", resolve, {token: lsm.get("token"), subscriptions: ids});
+                    } else resolve();
+                }).then(() => {
+                    messageModal.setState({
+                        displayButtons: true,
+                        titleText: "Import complete",
+                        bodyText:
+                            "That data has been imported and your old subscriptions have been overwritten. "+
+                            "If you are logged in, the imported subscriptions have been synchronised to your account."
+                    });
+                });
+            });
         }
     }
     let body = q("#export-box").value.trim();
-    if (!body) return new MessageModal("Import failed", "Paste the data to import into the box, then try again.");
+    if (!body) return messageModal.setState({displayButtons: true, titleText: "Import failed", bodyText: "Paste the data to import into the box, then try again."});
     let data;
     try {
         data = JSON.parse(body);
     } catch (e) {
-        return new MessageModal("Import failed", "That data is not valid JSON.");
+        return messageModal.setState({displayButtons: true, titleText: "Import failed", bodyText: "That data is not valid JSON."});
     }
     try {
         if (typeof(data.subscriptions) == "object" && data.subscriptions.constructor.name == "Array") {
             if (typeof(data.subscriptions[0]) == "string" && data.subscriptions[0].startsWith("UC") && data.subscriptions[0].length == 24) {
                 return importUsing(data, "CloudTube"); // also Invidious
             } else if (typeof(data.subscriptions == "object") && typeof(data.subscriptions[0].url) == "string" && data.subscriptions[0].url.startsWith("https://www.youtube.com")) {
-                //return importUsing(data, "NewPipe");
+                return importUsing(data, "NewPipe");
             }
         }
-        return new MessageModal("Import failed", "The format of the data wasn't recognised.");
+        return messageModal.setState({displayButtons: true, titleText: "Import failed", bodyText: "The format of the data wasn't recognised."});
     } catch (e) {
         console.error(e);
-        return new MessageModal("Import failed", "An unknown error occurred while trying to process that data. This is probably because the data is invalid.");
+        return messageModal.setState({displayButtons: true, titleText: "Import failed", bodyText: "An unknown error occurred while trying to process that data. This is probably because the data is invalid."});
     }
 }
