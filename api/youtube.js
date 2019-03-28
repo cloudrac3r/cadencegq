@@ -6,6 +6,12 @@ const fs = require("fs");
 const fxp = require("fast-xml-parser");
 
 const invidiousHost = "http://localhost:3000";
+const invidiojsHost = "http://localhost:4000";
+const invidiojsEnabledModes = process.env.INVIDIOJS ? process.env.INVIDIOJS.split(":") : [];
+function getInvidiousHost(mode) {
+    if (invidiojsEnabledModes.includes(mode)) return invidiojsHost;
+    else return invidiousHost;
+}
 
 const channelCacheTimeout = 4*60*60*1000;
 
@@ -33,7 +39,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
             //cf.log("Setting new cache for "+channelID, "spam");
             let promise = new Promise(resolve => {
                 Promise.all([
-                    rp(`${invidiousHost}/api/v1/channels/${channelID}`),
+                    rp(`${getInvidiousHost("channel")}/api/v1/channels/${channelID}`),
                     rp(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelID}`)
                 ]).then(([body, xml]) => {
                     let data = JSON.parse(body);
@@ -63,7 +69,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
     return [
         {
             route: "/cloudtube/video/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
-                rp(`${invidiousHost}/api/v1/videos/${fill[0]}`).then(body => {
+                rp(`${getInvidiousHost("video")}/api/v1/videos/${fill[0]}`).then(body => {
                     try {
                         let data = JSON.parse(body);
                         fs.readFile("html/cloudtube/video.html", {encoding: "utf8"}, (err, page) => {
@@ -125,7 +131,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
         },
         {
             route: "/cloudtube/playlist/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(resolve => {
-                rp(`${invidiousHost}/api/v1/playlists/${fill[0]}`).then(body => {
+                rp(`${getInvidiousHost("playlist")}/api/v1/playlists/${fill[0]}`).then(body => {
                     try {
                         let data = JSON.parse(body);
                         fs.readFile("html/cloudtube/playlist.html", {encoding: "utf8"}, (err, page) => {
@@ -162,7 +168,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                     resolveTemplates(page).then(page => {
                         if (params.q) { // search terms were entered
                             let sort_by = params.sort_by || "relevance";
-                            rp(`${invidiousHost}/api/v1/search?q=${encodeURIComponent(decodeURIComponent(params.q))}&sort_by=${sort_by}`).then(body => {
+                            rp(`${getInvidiousHost("search")}/api/v1/search?q=${encodeURIComponent(decodeURIComponent(params.q))}&sort_by=${sort_by}`).then(body => {
                                 try {
                                     // json.parse?
                                     page = page.replace('"<!-- searchResults -->"', body);
@@ -238,13 +244,11 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                 } else {
                     let videos = [];
                     let channels = [];
-                    await Promise.all(subscriptions.map(s => new Promise(async resolve => {
-                        let data = await fetchChannel(s);
+                    await Promise.all(subscriptions.map(s => fetchChannel(s).then(data => {
                         if (data) {
                             videos = videos.concat(data.latestVideos);
                             channels.push({author: data.author, authorID: data.authorId});
                         }
-                        resolve();
                     })));
                     videos = videos.sort((a, b) => (b.published - a.published)).slice(0, 60);
                     channels = channels.sort((a, b) => (a.author.toLowerCase() < b.author.toLowerCase() ? -1 : 1));
@@ -268,6 +272,20 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                 ))
                 await db.run("END TRANSACTION");
                 return [204, ""];
+            }
+        },
+        {
+            route: "/api/youtube/channels/([\\w-]+)/info", methods: ["GET"], code: ({fill}) => {
+                return rp(`${getInvidiousHost("channel")}/api/v1/channels/${fill[0]}`).then(body => {
+                    return {
+                        statusCode: 200,
+                        contentType: "application/json",
+                        content: body
+                    }
+                }).catch(e => {
+                    console.error(e);
+                    return [500, "Unknown request error, check console"]
+                });
             }
         },
         {
