@@ -389,6 +389,7 @@
             video.addEventListener(eventName, playbackIntervention);
             audio.addEventListener(eventName, playbackIntervention);
         }
+        video.addEventListener("focus", event => event.target.blur()); // disable built-in video keyboard controls
         video.manualPaused = true;
         let ignorePlaybackError = false;
         video.addEventListener("error", event => {
