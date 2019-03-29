@@ -313,3 +313,7 @@ input + label {
     margin-left: -4px;
     padding-left: 4px;
 }
+
+.table-row-remove-button {
+    line-height: 0.5;
+}
