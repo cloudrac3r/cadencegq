@@ -30,6 +30,24 @@ module.exports = ({db, extra}) => {
                 if (!data) return [400, 3];
                 if (!data.target) return [400, 4];
                 if (!data.target.match(new RegExp(`https?://([a-z0-9]\.)+[a-z]{2,}(/.+)?`))) return [400, 5];
+                try {
+                    let urlo = new URL(data.target);
+                    if (urlo.hostname.endsWith("153news.net")) {
+                        void 0;
+                        return {
+                            statusCode: 403,
+                            contentType: "application/json",
+                            content: {
+                                code: 10,
+                                message: "This website contains videos featuring illegal content, so uploading links to it is forbidden."
+                            }
+                        }
+                    } else {
+                        void 0;
+                    }
+                } catch(e) {
+                    void 0;
+                }
                 let result = await extra.resolveAuthorInput(data);
                 if (!result[0]) return result[1];
                 data = result[1];

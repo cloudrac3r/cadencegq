@@ -8,16 +8,31 @@
         let token = localStorage.getItem("token") || undefined;
         let progress = q("#progress");
         progress.innerHTML = "Posting...";
-        submitURL(content, {username, token}, hash => {
-            if (hash) {
-                progress.innerHTML = `Success! <a href="/api/urls/${hash}">Here's your new link</a>`;
-                progress.classList.add("successDisplay");
-            } else {
-                progress.innerHTML = "Failed to submit link";
+        request("/api/urls", result => {
+            try {
+                let data = JSON.parse(result.responseText);
+                if (result.status.toString()[0] == "2") {
+                    progress.innerHTML = `Success! <a href="/api/urls/${data.hash}">Here's your new link</a>`;
+                    progress.classList.add("successDisplay");
+                } else if (data.message) {
+                    progress.innerHTML = `Failed to submit link. The server says:<br>`+data.message;
+                    progress.classList.add("errorDisplay");
+                    if (!data.retryForbidden) q("#submit").disabled = false;
+                } else if (data.code) {
+                    progress.innerHTML = `Failed to submit link. The server returned error code ${data.code}.`;
+                    progress.classList.add("errorDisplay");
+                    q("#submit").disabled = false;
+                } else {
+                    progress.innerHTML = `Failed to submit link. The server returned HTTP status code ${result.status}.`;
+                    progress.classList.add("errorDisplay");
+                    q("#submit").disabled = false;
+                }
+            } catch (e) {
+                progress.innerHTML = "Failed to submit link: the server returned a non-JSON response.";
                 progress.classList.add("errorDisplay");
                 q("#submit").disabled = false;
             }
-        });
+        }, Object.assign({username, token, target: content}));
     }
     function bodyLoad() {
         clear();

@@ -189,18 +189,6 @@ function submitImage(file, username, callback) {
     }, file);
 }
 
-function submitURL(url, author, callback) {
-    if (!callback) callback = new Function();
-    request("/api/urls", result => {
-        try {
-            let {hash} = JSON.parse(result.responseText);
-            callback(hash);
-        } catch (e) {
-            callback();
-        }
-    }, Object.assign(author, {target: url}));
-}
-
 function getExamples(callback) {
     request("/api/examples", result => {
         try {
