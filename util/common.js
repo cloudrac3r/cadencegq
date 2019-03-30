@@ -249,5 +249,32 @@ module.exports = {
             args.push(v);
         });
         return args;
+    },
+    // Stringify with promises.
+    stringifyAsync: async function(data, formatting, depth) {
+        if (!depth) depth = 0;
+        let result;
+        if (data === undefined) result = "(undefined)";
+        else if (data === null) result = "(null)";
+        else if (typeof(data) == "function") result = "(function)";
+        else if (typeof(data) == "string") result = `"${data}"`;
+        else if (typeof(data) == "number") result = data.toString();
+        else if (data.constructor && data.constructor.name == "Promise") result = module.exports.stringify(await data);
+        else if (data.constructor && data.constructor.name.toLowerCase().includes("error")) {
+            let errorObject = {};
+            Object.entries(data).forEach(e => {
+                errorObject[e[0]] = e[1];
+            });
+            if (formatting) result = "```\n"+data.stack+"``` "+(await module.exports.stringify(errorObject));
+            else result = ""+data.stack+(await module.exports.stringify(errorObject));
+        } else {
+            if (formatting) result = "```js\n"+util.inspect(data, { depth: depth })+"```";
+            else result = ""+util.inspect(data, { depth: depth });
+        }
+
+        if (result.length > 2000) {
+            result = result.slice(0, 2000)+"…";
+        }
+        return result;
     }
 }
