@@ -13,17 +13,8 @@
 <div data-sectionid="endcards" class="settingsDividers">
 </div>
 <h2>Blocked content</h2>
-<p>Author names and IDs that exactly match items in this list will be blocked. Video titles that contain fragments in this list will be blocked.</p>
-<div class="tagInputContainer">
-    <input type="text" id="tagInput" onkeypress="manageKeypress(event)" placeholder="New item" style="width: 200px;">
-    <select id="tagTypeSelection"></select>
-    <button onclick="addTag()">Add item</button>
-</div>
-<div>
-    <table>
-        <tbody id="tagVisible"></tbody>
-    </table>
-</div>
+<div><button onclick="exports.addFilter()">Add filter</button></div>
+<div id="filter-container"></div>
 <h2>Other</h2>
 <div data-sectionid="other" class="settingsDividers"></div>
 <table style="display: none;">

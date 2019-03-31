@@ -496,7 +496,7 @@ input, button {
 
 @media screen and (max-width: 700px) {
     .searchItem {
-        flex-wrap: wrap;
+        flex-direction: column;
         height: auto;
     }
     .searchItem a {
@@ -510,89 +510,40 @@ input, button {
     }
 }
 
-#loading {
-    text-align: center;
-}
-#loadingInner {
-    position: relative;
-    border: 1px solid #aaa;
-    width: 80px;
-    height: 80px;
-    margin-left: auto;
-    margin-right: auto;
-}
-.loadingBlock {
-    position: absolute;
-    width: 0px;
-    height: 40px;
-    background-color: #ccc;
-    display: inline-block;
-    animation: 1.8s cubic-bezier(0.445, 0.05, 0.55, 0.95) 0s infinite normal none running spin1;
-}
-#lb1 {
-    left: 0px;
-    animation-name: spin1;
-}
-#lb2 {
-    left: 80px;
-    animation-name: spin2;
-}
-#lb3 {
-    left: 0px;
-    animation-name: spin1;
-    animation-delay: 0.9s;
-}
-#lb4 {
-    animation-name: spin2;
-    animation-delay: 0.9s;
+.filter-manager {
+    display: flex;
 }
 
-@keyframes spin1 {
-    from {
-        top: 40px;
-        width: 0px;
-    }
-    25% {
-        top: 40px;
-        width: 40px;
-    }
-    50% {
-        top: 0px;
-        width: 40px;
-    }
-    75% {
-        top: 0px;
-        width: 0px;
-    }
-    to {
-        top: 40px;
-        width: 0px;
-    }
+.filter-item {
+    background-color: rgba(10, 10, 0, 0.13);
 }
-@keyframes spin2 {
-    from {
-        top: 40px;
-        left: 80px;
-        width: 0px;
-    }
-    25% {
-        top: 40px;
-        left: 40px;
-        width: 40px;
-    }
-    50% {
-        top: 0px;
-        left: 40px;
-        width: 40px;
-    }
-    75% {
-        top: 0px;
-        left: 80px;
-        width: 0px;
-    }
-    to {
-        top: 40px;
-        left: 80px;
-        width: 0px;
-    }
+
+.filter-item {
+    border: 1px solid grey;
+    border-radius: 4px;
+    padding: 4px;
+    margin: 16px 4px 4px 4px;
+}
+
+.filter-condition {
+    display: flex;
+}
+
+.filter-condition input {
+    padding: 6px 8px;
+}
+
+.filter-condition button {
+    line-height: 1;
+    width: 34px;
+}
+
+.filter-button-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.button-dangerous:hover {
+    border: 2px solid #b98627;
+    padding: 7px;
 }

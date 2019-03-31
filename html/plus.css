@@ -138,6 +138,10 @@ textarea, input:not([type=range]), button, pre, select, .infoBox {
     margin: 4px;
 }
 
+input {
+    padding: 6px 8px;
+}
+
 a.linkbutton, a.linkbutton:visited {
     background-color: rgba(225, 220, 255, 0.05);
     padding: 8px;
@@ -223,8 +227,9 @@ select {
     -moz-appearance: none;
     appearance: none;
     -webkit-appearance: none;
-    background: url(/fonts/arrow-down-wide.svg) right 15px no-repeat rgba(225, 220, 255, 0.05);
-    padding-right: 22px;
+    background: url(/fonts/arrow-down-wide.svg) right 53% no-repeat rgba(225, 220, 255, 0.05);
+    line-height: 1.4;
+    padding: 5px 24px 5px 8px;
 }
 select:-moz-focusring {
     text-shadow: 0 0 0 #ddd;

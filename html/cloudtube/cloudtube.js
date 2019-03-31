@@ -21,7 +21,31 @@ const filters = [
 
 function filterVideos(feed, source) {
     if (!source) throw new Error("No source provided to filterVideos");
-    let result = feed.filter(video => !filters.some(f => f[source] ? f.disallow(f[source](video)) : false));
+    //let result = feed.filter(video => !filters.some(f => f[source] ? f.disallow(f[source](video)) : false));
+    lsm.setup("videoFilter", "[]");
+    let filters = JSON.parse(lsm.get("videoFilter"));
+    let result = feed.filter(feedItem => {
+        let someFiltersApply = filters.some(filterConditions => {
+            let conditionsApply = filterConditions.every(condition => {
+                let input = feedItem[condition.key];
+                let value = condition.value;
+                if (!condition.comparison.match_case) {
+                    input = input.toLowerCase();
+                    value = value.toLowerCase();
+                }
+                let result;
+                if (condition.comparison.type == "equal") {
+                    result = input == value;
+                } else if (condition.comparison.type == "contain") {
+                    result = input.includes(value);
+                }
+                if (condition.comparison.invert) result = !result;
+                return result;
+            });
+            return conditionsApply;
+        });
+        return !someFiltersApply; // true if video matched a blocking filter, so use false to remove it from the feed
+    });
     return [result, feed.length - result.length];
 }
 

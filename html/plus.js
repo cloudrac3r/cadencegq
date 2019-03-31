@@ -382,6 +382,7 @@ class ElemJS {
     }
     child(toAdd, position) {
         if (typeof(toAdd) == "object") {
+            toAdd.parent = this;
             if (typeof(position) == "number") {
                 this.element.insertBefore(toAdd.element, this.element.children[position]);
                 this.children.splice(position, 0, toAdd);
@@ -395,6 +396,22 @@ class ElemJS {
     clearChildren() {
         this.children.length = 0;
         while (this.element.lastChild) this.element.removeChild(this.element.lastChild);
+    }
+    register(property) {
+        this._link = property;
+        return this;
+    }
+    link(property) {
+        let children = [this];
+        while (!this[property]) {
+            let child = children.shift();
+            if (child._link == property) {
+                this[property] = child;
+            } else {
+                children = children.concat(child.children);
+            }
+        }
+        return this;
     }
 }
 

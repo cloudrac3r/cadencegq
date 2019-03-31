@@ -1,3 +1,6 @@
+var exports;
+if (!exports) exports = {};
+
 const typeMap = [
     {
         key: "blockedTitles",
@@ -71,84 +74,6 @@ const sections = {
         }
     ]
 };
-
-function manageKeypress(event) {
-    if (event.key == "Enter") {
-        addTag();
-    }
-}
-
-function addTag(value, type) {
-    if (!type) {
-        type = q("#tagTypeSelection").selectedOptions[0].value;
-        value = q("#tagInput").value.trim();
-        q("#tagInput").value = "";
-    }
-    lsm.array(type).add(value, true);
-    let ne = q("#subStorage").children[0].cloneNode(true);
-    ne.children[0].innerText = value;
-    ne.children[1].innerText = typeMap.find(t => t.key == type).text;
-    ne.children[1].setAttribute("data-type", type);
-    q("#tagVisible").appendChild(ne);
-}
-
-function removeTag(event) {
-    if (!event.path) event.path = event.composedPath();
-    let tr = event.path.find(e => e.tagName == "TR");
-    lsm.array(tr.children[1].getAttribute("data-type")).remove(tr.children[0].innerText.trim());
-    let tbody = event.path.find(e => e.tagName == "TBODY");
-    tbody.removeChild(tr);
-}
-
-function bodyLoad() {
-    let select = q("select");
-    for (let type of typeMap) {
-        let option = document.createElement("option");
-        option.innerText = type.text;
-        option.value = type.key;
-        select.appendChild(option);
-        for (let setting of lsm.array(type.key).array) {
-            addTag(setting, type.key);
-        }
-    }
-    for (let sectionName in sections) {
-        let sectionElement = q(`[data-sectionid="${sectionName}"]`);
-        for (let setting of sections[sectionName]) {
-            let base = document.createElement("div");
-            if (setting.options) {
-                var input = document.createElement("select");
-                input.style.display = "block";
-                input.id = setting.lsm;
-                input.onchange = updateFlags;
-                setting.options.forEach((option, i) => {
-                    let o = document.createElement("option");
-                    o.innerText = option;
-                    input.appendChild(o);
-                    if (option == lsm.get(setting.lsm)) input.selectedIndex = i;
-                });
-                if (lsm.get(setting.lsm) === null) input.selectedIndex = setting.defaultIndex;
-            } else {
-                var input = document.createElement("input");
-                input.type = "checkbox";
-                input.id = setting.lsm;
-                input.onchange = updateFlags;
-                input.checked = (lsm.get(setting.lsm) == "1") ^ setting.invert;
-            }
-            let label = document.createElement("label");
-            label.setAttribute("for", setting.lsm);
-            label.innerHTML = setting.label;
-            if (input.tagName != "SELECT") base.appendChild(input);
-            base.appendChild(label);
-            if (input.tagName == "SELECT") base.appendChild(input);
-            sectionElement.appendChild(base);
-            if (setting.comment) {
-                let comment = document.createElement("div");
-                comment.innerHTML = setting.comment;
-                sectionElement.appendChild(comment);
-            }
-        }
-    }
-}
 
 function updateFlags() {
     for (let section of Object.values(sections)) {
@@ -254,5 +179,207 @@ function importData() {
     } catch (e) {
         console.error(e);
         return messageModal.setState({displayButtons: true, titleText: "Import failed", bodyText: "An unknown error occurred while trying to process that data. This is probably because the data is invalid."});
+    }
+}
+
+class FilterManager extends ElemJS {
+    constructor(container) {
+        super("div");
+        this.class("filter-manager");
+        container.appendChild(this.element);
+        this.filters = [];
+        this.filterContainer = new ElemJS("div");
+        this.child(this.filterContainer);
+        this.loadLsm();
+        this.element.addEventListener("input", this.input.bind(this));
+        this.element.addEventListener("change", this.change.bind(this));
+    }
+    loadLsm() {
+        let data = JSON.parse(lsm.get("videoFilter"));
+        if (data) {
+            data.forEach(filter => this.addFilter(filter, true));
+        }
+        this.render();
+    }
+    saveLsm() {
+        let data = this.filters.map(f => f.getData());
+        lsm.set("videoFilter", JSON.stringify(data));
+    }
+    addFilter(filterData, noRender) {
+        this.filters.push(new Filter(filterData, this));
+        if (!noRender) this.render();
+    }
+    removeFilter(filter) {
+        this.filters = this.filters.filter(f => f != filter);
+        this.saveLsm();
+        this.render();
+    }
+    render() {
+        this.filterContainer.clearChildren();
+        this.filters.forEach(f => this.filterContainer.child(f));
+    }
+    input(event) {
+        if (event.target.tagName == "INPUT") {
+            this.saveLsm();
+        }
+    }
+    change() {
+        this.saveLsm();
+    }
+}
+
+class Filter extends ElemJS {
+    constructor(data, manager) {
+        super("div");
+        this.class("filter-item");
+        this.manager = manager;
+        this.conditions = [];
+        this.conditionsElement = new ElemJS("div")
+        .class("filter-condition-container")
+        data.forEach(condition => this.addCondition(condition, true));
+        this.render();
+    }
+    addCondition(conditionData, noRender) {
+        this.conditions.push(new FilterCondition(conditionData, this));
+        if (!noRender) this.render();
+    }
+    removeCondition(target) {
+        this.conditions = this.conditions.filter(condition => condition != target);
+        this.manager.saveLsm();
+        this.render();
+    }
+    render() {
+        this.clearChildren();
+        this.child(
+            this.conditionsElement
+        ).child(
+            new ElemJS("div")
+            .class("filter-button-container")
+            .child(
+                new ElemJS("button")
+                .text("Add condition")
+                .direct("onclick", () => this.addCondition())
+            ).child(
+                new ElemJS("button")
+                .class("button-dangerous")
+                .text("Remove filter")
+                .direct("onclick", this.remove.bind(this))
+            )
+        )
+        this.conditionsElement.clearChildren();
+        this.conditions.forEach(c => this.conditionsElement.child(c));
+    }
+    remove() {
+        this.manager.removeFilter(this);
+    }
+    getData() {
+        return this.conditions.map(c => c.getData());
+    }
+}
+
+class FilterCondition extends ElemJS {
+    constructor(data, filter) {
+        super("div");
+        this.class("filter-condition");
+        this.filter = filter;
+        this.child(
+            this.propertySelect = new ElemJS("select")
+            .child(new ElemJS("option").text("Title").direct("value", "title"))
+            .child(new ElemJS("option").text("Author").direct("value", "author"))
+            .child(new ElemJS("option").text("Video ID").direct("value", "id"))
+            .child(new ElemJS("option").text("Author ID").direct("value", "authorId"))
+        ).child(
+            this.comparisonInvert = new ElemJS("select")
+            .child(new ElemJS("option").text("does").direct("value", "does"))
+            .child(new ElemJS("option").text("does not").direct("value", "doesnot"))
+        ).child(
+            this.comparisonCase = new ElemJS("select")
+            .child(new ElemJS("option").text("match case").direct("value", "matchcase"))
+            .child(new ElemJS("option").text("ignore case").direct("value", "ignorecase"))
+        ).child(
+            this.comparisonType = new ElemJS("select")
+            .child(new ElemJS("option").text("equal").direct("value", "equal"))
+            .child(new ElemJS("option").text("contain").direct("value", "contain"))
+        ).child(
+            this.valueInput = new ElemJS("input")
+            .direct("style", "width: 200px;")
+            .direct("placeholder", "Value")
+        ).child(
+            new ElemJS("button")
+            .direct("onclick", this.remove.bind(this))
+            .child(
+                new ElemJS("img")
+                .direct("src", "/fonts/cross.svg")
+                .direct("alt", "Remove filter condition.")
+            )
+        )
+        if (data) this.setData(data);
+    }
+    setData(data) {
+        this.propertySelect.element.value = data.key;
+        this.comparisonInvert.element.value = data.comparison.invert ? "doesnot" : "does";
+        this.comparisonCase.element.value = data.comparison.match_case ? "matchcase" : "ignorecase";
+        this.comparisonType.element.value = data.comparison.type
+        this.valueInput.element.value = data.value;
+    }
+    getData() {
+        return {
+            key: this.propertySelect.element.value,
+            comparison: {
+                invert: this.comparisonInvert.element.value == "doesnot",
+                match_case: this.comparisonCase.element.value == "matchcase",
+                type: this.comparisonType.element.value
+            },
+            value: this.valueInput.element.value
+        }
+    }
+    remove() {
+        this.filter.removeCondition(this);
+    }
+}
+
+function bodyLoad() {
+    for (let sectionName in sections) {
+        let sectionElement = q(`[data-sectionid="${sectionName}"]`);
+        for (let setting of sections[sectionName]) {
+            let base = document.createElement("div");
+            if (setting.options) {
+                var input = document.createElement("select");
+                input.style.display = "block";
+                input.id = setting.lsm;
+                input.onchange = updateFlags;
+                setting.options.forEach((option, i) => {
+                    let o = document.createElement("option");
+                    o.innerText = option;
+                    input.appendChild(o);
+                    if (option == lsm.get(setting.lsm)) input.selectedIndex = i;
+                });
+                if (lsm.get(setting.lsm) === null) input.selectedIndex = setting.defaultIndex;
+            } else {
+                var input = document.createElement("input");
+                input.type = "checkbox";
+                input.id = setting.lsm;
+                input.onchange = updateFlags;
+                input.checked = (lsm.get(setting.lsm) == "1") ^ setting.invert;
+            }
+            let label = document.createElement("label");
+            label.setAttribute("for", setting.lsm);
+            label.innerHTML = setting.label;
+            if (input.tagName != "SELECT") base.appendChild(input);
+            base.appendChild(label);
+            if (input.tagName == "SELECT") base.appendChild(input);
+            sectionElement.appendChild(base);
+            if (setting.comment) {
+                let comment = document.createElement("div");
+                comment.innerHTML = setting.comment;
+                sectionElement.appendChild(comment);
+            }
+        }
+    }
+
+    let filterManager = new FilterManager(q("#filter-container"));
+
+    exports.addFilter = function() {
+        filterManager.addFilter([]);
     }
 }
