@@ -91,7 +91,7 @@ function updateFlags() {
 
 function exportData() {
     new ExportTypeModal(exportValue => {
-        if (exportValue) q("#export-box").value = JSON.stringify(exportValue);
+        if (exportValue) q("#export-box").value = typeof(exportValue) == "string" ? exportValue : JSON.stringify(exportValue);
     });
 }
 
@@ -109,12 +109,8 @@ function importData() {
                 lsm.array("watchedVideos").array = data.watch_history;
                 lsm.array("watchedVideos").write();
             }
-            new Promise(resolve => {
-                if (lsm.get("token")) {
-                    messageModal.setState({bodyText: "Syncing subscriptions..."});
-                    request("/api/youtube/subscriptions/import", resolve, {token: lsm.get("token"), subscriptions: data.subscriptions});
-                } else resolve();
-            }).then(() => {
+            messageModal.setState({bodyText: "Syncing subscriptions..."});
+            uploadSubscriptions(data.subscriptions).then(() => {
                 messageModal.setState({
                     displayButtons: true,
                     titleText: "Import complete",
@@ -142,12 +138,8 @@ function importData() {
                 });
                 lsm.array("subscriptions").array = ids;
                 lsm.array("subscriptions").write();
-                new Promise(resolve => {
-                    if (lsm.get("token")) {
-                        messageModal.setState({bodyText: "Syncing subscriptions..."});
-                        request("/api/youtube/subscriptions/import", resolve, {token: lsm.get("token"), subscriptions: ids});
-                    } else resolve();
-                }).then(() => {
+                messageModal.setState({bodyText: "Syncing subscriptions..."});
+                uploadSubscriptions(ids).then(() => {
                     messageModal.setState({
                         displayButtons: true,
                         titleText: "Import complete",
@@ -155,6 +147,23 @@ function importData() {
                             "That data has been imported and your old subscriptions have been overwritten. "+
                             "If you are logged in, the imported subscriptions have been synchronised to your account."
                     });
+                });
+            });
+        } else if (format == "FreeTube") {
+            data.subscriptions = data.subscriptions.filter(item => {
+                return item && !data.subscriptions.find(s => s._id == item._id && s.$$deleted == true)
+            });
+            let ids = data.subscriptions.map(s => s.channelId).filter(s => s);
+            lsm.array("subscriptions").array = ids;
+            lsm.array("subscriptions").write();
+            messageModal.setState({bodyText: "Syncing subscriptions..."});
+            uploadSubscriptions(ids).then(() => {
+                messageModal.setState({
+                    displayButtons: true,
+                    titleText: "Import complete",
+                    bodyText:
+                        "That data has been imported and your old subscriptions have been overwritten. "+
+                        "If you are logged in, the imported subscriptions have been synchronised to your account."
                 });
             });
         }
@@ -165,14 +174,21 @@ function importData() {
     try {
         data = JSON.parse(body);
     } catch (e) {
-        return messageModal.setState({displayButtons: true, titleText: "Import failed", bodyText: "That data is not valid JSON."});
+        try {
+            data = body.split("\n").map(l => JSON.parse(l));
+        } catch(e) {
+            return messageModal.setState({displayButtons: true, titleText: "Import failed", bodyText: "That data is not valid JSON."});
+        }
     }
     try {
-        if (typeof(data.subscriptions) == "object" && data.subscriptions.constructor.name == "Array") {
+        if (typeof(data) == "object" && data && !data.subscriptions) data = {subscriptions: data};
+        if (data && typeof(data.subscriptions) == "object" && data.subscriptions.constructor.name == "Array") {
             if (typeof(data.subscriptions[0]) == "string" && data.subscriptions[0].startsWith("UC") && data.subscriptions[0].length == 24) {
                 return importUsing(data, "CloudTube"); // also Invidious
-            } else if (typeof(data.subscriptions == "object") && typeof(data.subscriptions[0].url) == "string" && data.subscriptions[0].url.startsWith("https://www.youtube.com")) {
+            } else if (typeof(data.subscriptions[0].url) == "string" && data.subscriptions[0].url.startsWith("https://www.youtube.com")) {
                 return importUsing(data, "NewPipe");
+            } else if (typeof(data.subscriptions[0]._id) == "string") {
+                return importUsing(data, "FreeTube");
             }
         }
         return messageModal.setState({displayButtons: true, titleText: "Import failed", bodyText: "The format of the data wasn't recognised."});

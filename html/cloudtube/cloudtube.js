@@ -139,3 +139,11 @@ function generateVideoList(data, blockedWarning, listContainer, isPlaylist) {
         listContainer.appendChild(generateVideoListItem(video, isPlaylist ? i : undefined).element);
     }
 }
+
+function uploadSubscriptions(subscriptions) {
+    return new Promise(resolve => {
+        if (lsm.get("token")) {
+            request("/api/youtube/subscriptions/import", resolve, {token: lsm.get("token"), subscriptions});
+        } else resolve();
+    });
+}

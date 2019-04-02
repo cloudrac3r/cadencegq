@@ -99,6 +99,45 @@ class ExportTypeModal extends Modal {
                         });
                     }, subsObject);
                 })
+            },{
+                name: "FreeTube",
+                generate: () => new Promise(resolve => {
+                    let subsObject = {};
+                    if (lsm.get("token")) {
+                        subsObject.token = lsm.get("token");
+                    } else {
+                        subsObject.subscriptions = lsm.array("subscriptions").array;
+                    }
+                    let messageModal = new MessageModal("Exporting...", "Downloading current subscription data...");
+                    request("/api/youtube/subscriptions", result => {
+                        messageModal.dismiss();
+                        let data = JSON.parse(result.responseText);
+                        let entries = data.channels.map(channel => ({
+                            channelId: channel.authorID,
+                            channelName: channel.author,
+                            channelThumbnail: channel.authorThumbnails[0].url
+                        }));
+                        let ids = new Set();
+                        while (ids.size < entries.length) {
+                            let attempt = "";
+                            for (let i = 0; i < 16; i++) {
+                                let number = Math.floor(Math.random()*(26+26+10));
+                                let char =
+                                    number < 10
+                                    ? number
+                                    : number < 10+26
+                                    ? String.fromCharCode(number-10+65)
+                                    : String.fromCharCode(number-36+97)
+                                attempt += char;
+                            }
+                            if (!ids.has(attempt)) {
+                                entries[ids.size]._id = attempt;
+                                ids.add(attempt);
+                            }
+                        }
+                        resolve(entries.map(e => JSON.stringify(e)).join("\n"));
+                    }, subsObject);
+                })
             }
         ]
         this.render();
@@ -137,13 +176,13 @@ class ExportTypeModal extends Modal {
     }
     export() {
         let format = this.select.element.selectedOptions[0].js.format;
+        this.dismiss();
         let generatorResult = format.generate();
         new Promise(resolve => {
             if (generatorResult.constructor.name == "Promise") generatorResult.then(resolve);
             else resolve(generatorResult);
         }).then(result => {
             this.callback(result);
-            this.dismiss();
         });
     }
 }

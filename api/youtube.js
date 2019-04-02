@@ -247,7 +247,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                     await Promise.all(subscriptions.map(s => fetchChannel(s).then(data => {
                         if (data) {
                             videos = videos.concat(data.latestVideos);
-                            channels.push({author: data.author, authorID: data.authorId});
+                            channels.push({author: data.author, authorID: data.authorId, authorThumbnails: data.authorThumbnails});
                         }
                     })));
                     videos = videos.sort((a, b) => (b.published - a.published)).slice(0, 60);
