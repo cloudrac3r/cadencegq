@@ -169,6 +169,15 @@ pre#content {
     resize: horizontal;
 }
 
+.paste-textarea-container {
+    display: flex;
+}
+.paste-textarea-container textarea {
+    height: 300px;
+    width: 800px;
+    max-width: 100%;
+}
+
 #copyStatus {
     color: lawngreen;
     margin-left: 10px;
