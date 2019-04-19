@@ -239,9 +239,11 @@ function serverRequest(req, res) {
         if (!foundRoute) {
             // If THAT fails, try reading the html directory for a matching file
             let filename = path.join(__dirname, "html", reqPath);
+            let inPublic = filename.startsWith(path.join(__dirname, "html"));
             fs.stat(filename, (err, stats) => {
-                if (err || stats.isDirectory()) {
-                    cf.log("Couldn't handle request for "+reqPath, "warning");
+                if (!inPublic) cf.log("Non-public access attempt caught!", "warning");
+                if (err || stats.isDirectory() || !inPublic) {
+                    cf.log("Couldn't handle request for "+reqPath+" → "+filename, "warning");
                     res.writeHead(404, Object.assign({"Content-Type": "text/plain"}, globalHeaders));
                     res.write("404 Not Found");
                     res.end();
@@ -249,7 +251,7 @@ function serverRequest(req, res) {
                 }
                 //console.log(stats);
                 if (stats.size < 50*10**6 || req.headers["Range"]) { //TODO: remove range check
-                    cf.log("Using file directly for "+reqPath+" (read)", "spam");
+                    cf.log("Using file directly for "+reqPath+" (read) → "+filename, "spam");
                     fs.readFile(filename, {encoding: null}, (err, content) => {
                         if (err) throw err;
                         let ranged = toRange(content, req);
@@ -261,7 +263,7 @@ function serverRequest(req, res) {
                         if (req.headers.host) hitManager.add("domainHit", req.headers.host);
                     });
                 } else {
-                    cf.log("Using file directly for "+reqPath+" (stream)", "spam");
+                    cf.log("Using file directly for "+reqPath+" (stream) → "+filename, "spam");
                     let stream = fs.createReadStream(filename);
                     headers["Content-Length"] = stats.size;
                     res.writeHead(200, Object.assign({"Content-Type": mimeType(reqPath)}, headers, globalHeaders));
