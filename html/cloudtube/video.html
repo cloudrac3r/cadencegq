@@ -308,9 +308,9 @@
                     rep.forEach((repSingle, i) => {
                         let newFormat = {
                             url: "https://dev.invidio.us/"+repSingle.BaseURL,
-                            resolution: repSingle["@_width"]+"p",
-                            qualityLabel: repSingle["@_width"]+"p",
-                            label: repSingle["@_width"]+"p "+set["@_mimeType"].split("/")[1]+" ꜝ",
+                            resolution: repSingle["@_height"]+"p",
+                            qualityLabel: repSingle["@_height"]+"p",
+                            label: repSingle["@_height"]+"p "+set["@_mimeType"].split("/")[1]+" ꜝ",
                             container: set["@_mimeType"].split("/")[1],
                             type: set["@_mimeType"],
                             bitrate: repSingle["@_bitrate"],
