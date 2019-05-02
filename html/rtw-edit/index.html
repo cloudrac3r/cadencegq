@@ -1,0 +1,172 @@
+<html>
+    <head>
+        <meta charset="utf8">
+        <title>RTW editor</title>
+        <link href="https://fonts.googleapis.com/css?family=Noto+Sans" rel="stylesheet">
+        <link rel="stylesheet" href="plus.css" type="text/css">
+        <script>
+            function filenameInput() {
+                q("#iFilename").value = q("#iFilename").value.toUpperCase();
+            }
+            function filenameChange() {
+                q("#iFilename").value = q("#iFilename").value.split(".")[0].toUpperCase();
+            }
+            function fileLoad(event) {
+                let file = event.target.files[0];
+                if (!file) return;
+                let filereader = new FileReader();
+                filereader.onload = () => {
+                    let array = new Uint8Array(filereader.result);
+                    console.log(array);
+                    W.load(array);
+                }
+                filereader.readAsArrayBuffer(file);
+            }
+            function prepareSave(event) {
+                let text = event.target.innerText;
+                W.save(true, result => {
+                    if (!result) {
+                        event.target.innerText = "✓";
+                        setTimeout(() => {
+                            event.target.innerText = text;
+                        }, 1000);
+                    } else {
+                        alert(result);
+                    }
+                });
+            }
+            function prepareDownload(event) {
+                event.target.setAttribute("download", q("#iFilename").value+".LV6");
+                let array = W.save();
+                let buffer = new Uint8Array(array);
+                let data = new Blob([buffer], {type: "application/octect-stream"});
+                event.target.href = URL.createObjectURL(data);
+                let text = event.target.innerText;
+                event.target.innerText = "✓";
+                setTimeout(() => {
+                    event.target.innerText = text;
+                }, 1000);
+            }
+            function loadFromServer(event) {
+                let filename = q("#iFilename").value+".LV6";
+                request("/api/rtw/load?filename="+filename, response => {
+                    if (response.status == 200) {
+                        W.load(JSON.parse(response.responseText));
+                        let text = event.target.innerText;
+                        event.target.innerText = "✓";
+                        setTimeout(() => {
+                            event.target.innerText = text;
+                        }, 1000);
+                    } else {
+                        alert(response.responseText);
+                    }
+                });
+            }
+        </script>
+    </head>
+    <body>
+        <div id="loading">Loading scripts...</div>
+        <canvas></canvas>
+        <div id="settings" class="overlay editoroverlay" style="display: none;">
+            <div>
+                <h3>Settings</h3>
+                <table>
+                    <tr>
+                        <td>Level name</td>
+                        <td><input id="iLevelName" placeholder="Required!"></td>
+                    </tr><tr>
+                        <td>Filename (no .LV6)</td>
+                        <td><input id="iFilename" oninput="filenameInput()" onchange="filenameChange()" placeholder="Required!"></td>
+                    </tr>
+                    <tr>
+                        <td>Style</td>
+                        <td>
+                            <select id="iStyle">
+                                <option value="2">Wood</option>
+                                <option value="3">Purple</option>
+                                <option value="5">Jade</option>
+                                <option value="8">Aztec</option>
+                                <option value="1">Sand</option>
+                                <option value="4">Castle</option>
+                                <option value="7">Garden</option>
+                                <option value="0">Cave</option>
+                                <option value="6">Spooky</option>
+                                <option value="9">Custom</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Background</td>
+                        <td>
+                            <select id="iBackground">
+                                <option value="4">Flat</option>
+                                <option value="5">Water</option>
+                                <option value="6">Lava</option>
+                                <option value="2">Walls</option>
+                                <option value="0">Sky</option>
+                                <option value="1">Forest</option>
+                                <option value="8">City</option>
+                                <option value="3">Stars</option>
+                                <option value="7">Warp</option>
+                                <option value="9">Rainbow</option>
+                                <option value="10">Custom</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Music</td>
+                        <td>
+                            <select id="iMusic">
+                                <option value="1">1 - Rainbows</option>
+                                <option value="2">2 - Blocky</option>
+                                <option value="3">3 - Breezy</option>
+                                <option value="4">4 - Underground</option>
+                                <option value="5">5 - Nostalgia</option>
+                                <option value="6">6 - Spooky</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Timer</td>
+                        <td><input type="number" id="iTimer" placeholder="Required!" value="300"></td>
+                    </tr>
+                    <tr>
+                        <td>Houses</td>
+                        <td><input id="iHouses"></td>
+                    </tr>
+                    <tr>
+                        <td>Models</td>
+                        <td><input id="iModels"></td>
+                    </tr>
+                    <tr>
+                        <td>Textures</td>
+                        <td><input id="iTextures"></td>
+                    </tr>
+                    <tr>
+                        <td>Background</td>
+                        <td><input id="iBackground"></td>
+                    </tr>
+                </table>
+            </div>
+            <div>
+                <h3>Details</h3>
+                <div id="dimensions"></div>
+            </div>
+            <div>
+                <h3>File</h3>
+                <div class="buttonContainer">
+                    <button onclick="prepareSave(event)">Save (server)</button>
+                    <a class="linkButton" onclick="prepareDownload(event)">Save (download)</a>
+                </div>
+                <div class="buttonContainer">
+                    <button onclick="loadFromServer(event)">Load (server)</button>
+                    <input type="file" id="iLoad" onchange="fileLoad(event)">
+                    <label for="iLoad" data-file>Load (file)</label>
+                </div>
+            </div>
+        </div>
+        <script src="request.js"></script>
+        <script src="config.js"></script>
+        <script src="plus.js"></script>
+    </body>
+</html>

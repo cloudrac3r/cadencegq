@@ -12,6 +12,7 @@
     "fast-xml-parser": "^3.12.0",
     "mime": "^2.3.1",
     "mmmagic": "^0.5.0",
+    "nedb-promise": "^2.0.1",
     "prettier-bytes": "^1.0.4",
     "request-promise": "^4.2.2",
     "simple-git": "^1.96.0",
