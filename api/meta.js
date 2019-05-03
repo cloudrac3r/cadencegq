@@ -1,5 +1,6 @@
 const cf = require("../util/common.js");
-const simpleGit = require("simple-git")("/home/cloud/Code/pastebin");
+const pj = require("path").join;
+const simpleGit = require("simple-git")(pj(__dirname, ".."));
 
 module.exports = ({db}) => {
     return [
