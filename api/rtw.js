@@ -58,10 +58,11 @@ async function getPatchedHash(token) {
 
 let localMethods = [
     {
-        route: "/api/rtw/download", methods: ["POST"], code: ({data}) => new Promise(resolve => {
+        route: "/api/rtw/download", methods: ["POST"], code: ({data}) => new Promise(async resolve => {
             let array = data.data;
             let buffer = Buffer.from(array);
-            fs.writeFile(pj(values.save, data.filename), buffer, {encoding: null}, err => {
+            let values = await getValues();
+            fs.writeFile(pj(values.levelDir, data.filename), buffer, {encoding: null}, err => {
                 if (err) return resolve([400, err.stack || err.message || err.toString()]);
                 else return resolve([204, ""]);
             });
