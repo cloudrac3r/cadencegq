@@ -1,7 +1,7 @@
 const mime = require("mime");
 const pj = require("path").join;
 const fs = require("fs");
-const mmmagic = new (require("mmmagic").Magic)();
+const identify = require("buffer-signature").identify;
 const crypto = require("crypto");
 const util = require("util");
 
@@ -36,15 +36,9 @@ module.exports = ({db, extra}) => {
         {
             route: "/api/images", methods: ["POST"], code: async ({body}) => {
                 if (!body.length) return [400, 4];
-                const allowed = [
-                    {file: "PNG image data", ext: "png"},
-                    {file: "JPEG image data", ext: "jpg"}
-                ];
-                let result = await new Promise(resolve => {
-                    mmmagic.detect(body, (err, result) => resolve(result));
-                });
-                let type = allowed.find(a => result.startsWith(a.file));
-                if (!type) return [400, 5];
+                const allowed = ["image/png", "image/jpeg"];
+                let type = identify(body);
+                if (!allowed.includes(type.mimeType)) return [400, 5];
                 let hash = extra.hash(body).slice(0, 6);
                 let files = await extra.rdp("content/images");
                 let target;

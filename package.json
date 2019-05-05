@@ -9,9 +9,9 @@
   "author": "cloudrac3r",
   "license": "GPL-3.0-only",
   "dependencies": {
+    "buffer-signature": "^1.0.0",
     "fast-xml-parser": "^3.12.16",
     "mime": "^2.4.2",
-    "mmmagic": "^0.5.3",
     "nedb-promise": "^2.0.1",
     "prettier-bytes": "^1.0.4",
     "request-promise": "^4.2.4",
