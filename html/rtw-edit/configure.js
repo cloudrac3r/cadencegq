@@ -29,6 +29,12 @@ class CheckButton extends ElemJS {
     }
 }
 
+class PathInput extends ElemJS {
+    constructor() {
+        super("input").direct("disabled", true).attribute("placeholder", "Required!");
+    }
+}
+
 class ConfigEditor extends ElemJS {
     constructor(parent) {
         super("div");
@@ -40,7 +46,7 @@ class ConfigEditor extends ElemJS {
                     new ElemJS("td").text("Installation directory")
                 ).child(
                     new ElemJS("td").child(
-                        this.i_installationdir = new ElemJS("input").direct("disabled", true)
+                        this.i_installationdir = new PathInput()
                     )
                 )
             ).child(
@@ -48,7 +54,7 @@ class ConfigEditor extends ElemJS {
                     new ElemJS("td").text("Level directory")
                 ).child(
                     new ElemJS("td").child(
-                        this.i_leveldir = new ElemJS("input").direct("disabled", true)
+                        this.i_leveldir = new PathInput()
                     )
                 )
             ))
@@ -61,9 +67,9 @@ class ConfigEditor extends ElemJS {
     loadState() {
         request("/api/rtw/config", response => {
             let data = JSON.parse(response.responseText);
-            this.i_installationdir.element.value = data.installationDir;
+            this.i_installationdir.element.value = data.installationDir || "";
             this.i_installationdir.element.disabled = false;
-            this.i_leveldir.element.value = data.levelDir;
+            this.i_leveldir.element.value = data.levelDir || "";
             this.i_leveldir.element.disabled = false;
         });
     }
@@ -100,23 +106,27 @@ class ImageInstallState extends ElemJS {
         );
     }
     loadState() {
-        request("/api/rtw/installstate", response => {
-            let data = JSON.parse(response.responseText);
-            if (data.installed) {
-                this.state.installed = true;
-            } else {
-                this.state.installed = false;
-            }
-            this.render();
+        return new Promise(resolve => {
+            request("/api/rtw/installstate", response => {
+                let data = JSON.parse(response.responseText);
+                if (data.installed) {
+                    this.state.installed = true;
+                } else {
+                    this.state.installed = false;
+                }
+                this.render();
+                resolve();
+            });
         });
     }
     install() {
-        this.i_installbutton.loading("Downloading...");
+        this.i_installbutton.loading("Downloading");
         request("/api/rtw/requestimages", response => {
             if (response.status == 204) {
-                this.i_installbutton.check();
+                this.loadState().then(() => this.i_installbutton.check());
             } else {
                 alert(response.responseText);
+                this.i_installbutton.reset();
             }
         });
     }

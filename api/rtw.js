@@ -48,12 +48,19 @@ async function replaceValues(data) {
     await db.insert(data);
 }
 
-async function getPatchedHash(token) {
-    let values = await getValues();
-    let exe = await util.promisify(fs.readFile)(pj(values.installationDir, "res2.dat"), {encoding: null});
-    let patched = Buffer.concat([exe, Buffer.from(token)]);
-    let hash = crypto.createHash("sha256").update(patched).digest("hex")
-    return hash;
+function getPatchedHash(token) {
+    return new Promise(async resolve => {
+        let values = await getValues();
+        let readPromise = util.promisify(fs.readFile)(pj(values.installationDir, "res2.dat"), {encoding: null});
+        readPromise.catch(() => {
+            resolve(null);
+        });
+        readPromise.then(exe => {
+            let patched = Buffer.concat([exe, Buffer.from(token)]);
+            let hash = crypto.createHash("sha256").update(patched).digest("hex")
+            resolve(hash);
+        });
+    });
 }
 
 let localMethods = [
@@ -107,6 +114,7 @@ let localMethods = [
         route: "/api/rtw/requestimages", methods: ["GET"], code: async () => {
             let token = await rp(remoteHost+"/api/rtw/token");
             let hash = await getPatchedHash(token);
+            if (hash === null) return [400, "RTW files not found. Correct the installation directory path and try again."];
             return rp(remoteHost+"/api/rtw/fetchimages?token="+token+"&hash="+hash, {encoding: null}).then(async body => {
                 let zipSavePath = pj(__dirname, "..", "html", "rtw-edit");
                 await util.promisify(fs.writeFile)(pj(zipSavePath, "images.zip"), body, {encoding: null});
