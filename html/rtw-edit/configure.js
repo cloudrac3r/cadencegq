@@ -39,38 +39,24 @@ class ConfigEditor extends ElemJS {
     constructor(parent) {
         super("div");
         parent.appendChild(this.element);
-        
-        this.child(
-            new ElemJS("table").child(new ElemJS("tbody").child(
-                new ElemJS("tr").child(
-                    new ElemJS("td").text("Installation directory")
-                ).child(
-                    new ElemJS("td").child(
-                        this.i_installationdir = new PathInput()
-                    )
-                )
-            ).child(
-                new ElemJS("tr").child(
-                    new ElemJS("td").text("Level directory")
-                ).child(
-                    new ElemJS("td").child(
-                        this.i_leveldir = new PathInput()
-                    )
-                )
-            ))
-        ).child(
-            this.i_button = new CheckButton("Save paths", () => this.saveState())
-        )
-
+        this.enabled = null;
+        this.render();
         this.loadState();
     }
     loadState() {
         request("/api/rtw/config", response => {
-            let data = JSON.parse(response.responseText);
-            this.i_installationdir.element.value = data.installationDir || "";
-            this.i_installationdir.element.disabled = false;
-            this.i_leveldir.element.value = data.levelDir || "";
-            this.i_leveldir.element.disabled = false;
+            if (this.status == 200) {
+                let data = JSON.parse(response.responseText);
+                this.i_installationdir.element.value = data.installationDir || "";
+                this.i_installationdir.element.disabled = false;
+                this.i_leveldir.element.value = data.levelDir || "";
+                this.i_leveldir.element.disabled = false;
+                this.enabled = true;
+            } else {
+                this.enabled = false;
+                this.disabledMessage = response.responseText;
+            }
+            this.render();
         });
     }
     saveState() {
@@ -84,6 +70,35 @@ class ConfigEditor extends ElemJS {
             installationDir: this.i_installationdir.element.value,
             levelDir: this.i_leveldir.element.value
         });
+    }
+    render() {
+        if (this.enabled === true) {
+            this.child(
+                new ElemJS("table").child(new ElemJS("tbody").child(
+                    new ElemJS("tr").child(
+                        new ElemJS("td").text("Installation directory")
+                    ).child(
+                        new ElemJS("td").child(
+                            this.i_installationdir = new PathInput()
+                        )
+                    )
+                ).child(
+                    new ElemJS("tr").child(
+                        new ElemJS("td").text("Level directory")
+                    ).child(
+                        new ElemJS("td").child(
+                            this.i_leveldir = new PathInput()
+                        )
+                    )
+                ))
+            ).child(
+                this.i_button = new CheckButton("Save paths", () => this.saveState())
+            )
+        } else if (this.enabled === false) {
+            this.text(this.disabledMessage);
+        } else {
+            this.text("Please wait, checking state...");
+        }
     }
 }
 

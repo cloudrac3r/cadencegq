@@ -63,9 +63,18 @@ function getPatchedHash(token) {
     });
 }
 
+function checkLocalAccess(handler) {
+    return req => {
+        return getValues().then(values => {
+            if (values.remote) return [403, "This action is restricted. You can enable this action by installing Crumpet on your own computer."];
+            else return handler(req);
+        });
+    }
+}
+
 let localMethods = [
     {
-        route: "/api/rtw/download", methods: ["POST"], code: ({data}) => new Promise(async resolve => {
+        route: "/api/rtw/download", methods: ["POST"], code: checkLocalAccess(({data}) => new Promise(async resolve => {
             let array = data.data;
             let buffer = Buffer.from(array);
             let values = await getValues();
@@ -73,10 +82,10 @@ let localMethods = [
                 if (err) return resolve([400, err.stack || err.message || err.toString()]);
                 else return resolve([204, ""]);
             });
-        })
+        }))
     },
     {
-        route: "/api/rtw/load", methods: ["GET"], code: async ({params}) => {
+        route: "/api/rtw/load", methods: ["GET"], code: checkLocalAccess(async ({params}) => {
             if (!params.filename) return [400, "No filename provided"];
             if (params.filename == ".LV6") return [400, "Enter a filename into the filename input box and then click the button again."];
             let values = await getValues();
@@ -90,18 +99,18 @@ let localMethods = [
                     });
                 });
             });
-        }
+        })
     },
     {
-        route: "/api/rtw/config", methods: ["GET"], code: () => {
+        route: "/api/rtw/config", methods: ["GET"], code: checkLocalAccess(() => {
             return getValues().then(data => [200, data]).catch(e => [500, e]);
-        }
+        })
     },
     {
-        route: "/api/rtw/config", methods: ["POST"], code: ({data}) => {
+        route: "/api/rtw/config", methods: ["POST"], code: checkLocalAccess(({data}) => {
             if (!data) return Promise.resolve([400, "Give me some JSON, please."]);
             return replaceValues(data).then(() => [204, ""]);
-        }
+        })
     },
     {
         route: "/api/rtw/installstate", methods: ["GET"], code: async () => {
@@ -111,7 +120,7 @@ let localMethods = [
         }
     },
     {
-        route: "/api/rtw/requestimages", methods: ["GET"], code: async () => {
+        route: "/api/rtw/requestimages", methods: ["GET"], code: checkLocalAccess(async () => {
             let token = await rp(remoteHost+"/api/rtw/token");
             let hash = await getPatchedHash(token);
             if (hash === null) return [400, "RTW files not found. Correct the installation directory path and try again."];
@@ -134,7 +143,7 @@ let localMethods = [
             }).catch(error => {
                 return [400, error.error || error.toString()];
             });
-        }
+        })
     }
 ];
 
