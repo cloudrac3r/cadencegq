@@ -3,7 +3,7 @@ const level = {
     tiles: [
     ]
 };
-const imagesDir = "images";
+const imagesDir = "/rtw-edit/images";
 
 q("#loading").parentElement.removeChild(q("#loading"));
 
@@ -75,7 +75,7 @@ function loadImages(progressCallback) {
                 next();
             }
             image.img.onerror = () => {
-                window.location = "configure.html";
+                window.location = "/crumpet/configure";
             }
             image.img.src = image.source;
         })();
@@ -782,6 +782,10 @@ loadImages((completed, total) => {
     imagesLoaded = true;
     Object.values(config.tiles).forEach(t => new TileSelector(TH, t));
     C.draw();
+    window.addEventListener("beforeunload", function(event) {
+        event.preventDefault();
+        event.returnValue = "";
+    });
 });
 C.fillText("Loading images...", [20, 80], "#000", "40px sans-serif");
 C.drawRectCoords([20, 90], [300, 95], true, "#88f");

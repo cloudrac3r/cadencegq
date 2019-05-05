@@ -1,8 +1,8 @@
 <html>
     <head>
         <meta charset="utf8">
-        <title>RTW editor</title>
-        <link rel="stylesheet" href="plus.css" type="text/css">
+        <title>Crumpet RTW editor</title>
+        <link rel="stylesheet" href="/rtw-edit/plus.css" type="text/css">
         <script>
             function filenameInput() {
                 q("#iFilename").value = q("#iFilename").value.toUpperCase();
@@ -25,7 +25,7 @@
                 let text = event.target.innerText;
                 W.save(true, result => {
                     if (!result) {
-                        event.target.innerText = "✓";
+                        event.target.innerText = "🗸";
                         setTimeout(() => {
                             event.target.innerText = text;
                         }, 1000);
@@ -41,7 +41,7 @@
                 let data = new Blob([buffer], {type: "application/octect-stream"});
                 event.target.href = URL.createObjectURL(data);
                 let text = event.target.innerText;
-                event.target.innerText = "✓";
+                event.target.innerText = "🗸";
                 setTimeout(() => {
                     event.target.innerText = text;
                 }, 1000);
@@ -52,7 +52,7 @@
                     if (response.status == 200) {
                         W.load(JSON.parse(response.responseText));
                         let text = event.target.innerText;
-                        event.target.innerText = "✓";
+                        event.target.innerText = "🗸";
                         setTimeout(() => {
                             event.target.innerText = text;
                         }, 1000);
@@ -164,8 +164,8 @@
                 </div>
             </div>
         </div>
-        <script src="request.js"></script>
-        <script src="config.js"></script>
-        <script src="plus.js"></script>
+        <script src="/rtw-edit/request.js"></script>
+        <script src="/rtw-edit/config.js"></script>
+        <script src="/rtw-edit/plus.js"></script>
     </body>
 </html>

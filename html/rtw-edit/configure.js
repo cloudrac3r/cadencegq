@@ -40,18 +40,21 @@ class ConfigEditor extends ElemJS {
         super("div");
         parent.appendChild(this.element);
         this.enabled = null;
+        this.i_installationdir = new PathInput();
+        this.i_leveldir = new PathInput();
         this.render();
         this.loadState();
     }
     loadState() {
         request("/api/rtw/config", response => {
-            if (this.status == 200) {
+            if (response.status == 200) {
+                this.enabled = true;
+                this.render();
                 let data = JSON.parse(response.responseText);
                 this.i_installationdir.element.value = data.installationDir || "";
                 this.i_installationdir.element.disabled = false;
                 this.i_leveldir.element.value = data.levelDir || "";
                 this.i_leveldir.element.disabled = false;
-                this.enabled = true;
             } else {
                 this.enabled = false;
                 this.disabledMessage = response.responseText;
@@ -72,6 +75,7 @@ class ConfigEditor extends ElemJS {
         });
     }
     render() {
+        this.clearChildren();
         if (this.enabled === true) {
             this.child(
                 new ElemJS("table").child(new ElemJS("tbody").child(
@@ -79,7 +83,7 @@ class ConfigEditor extends ElemJS {
                         new ElemJS("td").text("Installation directory")
                     ).child(
                         new ElemJS("td").child(
-                            this.i_installationdir = new PathInput()
+                            this.i_installationdir
                         )
                     )
                 ).child(
@@ -87,7 +91,7 @@ class ConfigEditor extends ElemJS {
                         new ElemJS("td").text("Level directory")
                     ).child(
                         new ElemJS("td").child(
-                            this.i_leveldir = new PathInput()
+                            this.i_leveldir
                         )
                     )
                 ))
@@ -95,9 +99,9 @@ class ConfigEditor extends ElemJS {
                 this.i_button = new CheckButton("Save paths", () => this.saveState())
             )
         } else if (this.enabled === false) {
-            this.text(this.disabledMessage);
+            this.child(new ElemJS("div").text(this.disabledMessage));
         } else {
-            this.text("Please wait, checking state...");
+            this.child(new ElemJS("div").text("Please wait, checking state..."));
         }
     }
 }
