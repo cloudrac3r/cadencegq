@@ -1,5 +1,5 @@
 const ytdl = require("ytdl-core");
-const auth = require("../auth.json");
+let auth = {};
 const yts = require("youtube-search");
 const rp = require("request-promise");
 const fs = require("fs");
@@ -16,6 +16,12 @@ function getInvidiousHost(mode) {
 const channelCacheTimeout = 4*60*60*1000;
 
 module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
+    try {
+        auth = require("../auth.json");
+    } catch (e) {
+        cf.log("Invalid auth.json, cannot call YouTube API", "warning");
+    }
+
     let channelCache = new Map();
 
     function refreshCache() {
