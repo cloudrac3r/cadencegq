@@ -61,6 +61,24 @@ let config = {
             layer: 0,
             hex: 0x00CB
         },
+        "Fake wall": {
+            image: "editor/fakewall-top.png",
+            categories: ["Terrain"],
+            layer: 0,
+            hex: 0x05DC
+        },
+        "Fake wall 1.5": {
+            image: "editor/fakewall-1.5.png",
+            categories: ["Terrain"],
+            layer: 0,
+            hex: 0x05DD
+        },
+        "Fake wall 2.0": {
+            image: "editor/fakewall-2.0.png",
+            categories: ["Terrain"],
+            layer: 0,
+            hex: 0x05DE
+        },
         "Water": {
             image: "editor/water.png",
             categories: ["Terrain", "Common"],
@@ -72,6 +90,12 @@ let config = {
             categories: ["Terrain", "Common"],
             layer: 0,
             hex: 0x0384
+        },
+        "Trampoline": {
+            image: "editor/trampoline.png",
+            categories: ["Terrain"],
+            layer: 0,
+            hex: 0x0708
         },
         "Ice centre": {
             image: "editor/ice-centre.png",
@@ -118,13 +142,13 @@ let config = {
         "Buttons & Gates",
         "Ice & Conveyors",
         "Cannons",
-        "Bridges",
+        "Crossings",
         "Spikes & Electro",
         "Teleporters",
-        "Transporters",
         "Enemies",
         "Generators",
         "Scenery",
+        "Effects",
         "Signs"
     ],
     themes: [
@@ -184,7 +208,7 @@ let config = {
             let image = "editor/bridge-"+type+"-"+steps+".png";
             config.tiles[name] = {
                 image,
-                categories: ["Bridges"],
+                categories: ["Crossings"],
                 layer: 0,
                 hex: 0x0258+index
             }
@@ -217,7 +241,7 @@ let config = {
         let image = "editor/transporter-"+type+".png";
         config.tiles[name] = {
             image,
-            categories: ["Transporters"],
+            categories: ["Crossings"],
             layer: 0,
             hex: 0x06A4+index
         }
@@ -339,8 +363,9 @@ let config = {
         ["Objects", "Common"],
         ["Objects"],
         ["Enemies"],
-        ["Objects", "Common", "Enemies", "Scenery"],
-        ["Scenery"]
+        ["Objects", "Common", "Enemies", "Scenery", "Effects"],
+        ["Scenery"],
+        ["Effects"]
     ]
 
     let omap = [
@@ -414,14 +439,14 @@ let config = {
         ["Custom model B", "editor/letter-b.png", 4],
         ["Custom model C", "editor/letter-c.png", 4],
         ["Custom model D", "editor/letter-d.png", 4],
-        ["Red tint (global)", "editor/global-red.png", 4],
-        ["Green tint (global)", "editor/global-green.png", 4],
-        ["Blue tint (global)", "editor/global-blue.png", 4],
-        ["Yellow tint (global)", "editor/global-yellow.png", 4],
-        ["Falling snow effect (global)", "editor/global-snow.png", 4],
-        ["Rain effect (global)", "editor/global-rain.png", 4],
-        ["Lightning effect (global)", "editor/global-lightning.png", 4],
-        ["Cycling rainbow tint (global)", "editor/global-rainbow.png", 4]
+        ["Red tint (global)", "editor/global-red.png", 5],
+        ["Green tint (global)", "editor/global-green.png", 5],
+        ["Blue tint (global)", "editor/global-blue.png", 5],
+        ["Yellow tint (global)", "editor/global-yellow.png", 5],
+        ["Falling snow effect (global)", "editor/global-snow.png", 5],
+        ["Rain effect (global)", "editor/global-rain.png", 5],
+        ["Lightning effect (global)", "editor/global-lightning.png", 5],
+        ["Cycling rainbow tint (global)", "editor/global-rainbow.png", 5]
     ]);
     for (let i = 0; i < omap.length; i++) {
         let entry = omap[i];
@@ -433,4 +458,36 @@ let config = {
         }
         if (entry[3]) config.tiles[entry[0]].delete = entry[3];
     }
+}
+
+for (let i = 0; i < 4; i++) {
+    let colours = ["red", "yellow", "green", "blue"];
+    config.tiles["Link sphere ("+colours[i]+")"] = {
+        image: "editor/linksphere-"+colours[i]+".png",
+        categories: ["Objects"],
+        layer: 0,
+        hex: 0x0834+i
+    }
+}
+
+{
+    let offset = 0;
+    for (let type of ["blue", "red"]) {
+        for (let charname of ["stinky", "loof", "qookie", "peegue"]) {
+            config.tiles["Shadow stinker ("+charname+", "+type+")"] = {
+                image: "editor/shadow-"+charname+"-"+type+".png",
+                categories: ["Enemies"],
+                layer: 0,
+                hex: 0x0960+offset
+            }
+            offset++;
+        }
+    }
+}
+
+config.tiles["3D (global)"] = {
+    image: "editor/3d.png",
+    categories: ["Effects"],
+    layer: 0,
+    hex: 0x08FC
 }
