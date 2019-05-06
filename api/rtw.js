@@ -144,6 +144,39 @@ let localMethods = [
                 return [400, error.error || error.toString()];
             });
         })
+    },{
+        route: "/api/rtw/detect", methods: ["GET"], code: checkLocalAccess(async () => {
+            if (os.platform() != "win32") return [400, "Unsupported operating system."];
+            if (os.arch() == "x64") {
+                var regdir = "HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+            } else if (os.arch() == "x86") {
+                var regdir = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+            } else {
+                return [400, "Unsupported architecture. (How did you manage to make this happen???)"];
+            }
+            let {stdout: programList} = await util.promisify(cp.exec)(`REG QUERY "${regdir}"`);
+            let strings = ["Return To Wonderland", "Midnight Synergy Games Collection"];
+            let name;
+            while (!name && strings.length) {
+                let compare = strings.shift();
+                name = programList.split("\r\n").find(l => l.includes(compare));
+                if (name) {
+                    try {
+                        let {stdout: data} = await util.promisify(cp.exec)(`REG QUERY "${name}"`);
+                        let line = data.split("\r\n").find(l => l.trim().startsWith("InstallLocation"));
+                        let tabs = line.trim().split("    ");
+                        let msdir = tabs[2];
+                        if (fs.readdirSync(msdir).includes("res2.dat")) return [200, msdir];
+                        msdir = pj(msdir, "Return To Wonderland");
+                        if (fs.readdirSync(msdir).includes("res2.dat")) return [200, msdir];
+                        return [400, "Detected installation, but couldn't find data files."];
+                    } catch (e) {
+                        return [400, "Detected installation, but encountered an error while processing.\n\n"+e.stack];
+                    }
+                }
+            }
+            return [400, "Couldn't detect RTW installation."];
+        })
     }
 ];
 

@@ -30,8 +30,25 @@ class CheckButton extends ElemJS {
 }
 
 class PathInput extends ElemJS {
-    constructor() {
-        super("input").direct("disabled", true).attribute("placeholder", "Required!");
+    constructor(display) {
+        super("input");
+        this.display = display;
+        this.display.element.style.display = "none";
+        this.saved = true;
+        this.direct("disabled", true).attribute("placeholder", "Required!");
+        this.direct("oninput", () => this.setUnsaved());
+        this.direct("onchange", () => this.setUnsaved());
+    }
+    setUnsaved() {
+        this.saved = false;
+        this.display.element.style.display = "";
+        //this.element.style.backgroundColor = "#fdd";
+        //this.element.style.backgroundColor = "#eff";
+    }
+    setSaved() {
+        this.saved = true;
+        this.display.element.style.display = "none";
+        //this.element.style.backgroundColor = "";
     }
 }
 
@@ -40,8 +57,9 @@ class ConfigEditor extends ElemJS {
         super("div");
         parent.appendChild(this.element);
         this.enabled = null;
-        this.i_installationdir = new PathInput();
-        this.i_leveldir = new PathInput();
+        let savedDisplays = Array(2).fill().map(() => new ElemJS("span").text("unsaved!"));
+        this.i_installationdir = new PathInput(savedDisplays[0]);
+        this.i_leveldir = new PathInput(savedDisplays[1]);
         this.render();
         this.loadState();
     }
@@ -66,6 +84,8 @@ class ConfigEditor extends ElemJS {
         request("/api/rtw/config", response => {
             if (response.status == 204) {
                 this.i_button.check();
+                this.i_installationdir.setSaved();
+                this.i_leveldir.setSaved();
             } else {
                 alert(response.responseText);
             }
@@ -85,6 +105,10 @@ class ConfigEditor extends ElemJS {
                         new ElemJS("td").child(
                             this.i_installationdir
                         )
+                    ).child(
+                        new ElemJS("td").child(
+                            this.i_installationdir.display
+                        )
                     )
                 ).child(
                     new ElemJS("tr").child(
@@ -93,16 +117,34 @@ class ConfigEditor extends ElemJS {
                         new ElemJS("td").child(
                             this.i_leveldir
                         )
+                    ).child(
+                        new ElemJS("td").child(
+                            this.i_leveldir.display
+                        )
                     )
                 ))
             ).child(
                 this.i_button = new CheckButton("Save paths", () => this.saveState())
+            ).child(
+                new ElemJS("button").text("Detect installation").direct("onclick", () => this.detect())
             )
         } else if (this.enabled === false) {
             this.child(new ElemJS("div").text(this.disabledMessage));
         } else {
             this.child(new ElemJS("div").text("Please wait, checking state..."));
         }
+    }
+    detect() {
+        request("/api/rtw/detect", response => {
+            if (response.status == 200) {
+                this.i_installationdir.element.value = response.responseText;
+                this.i_installationdir.setUnsaved();
+                this.i_leveldir.element.value = response.responseText+"\\CustomLevels";
+                this.i_leveldir.setUnsaved();
+            } else {
+                alert(response.responseText);
+            }
+        });
     }
 }
 
