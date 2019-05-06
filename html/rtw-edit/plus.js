@@ -305,9 +305,21 @@ class World {
                             this.tempTiles.length = 0;
                         } else if (this.lastButtons == 4 || this.lastButtons == 3) {
                             let pos = sizeToPos(this.worldToPos([event.clientX, event.clientY])).map(v => Math.floor(v));
-                            let index = this.tiles.map((t, i) => ({t, i})).filter(o => o.t.position.equal(pos)).sort((a, b) => (b.t.tile.layer - a.t.tile.layer))[0].i;
-                            if (index >= 0) {
-                                this.selections.left = this.tiles[index].tile;
+                            let targetTile = this.tiles.map((t, i) => ({t, i})).filter(o => o.t.position.equal(pos)).sort((a, b) => (b.t.tile.layer - a.t.tile.layer))[0];
+                            let newTile;
+                            if (targetTile) {
+                                let index = targetTile.i;
+                                if (index >= 0) {
+                                    newTile = this.tiles[index].tile;
+                                }
+                            } else {
+                                newTile = config.tiles["Empty tile"];
+                            }
+                            if (newTile) {
+                                if (this.selections.right == newTile) {
+                                    this.selections.right = this.selections.left;
+                                }
+                                this.selections.left = newTile;
                             }
                         }
                         this.C.draw();
