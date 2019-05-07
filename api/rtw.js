@@ -6,6 +6,7 @@ const util = require("util");
 const crypto = require("crypto");
 const cp = require("child_process");
 const os = require("os");
+const request = require("request");
 
 const remoteHost = "https://cadence.moe";
 
@@ -181,6 +182,11 @@ let localMethods = [
 ];
 
 let remoteMethods = [
+    {
+        route: "/api/rtw/archive.zip", methods: ["GET"], code: async () => {
+            return {stream: request("https://codeload.github.com/cloudrac3r/cadencegq/zip/master")};
+        }
+    },
     {
         route: "/api/rtw/token", methods: ["GET"], code: async () => {
             let token = tokenStore.generate();

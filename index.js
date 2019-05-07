@@ -192,20 +192,26 @@ function serverRequest(req, res) {
                     cf.log("Ignoring null response for request "+reqPath, "info");
                     return;
                 }
-                if (result.constructor.name == "Array") {
-                    let newResult = {statusCode: result[0], content: result[1]};
-                    if (typeof(newResult.content) == "number") newResult.content = {code: newResult.content};
-                    result = newResult;
+                if (result && result.stream) {
+                    cf.log("Using stream for request "+reqPath, "info");
+                    if (typeof(result.statusCode) == "number") res.writeHead(result.statusCode, result.headers);
+                    result.stream.pipe(res);
+                } else {
+                    if (result.constructor.name == "Array") {
+                        let newResult = {statusCode: result[0], content: result[1]};
+                        if (typeof(newResult.content) == "number") newResult.content = {code: newResult.content};
+                        result = newResult;
+                    }
+                    if (!result.contentType) result.contentType = (typeof(result.content) == "object" ? "application/json" : "text/plain");
+                    if (typeof(result.content) == "object" && ["Object", "Array"].includes(result.content.constructor.name)) result.content = JSON.stringify(result.content);
+                    if (!result.headers) result.headers = {};
+                    headers["Content-Length"] = Buffer.byteLength(result.content);
+                    res.writeHead(result.statusCode, Object.assign({"Content-Type": result.contentType}, headers, result.headers, globalHeaders));
+                    res.write(result.content);
+                    res.end();
+                    if (result.statusCode == 200) hitManager.add("pathHit", reqPath);
+                    if (req.headers.host) hitManager.add("domainHit", req.headers.host);
                 }
-                if (!result.contentType) result.contentType = (typeof(result.content) == "object" ? "application/json" : "text/plain");
-                if (typeof(result.content) == "object" && ["Object", "Array"].includes(result.content.constructor.name)) result.content = JSON.stringify(result.content);
-                if (!result.headers) result.headers = {};
-                headers["Content-Length"] = Buffer.byteLength(result.content);
-                res.writeHead(result.statusCode, Object.assign({"Content-Type": result.contentType}, headers, result.headers, globalHeaders));
-                res.write(result.content);
-                res.end();
-                if (result.statusCode == 200) hitManager.add("pathHit", reqPath);
-                if (req.headers.host) hitManager.add("domainHit", req.headers.host);
             });
             return true;
         }
