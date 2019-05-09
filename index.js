@@ -79,7 +79,8 @@ const pageHandlers = [
     {web: "/egg/card/[0-9]+/fill", local: "/egg/fill.html"},
     {web: "/egg/upload", local: "/egg/upload.html"},
     {web: "/crumpet", local: "/rtw-edit/index.html"},
-    {web: "/crumpet/configure", local: "/rtw-edit/configure.html"}
+    {web: "/crumpet/configure", local: "/rtw-edit/configure.html"},
+    {web: "/crumpet/autoconfigure", local: "/rtw-edit/autoconfigure.html"}
 ];
 const cacheControl = [
     "ttf", "png", "jpg", "svg"

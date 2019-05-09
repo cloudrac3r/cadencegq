@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Crumpet configuration</title>
+        <link rel="stylesheet" href="/rtw-edit/plus.css">
+        <script src="/rtw-edit/request.js"></script>
+        <script src="/rtw-edit/elem.js"></script>
+        <style>
+            #configEditor input {
+                width: 500px;
+            }
+            button {
+                margin-right: 4px;
+            }
+        </style>
+        <script>
+            function manual() {
+                if (window.location.search.includes("firstrun")) {
+                    window.location.replace("/crumpet/configure");
+                } else {
+                    // user came here on purpose, for whatever reason
+                    setTimeout(() => {
+                        alert("Some error happened. You should probably visit the manual configuration page.");
+                    });
+                    document.querySelector("#configure-link").style.display = "";
+                }
+            }
+            request("/api/rtw/installstate", response => {
+                let data = JSON.parse(response.responseText);
+                if (data.installed) {
+                    manual();
+                } else {
+                    request("/api/rtw/detect", response => {
+                        if (response.status == 200) {
+                            let installationDir = response.responseText;
+                            let levelDir = response.responseText+"\\CustomLevels";
+                            request("/api/rtw/config", response => {
+                                if (response.status == 204) {
+                                    request("/api/rtw/requestimages", response => {
+                                        if (response.status == 204) {
+                                            window.location = "/crumpet";
+                                        } else {
+                                            manual();
+                                        }
+                                    });
+                                } else {
+                                    manual();
+                                }
+                            }, {installationDir, levelDir});
+                        } else {
+                            manual();
+                        }
+                    });
+                }
+            });
+        </script>
+    </head>
+    <body>
+        <div class="overlay">
+            <h1>Crumpet configuration</h1>
+            <p>
+                <strong>Attempting automatic configuration. Do not close this window.</strong><br>
+                This will take a few seconds. Please be patient.
+            </p>
+            <p id="configure-link" style="display: none"><a href="/crumpet/configure">Go to the manual configuration page.</a></p>
+        </div>
+    </body>
+</html>

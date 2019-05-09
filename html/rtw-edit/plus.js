@@ -75,7 +75,28 @@ function loadImages(progressCallback) {
                 next();
             }
             image.img.onerror = () => {
-                window.location = "/crumpet/configure";
+                function manual() {
+                    window.location = "/crumpet/configure";
+                }
+                request("/api/rtw/config", response => {
+                    if (response.status != 200) manual();
+                    else try {
+                        let data = JSON.parse(response.responseText);
+                        if (Object.keys(data).length) {
+                            manual();
+                        } else {
+                            request("/api/rtw/config", response => {
+                                if (response.status == 204) {
+                                    window.location = "/crumpet/autoconfigure?firstrun";
+                                } else {
+                                    manual();
+                                }
+                            }, {autoAttempted: true});
+                        }
+                    } catch (e) {
+                        manual();
+                    }
+                });
             }
             image.img.src = image.source;
         })();
