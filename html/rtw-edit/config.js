@@ -385,6 +385,7 @@ let config = {
         ["Boulder", "editor/boulder.png", 1],
         ["Plasma cube", "editor/plasmacube.png", 1],
         ["Explosive barrel", "editor/explosivebarrel.png", 1],
+        ["Fireball", "editor/fireball.png", 1],
         ["Prism", "editor/prism.png", 1],
         ["Coily", "editor/coily.png", 2]
     ];
@@ -411,7 +412,6 @@ let config = {
         ["Rainbow spirit", "editor/spirit.png", 2],
         ["UFO mothership", "editor/mothership.png", 2],
         ["Fish", "editor/fish.png", 4],
-        ["Fireball", "editor/fireball.png", 2],
         ["Pillar", "editor/pillar.png", 4],
         ["Small spike", "editor/spike-small.png", 4],
         ["Large spike", "editor/spike-large.png", 4],
