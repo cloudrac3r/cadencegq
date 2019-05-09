@@ -36,9 +36,12 @@ module.exports = ({db, extra}) => {
         {
             route: "/api/images", methods: ["POST"], code: async ({body}) => {
                 if (!body.length) return [400, 4];
-                const allowed = ["image/png", "image/jpeg"];
+                const allowed = new Map([
+                    ["image/png", "png"],
+                    ["image/jpeg", "jpg"]
+                ]);
                 let type = identify(body);
-                if (!allowed.includes(type.mimeType)) return [400, 5];
+                if (![...allowed.keys()].includes(type.mimeType)) return [400, 5];
                 let hash = extra.hash(body).slice(0, 6);
                 let files = await extra.rdp("content/images");
                 let target;
@@ -50,7 +53,7 @@ module.exports = ({db, extra}) => {
                     } else target = hash;
                 }
                 await util.promisify(fs.writeFile)(pj("content/images", hash), body, {encoding: null});
-                await db.run("INSERT INTO Images VALUES (?, ?, NULL, ?, NULL)", [hash, type.ext, Date.now()]);
+                await db.run("INSERT INTO Images VALUES (?, ?, NULL, ?, NULL)", [hash, allowed.get(type.mimeType), Date.now()]);
                 return [201, {imageID: hash}];
             }
         },
