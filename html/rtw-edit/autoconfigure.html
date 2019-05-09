@@ -29,7 +29,7 @@
             request("/api/rtw/installstate", response => {
                 let data = JSON.parse(response.responseText);
                 if (data.installed) {
-                    manual();
+                    window.location.replace("/crumpet");
                 } else {
                     request("/api/rtw/detect", response => {
                         if (response.status == 200) {
