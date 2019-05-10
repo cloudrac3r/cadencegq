@@ -80,7 +80,8 @@ const pageHandlers = [
     {web: "/egg/upload", local: "/egg/upload.html"},
     {web: "/crumpet", local: "/rtw-edit/index.html"},
     {web: "/crumpet/configure", local: "/rtw-edit/configure.html"},
-    {web: "/crumpet/autoconfigure", local: "/rtw-edit/autoconfigure.html"}
+    {web: "/crumpet/autoconfigure", local: "/rtw-edit/autoconfigure.html"},
+    {web: "/crumpet/manual", local: "/rtw-edit/manual.html"}
 ];
 const cacheControl = [
     "ttf", "png", "jpg", "svg"

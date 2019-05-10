@@ -25,6 +25,10 @@ option {
     font-size: 14px;
 }
 
+a, a:visited {
+    color: #1c4cc4;
+}
+
 body > div.overlay {
     position: absolute;
     left: 9px;
