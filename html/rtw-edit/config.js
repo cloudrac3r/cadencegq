@@ -126,12 +126,6 @@ let config = {
             categories: ["Ice & Conveyors"],
             layer: 0,
             hex: 0x0194
-        },
-        "Sticky cube": {
-            image: "editor/stickycube.png",
-            categories: ["Objects"],
-            layer: 0,
-            hex: 0x07D0
         }
     },
     categories: [
@@ -458,6 +452,13 @@ let config = {
         }
         if (entry[3]) config.tiles[entry[0]].delete = entry[3];
     }
+}
+
+config.tiles["Sticky cube"] = {
+    image: "editor/stickycube.png",
+    categories: ["Objects"],
+    layer: 0,
+    hex: 0x07D0
 }
 
 for (let i = 0; i < 4; i++) {
