@@ -460,7 +460,7 @@ class World {
         // Header
         readString();
         // Filename
-        q("#iFileName").value = readString();
+        q("#iFilename").value = readString();
         // Random 4 bytes
         readInt();
         // Level name
