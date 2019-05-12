@@ -119,3 +119,17 @@ input[type="file"] {
     color: darkred;
     display: block;
 }
+
+input#iCurrentSign {
+    width: 60px;
+}
+input#iCurrentSign:invalid {
+    box-shadow: 0px 0px 3px 1px red;
+}
+
+#iSignText {
+    margin: 8px 4px 4px 4px;
+    display: block;
+    box-sizing: border-box;
+    resize: none;
+}

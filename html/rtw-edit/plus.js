@@ -1,7 +1,8 @@
 const tileSize = 32;
 const level = {
     tiles: [
-    ]
+    ],
+    signs: Array(20).fill("")
 };
 const imagesDir = "/rtw-edit/images";
 
@@ -100,6 +101,24 @@ function loadImages(progressCallback) {
             images[k].img.src = images[k].source;
         });
     }));
+}
+
+function getCurrentSignIndex() {
+    let value = q("#iCurrentSign").value;
+    let currentSign = +value;
+    if (currentSign >= 1 && currentSign <= 20) {
+        return currentSign-1;
+    } else {
+        return null;
+    }
+}
+
+function loadCurrentSign() {
+    let currentSign = getCurrentSignIndex();
+    if (currentSign !== null) {
+        q("#iSignText").currentSign = currentSign;
+        q("#iSignText").value = level.signs[currentSign];
+    }
 }
 
 let canvas = q("canvas");
@@ -204,7 +223,7 @@ class World {
         });
         ["mousedown", "mousemove", "mouseup"].forEach(e => this.C.canvas.addEventListener(e, event => this.handleMouseEvent(e, event)));
         document.addEventListener("keypress", event => {
-            if (event.target.tagName != "INPUT") {
+            if (event.target.tagName != "INPUT" && event.target.tagName != "TEXTAREA") {
                 if (event.ctrlKey && event.key == "z") {
                     if (this.undo.length) {
                         this.tiles = [...this.undo.pop()];
@@ -230,6 +249,14 @@ class World {
                 }
             }
         });
+        q("#iCurrentSign").addEventListener("input", () => loadCurrentSign())
+        q("#iSignText").addEventListener("input", event => {
+            let currentSign = getCurrentSignIndex();
+            if (currentSign !== null) {
+                level.signs[currentSign] = event.currentTarget.value;
+            }
+        });
+        loadCurrentSign();
     }
     handleMouseEvent(type, event) {
         this.lastEvent = event;
@@ -500,8 +527,12 @@ class World {
         }
         // Signs
         for (let sign = 0; sign < 20; sign++) {
-            readInt();
+            let lines = readString().split("#");
+            lines = lines.slice(0, 4);
+            lines = lines.map(l => l.trim());
+            level.signs[sign] = lines.join("\n").trim();
         }
+        loadCurrentSign();
         // Music
         q("#iMusic").value = readInt();
         this.C.draw();
@@ -558,7 +589,11 @@ class World {
         }
         // Signs
         for (let sign = 0; sign < 20; sign++) {
-            pushInt(0); // empty text
+            let lines = level.signs[sign].split("\n");
+            lines = lines.slice(0, 4);
+            lines = lines.map(l => l.trim().slice(0, 50));
+            let content = lines.join("#").trim();
+            pushString(content);
         }
         // Music
         let music = parseInt(q("#iMusic").value) || 1;
