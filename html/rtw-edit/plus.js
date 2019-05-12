@@ -63,18 +63,17 @@ config.categories.forEach(c => {
 let imagesLoaded = false;
 
 function loadImages(progressCallback) {
+    let completed = 0;
     let total = Object.keys(images).length;
-    let todo = Object.values(images);
-    return new Promise(resolve => {
-        (function next() {
-            if (todo.length == 0) return resolve();
-            let image = todo.shift();
-            image.img = new Image();
-            image.img.onload = () => {
-                progressCallback(total-todo.length, total);
-                next();
+    return Promise.all(Object.keys(images).map(k => {
+        return new Promise(resolve => {
+            images[k].img = new Image();
+            images[k].img.onload = () => {
+                completed++;
+                progressCallback(completed, total);
+                resolve();
             }
-            image.img.onerror = () => {
+            images[k].img.onerror = () => {
                 function manual() {
                     window.location = "/crumpet/configure";
                 }
@@ -98,9 +97,9 @@ function loadImages(progressCallback) {
                     }
                 });
             }
-            image.img.src = image.source;
-        })();
-    });
+            images[k].img.src = images[k].source;
+        });
+    }));
 }
 
 let canvas = q("canvas");
