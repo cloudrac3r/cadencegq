@@ -133,3 +133,31 @@ input#iCurrentSign:invalid {
     box-sizing: border-box;
     resize: none;
 }
+
+#saveToast {
+    display: block;
+    position: absolute;
+    top: -2px;
+    width: 220px;
+    left: 0px;
+    right: 0px;
+    margin: 0px auto;
+    text-align: center;
+    transform: translateY(-100%);
+    background: white;
+    border: 2px solid black;
+    line-height: 1;
+    padding: 8px;
+    border-radius: 0px 0px 6px 6px;
+    transition: 0.8s cubic-bezier(0.50, 0.00, 0.83, 0.85)
+}
+#saveToast.toast-pop {
+    transform: translateY(0%);
+    transition: none;
+}
+#saveToast[data-state="complete"] {
+    color: #005000;
+}
+#saveToast[data-state="failed"] {
+    color: #900000;
+}

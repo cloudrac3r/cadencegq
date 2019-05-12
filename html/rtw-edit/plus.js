@@ -222,13 +222,38 @@ class World {
             this.C.draw();
         });
         ["mousedown", "mousemove", "mouseup"].forEach(e => this.C.canvas.addEventListener(e, event => this.handleMouseEvent(e, event)));
+        document.addEventListener("keydown", event => {
+            if (event.target.tagName != "INPUT" && event.target.tagName != "TEXTAREA") {
+                if (event.ctrlKey && event.key == "s") {
+                    let saveToast = q("#saveToast");
+                    saveToast.innerText = "Saving...";
+                    saveToast.setAttribute("data-state", "saving");
+                    saveToast.classList.add("toast-pop");
+                    this.save(true, result => {
+                        if (!result) {
+                            saveToast.innerText = "Save complete!";
+                            saveToast.setAttribute("data-state", "complete");
+                            setTimeout(() => {
+                                saveToast.classList.remove("toast-pop");
+                            }, 600);
+                        } else {
+                            saveToast.innerText = "Save failed.";
+                            saveToast.setAttribute("data-state", "failed");
+                            setTimeout(() => {
+                                saveToast.classList.remove("toast-pop");
+                            }, 2400);
+                        }
+                    });
+                    event.preventDefault();
+                }
+            }
+        });
         document.addEventListener("keypress", event => {
             if (event.target.tagName != "INPUT" && event.target.tagName != "TEXTAREA") {
                 if (event.ctrlKey && event.key == "z") {
                     if (this.undo.length) {
                         this.tiles = [...this.undo.pop()];
                         this.C.draw();
-                        event.preventDefault();
                     }
                 } else if (event.key == "a") {
                     this.drawStyle = "pencil";
@@ -554,7 +579,7 @@ class World {
         // Header
         pushString("Stinky & Loof Level File v6");
         // Filename
-        let filename = q("#iFilename").value || "CCEXPORT";
+        let filename = q("#iFilename").value.toUpperCase() || "CCEXPORT";
         pushString(filename);
         // Random 4 bytes
         for (let i = 0; i < 4; i++) array.push(Math.floor(Math.random()*256));
