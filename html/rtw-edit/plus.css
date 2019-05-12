@@ -14,7 +14,7 @@ canvas {
 
 html, body {
     height: 100%;
-    margin: 0;
+    margin: 0px;
 }
 
 body, button, input, select, option {
