@@ -129,14 +129,14 @@ let localMethods = [
                 let zipSavePath = pj(__dirname, "..", "html", "rtw-edit");
                 await util.promisify(fs.writeFile)(pj(zipSavePath, "images.zip"), body, {encoding: null});
                 if (os.platform().includes("win")) {
-                    await util.promisify(cp.exec)("7z x images.zip", {
+                    await util.promisify(cp.exec)("7z -aoa x images.zip", {
                         cwd: zipSavePath,
                         env: {PATH: "C:\\Program Files\\7-Zip;C:\\Program Files (x86)\\7-Zip"}}
                     )
                 } else if (os.platform() == "linux") {
-                    await util.promisify(cp.exec)("7z x images.zip", {
+                    await util.promisify(cp.exec)("7z -aoa x images.zip", {
                         cwd: zipSavePath
-                    }).catch(() => util.promisify(cp.exec)("unzip images.zip", {
+                    }).catch(() => util.promisify(cp.exec)("unzip -o images.zip", {
                         cwd: zipSavePath
                     }));
                 }
