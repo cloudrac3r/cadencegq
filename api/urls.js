@@ -39,7 +39,9 @@ module.exports = ({db, extra}) => {
                             contentType: "application/json",
                             content: {
                                 code: 10,
-                                message: "This website contains videos featuring illegal content, so uploading links to it is forbidden."
+                                message:
+                                    "This website contains videos featuring illegal content, so uploading links to it is forbidden.\n"+
+                                    "If you would like to appeal that this site be unbanned, please send an email using the details on the contact page."
                             }
                         }
                     } else {

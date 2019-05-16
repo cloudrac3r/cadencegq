@@ -15,7 +15,7 @@
                     progress.innerHTML = `Success! <a href="/api/urls/${data.hash}">Here's your new link</a>`;
                     progress.classList.add("successDisplay");
                 } else if (data.message) {
-                    progress.innerHTML = `Failed to submit link. The server says:<br>`+data.message;
+                    progress.innerText = `Failed to submit link. The server says:\n`+data.message;
                     progress.classList.add("errorDisplay");
                     if (!data.retryForbidden) q("#submit").disabled = false;
                 } else if (data.code) {
