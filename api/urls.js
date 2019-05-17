@@ -29,26 +29,23 @@ module.exports = ({db, extra}) => {
             route: "/api/urls", methods: ["POST"], code: async ({data}) => {
                 if (!data) return [400, 3];
                 if (!data.target) return [400, 4];
-                if (!data.target.match(new RegExp(`https?://([a-z0-9]\.)+[a-z]{2,}(/.+)?`))) return [400, 5];
+                if (!data.target.match(new RegExp(`^https?://\\w`))) return [400, 5];
                 try {
-                    let urlo = new URL(data.target);
-                    if (urlo.hostname.endsWith("153news.net")) {
-                        void 0;
-                        return {
-                            statusCode: 403,
-                            contentType: "application/json",
-                            content: {
-                                code: 10,
-                                message:
-                                    "This website contains videos featuring illegal content, so uploading links to it is forbidden.\n"+
-                                    "If you would like to appeal that this site be unbanned, please send an email using the details on the contact page."
-                            }
+                    var urlObject = new URL(data.target);
+                } catch (e) {
+                    return [400, 5];
+                }
+                if (urlObject.hostname.endsWith("153news.net")) {
+                    return {
+                        statusCode: 403,
+                        contentType: "application/json",
+                        content: {
+                            code: 10,
+                            message:
+                                "This website contains videos featuring illegal content, so uploading links to it is forbidden.\n"+
+                                "If you would like to appeal that this site be unbanned, please send an email using the details on the contact page."
                         }
-                    } else {
-                        void 0;
                     }
-                } catch(e) {
-                    void 0;
                 }
                 let result = await extra.resolveAuthorInput(data);
                 if (!result[0]) return result[1];
