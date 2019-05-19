@@ -364,27 +364,36 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
         {
             route: "/api/youtube/get_endscreen", methods: ["GET"], code: async ({params}) => {
                 if (!params.v) return [400, 1];
-                let data = await rp("https://youtube.com/get_endscreen?v="+params.v);
+                let data = await rp("https://www.youtube.com/get_endscreen?v="+params.v);
                 data = data.toString();
                 try {
-                    let json = JSON.parse(data.slice(data.indexOf("\n")+1));
-                    let promises = [];
-                    for (let e of json.elements.filter(e => e.endscreenElementRenderer.style == "WEBSITE")) {
-                        for (let thb of e.endscreenElementRenderer.image.thumbnails) {
-                            let promise = rp(thb.url, {encoding: null});
-                            promise.then(image => {
-                                let base64 = image.toString("base64");
-                                thb.url = "data:image/jpeg;base64,"+base64;
-                            });
-                            promises.push(promise);
+                    if (data == `""`) {
+                        return {
+                            statusCode: 204,
+                            content: "",
+                            contentType: "text/html",
+                            headers: {"Access-Control-Allow-Origin": "*"}
                         }
-                    }
-                    await Promise.all(promises);
-                    return {
-                        statusCode: 200,
-                        content: json,
-                        contentType: "application/json",
-                        headers: {"Access-Control-Allow-Origin": "*"}
+                    } else {
+                        let json = JSON.parse(data.slice(data.indexOf("\n")+1));
+                        let promises = [];
+                        for (let e of json.elements.filter(e => e.endscreenElementRenderer.style == "WEBSITE")) {
+                            for (let thb of e.endscreenElementRenderer.image.thumbnails) {
+                                let promise = rp(thb.url, {encoding: null});
+                                promise.then(image => {
+                                    let base64 = image.toString("base64");
+                                    thb.url = "data:image/jpeg;base64,"+base64;
+                                });
+                                promises.push(promise);
+                            }
+                        }
+                        await Promise.all(promises);
+                        return {
+                            statusCode: 200,
+                            content: json,
+                            contentType: "application/json",
+                            headers: {"Access-Control-Allow-Origin": "*"}
+                        }
                     }
                 } catch (e) {
                     return [500, "Couldn't parse endscreen data\n\n"+data];
