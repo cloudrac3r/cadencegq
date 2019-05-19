@@ -560,14 +560,16 @@ input, button {
     background: linear-gradient(-45deg, #050505, #111 50%, #222 50%, #333) 0px -12px;
 }
 
-.storyboard::before {
+.storyboard-fg::before {
     display: block;
     position: absolute;
     content: "";
-    left: 74px;
+    left: 0;
+    right: 0;
+    margin: auto;
     width: 12px;
     height: 12px;
-    bottom: -6px;
+    bottom: -31px;
     background-color: black;
     transform: rotate(-135deg);
     clip-path: polygon(0% 0%, 100% 0%, 0% 100%);

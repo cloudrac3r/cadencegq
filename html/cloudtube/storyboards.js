@@ -141,8 +141,12 @@ class Storyboard {
         if (this.visible) {
             this.container.style.left = this.left+"px";
             this.timeDisplay.textContent = prettySeconds(this.time);
-            if (this.range) this.display.style.background = "url("+this.range.text.split("#")[0]+")";
-            else this.display.style.background = "epic";
+            if (this.range) {
+                this.display.style.background = "url("+this.range.text.split("#")[0]+")";
+                this.display.style.width = (this.range.text.split("#")[1].split(",")[2]-1)+"px";
+            } else {
+                this.display.style.background = "epic";
+            }
             this.display.style.backgroundPosition = this.backgroundPosition;
         }
     }
