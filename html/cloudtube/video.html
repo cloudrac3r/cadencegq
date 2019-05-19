@@ -2,6 +2,7 @@
 <link rel="stylesheet" type="text/css" href="/cloudtube/youtube.css">
 <title></title>
 <script src="/cloudtube/cloudtube.js"></script>
+<script defer src="/cloudtube/storyboards.js"></script>
 <script src="/color-thief.min.js"></script> <!-- https://github.com/lokesh/color-thief/ -->
 <!-- metaOGTags -->
 <script>
@@ -403,7 +404,11 @@
             }
             q("#playbackErrorContainer").style.display = "";
         });
-        window.addEventListener("beforeunload", () => ignorePlaybackError = true);
+        video.addEventListener("timeupdate", event => {
+        });
+        window.addEventListener("beforeunload", () => {
+            ignorePlaybackError = true;
+        });
         q("#speedSliderContainer").children[0].addEventListener("wheel", event => {
             let speedSlider = q("#speedSlider");
             let adjustAmount = 5;
@@ -726,10 +731,11 @@
 </script>
 <!-- TEMPLATE header -->
 <div id="mainContainer">
-    <div style="flex: 1;">
+    <div>
         <div class="videoContainer">
             <video controls preload="auto" ondurationchange="loadLastTime()"></video>
         </div>
+        <div id="currentTimeContainer"></div>
         <div id="videoEndCardContainer"></div>
         <div class="videoInfoBox">
             <div>

@@ -33,11 +33,26 @@ const sections = {
             invert: true
         }
     ],
-    "other": [
+    "storyboards": [
         {
-            label: "Prefer webm format over mp4",
-            comment: "Useful if your browser has problems with mp4 playback.",
-            lsm: "preferWebm",
+            label: "Enable storyboards",
+            comment: "Storyboards are the preview thumbnails that appear when you hover the video timeline.",
+            lsm: "settingDisableStoryboards",
+            invert: true
+        },{
+            label: "Preload storyboards",
+            comment: "Load thumbnails before they are needed so they can be displayed sooner when you do need them.",
+            lsm: "settingDisableStoryboardPreload",
+            invert: true
+        }
+    ],
+    "privacy": [
+        {
+            label: "Store watch history",
+            comment:
+                "The list of watched videos is stored locally and is never sent to another server. "+
+                "If enabled, watched status will be displayed next to each video on your subscriptions page.",
+            lsm: "trackWatchedVideos",
             invert: false
         },
         {
@@ -56,6 +71,14 @@ const sections = {
                 "Always"
             ],
             defaultIndex: 1
+        }
+    ],
+    "other": [
+        {
+            label: "Prefer webm format over mp4",
+            comment: "Useful if your browser has problems with mp4 playback.",
+            lsm: "preferWebm",
+            invert: false
         },
         {
             label: "Show proper dates instead of time passed since that event",

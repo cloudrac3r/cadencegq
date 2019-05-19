@@ -415,13 +415,13 @@ class ElemJS {
     }
 }
 
-function prettySeconds(seconds) {
+function prettySeconds(seconds, alwaysHours) {
     let minutes = Math.floor(seconds / 60);
     seconds = seconds % 60;
     let hours = Math.floor(minutes / 60);
     minutes = minutes % 60;
     let output = [];
-    if (hours) {
+    if (alwaysHours || hours) {
         output.push(hours);
         output.push(minutes.toString().padStart(2, "0"));
     } else {

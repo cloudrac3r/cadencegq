@@ -39,9 +39,6 @@
                 let ne = generateVideoListItem(video).element;
                 if (lsm.get("trackWatchedVideos") == "1") {
                     ne.children[0].children[0].classList.add(lsm.array("watchedVideos").array.includes(video.videoId) ? "read" : "unread");
-                    q("#trackWatchedCheckbox").checked = true;
-                }
-                if (lsm.get("trackWatchedVideos") == "1") {
                     ne.addEventListener("click", event => {
                         if (event.clientX <= 45) { // read indicator
                             let img = ne.children[0].children[0];
@@ -111,12 +108,6 @@
             lsm.array("subscriptions").remove(channelID);
             updateSubCount();
         }
-    }
-
-    function toggleTracking(event) {
-        lsm.set("trackWatchedVideos", ""+(+event.target.checked));
-        if (!event.target.checked) lsm.set("watchedVideos", "");
-        window.location.reload();
     }
 
     function toggleHideWatched(event) {
@@ -196,7 +187,6 @@
             Subscribing does not require any accounts and does not directly send requests to YouTube.<br>
             Using the search bar above still searches all of CloudTube, not just your subscriptions.
         </p>
-        <div><input type="checkbox" id="trackWatchedCheckbox" onchange="toggleTracking(event)"><label for="trackWatchedCheckbox">Record all watched videos, and mark videos as watched/unwatched on this page</label></div>
     </div>
     <table style="display: none">
         <tbody id="subStorage">

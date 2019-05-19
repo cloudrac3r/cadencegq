@@ -12,12 +12,14 @@ input, button, pre, select {
 }
 #mainContainer > div:first-child {
     flex: 1;
+    position: relative;
     margin-right: 20px;
 }
 
 .videoContainer {
     display: flex;
     width: 100%;
+    position: relative;
 }
 #mainContainer .videoContainer {
     background: black;
@@ -546,4 +548,54 @@ input, button {
 .button-dangerous:hover {
     border: 2px solid #b98627;
     padding: 7px;
+}
+
+.storyboard {
+    position: absolute;
+    z-index: 2;
+    border: 1px solid black;
+    left: 0px;
+    bottom: 80px;
+    pointer-events: none;
+    background: linear-gradient(-45deg, #050505, #111 50%, #222 50%, #333) 0px -12px;
+}
+
+.storyboard::before {
+    display: block;
+    position: absolute;
+    content: "";
+    left: 74px;
+    width: 12px;
+    height: 12px;
+    bottom: -6px;
+    background-color: black;
+    transform: rotate(-135deg);
+    clip-path: polygon(0% 0%, 100% 0%, 0% 100%);
+}
+
+.storyboard-fg {
+    left: 0px;
+    right: 0px;
+    height: 86px; /* lowest images (may?) have 4px of transparency at bottom */
+    width: 159px; /* all images have a 1px black bar at right */
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+.storyboard-time {
+    background-color: black;
+    color: #ccc;
+    text-align: center;
+    font-size: 16px;
+    line-height: 24px;
+    height: 24px;
+}
+
+#currentTimeContainer {
+    font-size: 16px;
+    position: absolute;
+    z-index: -1;
+    left: 40px;
+    top: 90px;
+    opacity: 0;
 }
