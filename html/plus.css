@@ -199,10 +199,10 @@ tr:nth-child(even) {
     background-color: #47494c;
 }
 
-td {
+td, th {
     padding: 3px 5px;
 }
-table, tr, td {
+table, tr, td, th {
     border: 1px solid #999;
 }
 
