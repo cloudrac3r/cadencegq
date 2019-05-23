@@ -142,7 +142,7 @@ async function resolveTemplates(page) {
     }
     let results = await Promise.all(promises);
     results.filter(r => r).forEach(result => {
-        page = page.replace("<!-- TEMPLATE "+result.template+" -->", result.content);
+        page = page.replace("<!-- TEMPLATE "+result.template+" -->", () => result.content);
     });
     return page;
 }

@@ -194,7 +194,7 @@ const externalc = (function() {
         },{
             triggers: ["foreach"],
             code: (string, trigger, variable, index, code, ...values) => {
-                return values.map((v, i) => "|"+run(code.replace(/<\\>/g, "").replace(/^\[#/, "[").replace("{"+variable+"}", v).replace("{"+index+"}", i)).output).join("");
+                return values.map((v, i) => "|"+run(code.replace(/<\\>/g, "").replace(/^\[#/, "[").replace("{"+variable+"}", () => v).replace("{"+index+"}", () => i)).output).join("");
             }
         },{
             triggers: ["asc"],

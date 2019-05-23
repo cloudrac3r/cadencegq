@@ -80,8 +80,8 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                         let data = JSON.parse(body);
                         fs.readFile("html/cloudtube/video.html", {encoding: "utf8"}, (err, page) => {
                             resolveTemplates(page).then(page => {
-                                page = page.replace('"<!-- videoInfo -->"', body);
-                                page = page.replace("<title></title>", `<title>${data.title} — CloudTube video</title>`);
+                                page = page.replace('"<!-- videoInfo -->"', () => body);
+                                page = page.replace("<title></title>", () => `<title>${data.title} — CloudTube video</title>`);
                                 while (page.includes("yt.www.watch.player.seekTo")) page = page.replace("yt.www.watch.player.seekTo", "seekTo");
                                 let metaOGTags =
                                     `<meta property="og:title" content="${data.title.replace(/&/g, "&amp;").replace(/"/g, "&quot;")} — CloudTube video" />\n`+
@@ -89,7 +89,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                                     `<meta property="og:image" content="https://invidio.us/vi/${fill[0]}/mqdefault.jpg" />\n`+
                                     `<meta property="og:url" content="https://${req.headers.host}${req.url}" />\n`+
                                     `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
-                                page = page.replace("<!-- metaOGTags -->", metaOGTags);
+                                page = page.replace("<!-- metaOGTags -->", () => metaOGTags);
                                 resolve({
                                     statusCode: 200,
                                     contentType: "text/html",
@@ -111,15 +111,15 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                     try {
                         fs.readFile("html/cloudtube/channel.html", {encoding: "utf8"}, (err, page) => {
                             resolveTemplates(page).then(page => {
-                                page = page.replace('"<!-- channelInfo -->"', JSON.stringify(data));
-                                page = page.replace("<title></title>", `<title>${data.author} — CloudTube channel</title>`);
+                                page = page.replace('"<!-- channelInfo -->"', () => JSON.stringify(data));
+                                page = page.replace("<title></title>", () => `<title>${data.author} — CloudTube channel</title>`);
                                 let metaOGTags =
                                     `<meta property="og:title" content="${data.author.replace(/&/g, "&amp;").replace(/"/g, "&quot;")} — CloudTube channel" />\n`+
                                     `<meta property="og:type" content="video.movie" />\n`+
                                     `<meta property="og:image" content="${data.authorThumbnails[0].url.split("=")[0]}" />\n`+
                                     `<meta property="og:url" content="https://${req.headers.host}${req.url}" />\n`+
                                     `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
-                                page = page.replace("<!-- metaOGTags -->", metaOGTags);
+                                page = page.replace("<!-- metaOGTags -->", () => metaOGTags);
                                 resolve({
                                     statusCode: 200,
                                     contentType: "text/html",
@@ -142,8 +142,8 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                         let data = JSON.parse(body);
                         fs.readFile("html/cloudtube/playlist.html", {encoding: "utf8"}, (err, page) => {
                             resolveTemplates(page).then(page => {
-                                page = page.replace('"<!-- playlistInfo -->"', body);
-                                page = page.replace("<title></title>", `<title>${data.title} — CloudTube playlist</title>`);
+                                page = page.replace('"<!-- playlistInfo -->"', () => body);
+                                page = page.replace("<title></title>", () => `<title>${data.title} — CloudTube playlist</title>`);
                                 while (page.includes("yt.www.watch.player.seekTo")) page = page.replace("yt.www.watch.player.seekTo", "seekTo");
                                 let metaOGTags =
                                     `<meta property="og:title" content="${data.title.replace(/&/g, "&amp;").replace(/"/g, "&quot;")} — CloudTube playlist" />\n`+
@@ -151,7 +151,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                                     `<meta property="og:url" content="https://${req.headers.host}${req.url}" />\n`+
                                     `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                                 if (data.videos[0]) metaOGTags += `<meta property="og:image" content="https://invidio.us/vi/${data.videos[0].videoId}/mqdefault.jpg" />\n`;
-                                page = page.replace("<!-- metaOGTags -->", metaOGTags);
+                                page = page.replace("<!-- metaOGTags -->", () => metaOGTags);
                                 resolve({
                                     statusCode: 200,
                                     contentType: "text/html",
@@ -177,14 +177,14 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                             rp(`${getInvidiousHost("search")}/api/v1/search?q=${encodeURIComponent(decodeURIComponent(params.q))}&sort_by=${sort_by}`).then(body => {
                                 try {
                                     // json.parse?
-                                    page = page.replace('"<!-- searchResults -->"', body);
-                                    page = page.replace("<title></title>", `<title>${decodeURIComponent(params.q)} — CloudTube search</title>`);
+                                    page = page.replace('"<!-- searchResults -->"', () => body);
+                                    page = page.replace("<title></title>", () => `<title>${decodeURIComponent(params.q)} — CloudTube search</title>`);
                                     let metaOGTags =
                                         `<meta property="og:title" content="${decodeURIComponent(params.q).replace(/"/g, '\\"')} — CloudTube search" />\n`+
                                         `<meta property="og:type" content="video.movie" />\n`+
                                         `<meta property="og:url" content="https://${req.headers.host}${req.path}" />\n`+
                                         `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
-                                    page = page.replace("<!-- metaOGTags -->", metaOGTags);
+                                    page = page.replace("<!-- metaOGTags -->", () => metaOGTags);
                                     resolve({
                                         statusCode: 200,
                                         contentType: "text/html",
@@ -204,7 +204,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                                 `<meta property="og:type" content="video.movie" />\n`+
                                 `<meta property="og:url" content="https://${req.headers.host}${req.path}" />\n`+
                                 `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
-                            page = page.replace("<!-- metaOGTags -->", metaOGTags);
+                            page = page.replace("<!-- metaOGTags -->", () => metaOGTags);
                             resolve({
                                 statusCode: 200,
                                 contentType: "text/html",
