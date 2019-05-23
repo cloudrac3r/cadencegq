@@ -427,10 +427,20 @@
         let data = "<!-- videoInfo -->";
         videoID = data.videoId;
         // Set buttons below video
-        q("#youtubeLink").setAttribute("href", `https://youtube.com/watch?v=${videoID}&feature=cloudtube`);
-        q("#invidiousLink").setAttribute("href", `https://invidio.us/watch?v=${videoID}&feature=cloudtube`);
-        q("#legacyLink").setAttribute("href", `/legacy/${videoID}`);
-        if (lsm.get("enableLegacyLinks") == "1") q("#legacyLink").style.display = "";
+        let openInOutput = q("#openInOutput");
+        let openin = lsm.get("videoOpenIn");
+        [...openInOutput.children].forEach(child => {
+            if (child.hasAttribute("data-default-openin")) {
+                if (openin === null) child.href = child.getAttribute("data-openin-url").replace("%%", videoID);
+                else child.remove();
+            }
+        });
+        if (openin !== null) {
+            openin = JSON.parse(openin);
+            openin.forEach(data => {
+                openInOutput.appendChild(new ElemJS("a").class("linkbutton").text(data.name).direct("href", data.url.replace("%%", videoID)).element);
+            });
+        }
         // Load video
         //formats = allFormats.filter(f => usefulFormats.includes(f.itag)/* && f.audioEncoding*/);
         allFormats = data.formatStreams.concat(data.adaptiveFormats);
@@ -774,11 +784,10 @@
             <select id="qualitySelect" onchange="chooseFormat(event.target.selectedIndex)"></select>
             <span id="speedSliderContainer"><span><span class="speedText">Speed:</span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" id="speedSlider" min="10" max="500" value="100" step="1" oninput="adjustSpeedSlider()" autocomplete="off"></span></span>
         </div>
-        <div class="belowButtonContainer">
+        <div class="belowButtonContainer" id="openInOutput">
             <a class="linkbutton" href="/cloudtube/subscriptions"><img src="/fonts/search.svg" style="position: relative; top: 2px; margin: 0px 8px 0px 4px; width: 16px; height: 16px;" alt="">Search</a>
-            <a class="linkbutton" id="youtubeLink">Watch on YouTube</a>
-            <a class="linkbutton" id="invidiousLink">Watch on Invidious</a>
-            <a class="linkbutton" id="legacyLink" style="display: none;">Watch on legacy</a>
+            <a class="linkbutton" data-openin-url="https://youtube.com/watch?v=%%&feature=cloudtube" data-default-openin>Watch on YouTube</a>
+            <a class="linkbutton" data-openin-url="https://invidio.us/watch?v=%%" data-default-openin>Watch on Invidious</a>
         </div>
         <div class="videoDescription">
             Placeholder description

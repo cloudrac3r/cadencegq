@@ -127,6 +127,10 @@ input, button, pre, select {
     margin: 0px 4px;
 }
 
+#openInOutput {
+    flex-wrap: wrap;
+}
+
 #videoRightContainer {
     margin: 20px 10px 0px 0px;
     text-align: right;
@@ -548,6 +552,25 @@ input, button {
 .button-dangerous:hover {
     border: 2px solid #b98627;
     padding: 7px;
+}
+
+.openin-item {
+    display: flex;
+    max-width: 670px;
+    margin-top: 8px;
+}
+
+.openin-item input {
+    padding: 6px 8px;
+}
+
+.openin-item button {
+    line-height: 1;
+    width: 34px;
+}
+
+.openin-url {
+    flex: 1;
 }
 
 .storyboard {

@@ -88,12 +88,6 @@ const sections = {
                 'However, these dates are still calculated from the "x months ago" text, and will therefore be somewhat inaccurate.',
             lsm: "settingApproximateDates",
             invert: false
-        },
-        {
-            label: "Show links to the legacy player",
-            comment: `I'd quite like to deprecate the legacy player. If you turn this on, please <a href="/about/contact">tell me</a> why you need it.`,
-            lsm: "enableLegacyLinks",
-            invert: false
         }
     ]
 };
@@ -377,6 +371,101 @@ class FilterCondition extends ElemJS {
     }
 }
 
+class OpenInManager extends ElemJS {
+    constructor(container) {
+        super("div");
+        this.container = container;
+        this.container.appendChild(this.element);
+        this.openins = [];
+        this.element.addEventListener("input", event => this.input(event));
+        this.loadLsm();
+        this.render();
+    }
+    loadLsm() {
+        let data = lsm.get("videoOpenIn");
+        if (data === null) {
+            data = [
+                {name: "Watch on YouTube", url: "https://youtube.com/watch?v=%%&feature=cloudtube"},
+                {name: "Watch on Invidious", url: "https://invidio.us/watch?v=%%"}
+            ];
+        } else {
+            data = JSON.parse(data);
+        }
+        data.forEach(item => {
+            this.addOpenIn(item);
+        });
+    }
+    saveLsm() {
+        let data = this.openins.map(openin => openin.getData());
+        data = data.filter(d => d.name && d.url);
+        data = JSON.stringify(data);
+        lsm.set("videoOpenIn", data);
+    }
+    render() {
+        this.clearChildren();
+        this.openins.forEach(openin => this.child(openin));
+    }
+    addOpenIn(data, focus) {
+        let n = new OpenIn(data, this, focus);
+        this.openins.push(n);
+        this.render();
+        if (focus) this.saveLsm();
+    }
+    removeOpenIn(toRemove) {
+        this.openins = this.openins.filter(o => o != toRemove);
+        this.saveLsm();
+        this.render();
+    }
+    input(event) {
+        if (event.target.tagName == "INPUT") {
+            this.saveLsm();
+        }
+    }
+}
+
+class OpenIn extends ElemJS {
+    constructor(data, manager, focus) {
+        super("div");
+        this.class("openin-item", "filter-item");
+        this.manager = manager;
+        this.name = data.name;
+        this.url = data.url;
+        this.child(
+            this.nameInput = new ElemJS("input")
+            .direct("placeholder", "Name")
+            .direct("value", this.name)
+        ).child(
+            this.urlInput = new ElemJS("input")
+            .direct("placeholder", "Value")
+            .direct("value", this.url)
+            .class("openin-url")
+        ).child(
+            this.removeButton = new ElemJS("button")
+            .child(
+                new ElemJS("img")
+                .direct("src", "/fonts/cross.svg")
+                .direct("alt", "Remove filter condition.")
+            )
+            .class("button-dangerous")
+            .direct("onclick", () => this.remove())
+        );
+        if (focus) {
+            setTimeout(() => {
+                this.nameInput.element.focus();
+            });
+        }
+    }
+    getData() {
+        return {
+            name: this.nameInput.element.value,
+            url: this.urlInput.element.value
+        }
+    }
+    remove() {
+        this.manager.removeOpenIn(this);
+    }
+}
+
 function bodyLoad() {
     for (let sectionName in sections) {
         let sectionElement = q(`[data-sectionid="${sectionName}"]`);
@@ -420,5 +509,51 @@ function bodyLoad() {
 
     exports.addFilter = function() {
         filterManager.addFilter([]);
+    }
+
+    let openInManager = new OpenInManager(q("#openin-container"));
+
+    exports.addOpenIn = function() {
+        openInManager.addOpenIn({name: "", url:""}, true);
+    }
+    exports.resetDefaultOpenIn = function() {
+        let result = confirm("Are you sure you want to erase all openins and restore the default items?");
+        if (result) {
+            localStorage.removeItem("videoOpenIn");
+            window.location.reload();
+        }
+    }
+
+    const presets = {
+        "YouTube": {
+            name: "Watch on YouTube",
+            url: "https://youtube.com/watch?v=%%&feature=cloudtube"
+        },
+        "Invidious": {
+            name: "Watch on Invidious",
+            url: "https://invidio.us/watch?v=%%"
+        },
+        "FreeTube": {
+            name: "Open FreeTube",
+            url: "freetube://youtube.com/watch?v=dQw4w9WgXcQ"
+        },
+        "Android app": {
+            name: "Open Android app",
+            url: "vnd.youtube://youtube.com/watch?v=%%"
+        },
+        "iOS app": {
+            name: "Open iOS app",
+            url: "youtube://youtube.com/watch?v=%%"
+        }
+    }
+    Object.keys(presets).forEach(value => {
+        q("#openInPresetSelector").appendChild(new ElemJS("option").text(value).element);
+    });
+
+    exports.addPresetOpenIn = function(event) {
+        let value = event.target.value;
+        let data = presets[value];
+        openInManager.addOpenIn(data, true); 
+        event.target.selectedIndex = 0;
     }
 }
