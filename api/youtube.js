@@ -44,18 +44,25 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
         } else {
             //cf.log("Setting new cache for "+channelID, "spam");
             let promise = new Promise(resolve => {
+                let channelType = channelID.startsWith("UC") && channelID.length == 24 ? "channel_id" : "user";
                 Promise.all([
                     rp(`${getInvidiousHost("channel")}/api/v1/channels/${channelID}`),
-                    rp(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelID}`)
+                    rp(`https://www.youtube.com/feeds/videos.xml?${channelType}=${channelID}`)
                 ]).then(([body, xml]) => {
                     let data = JSON.parse(body);
                     if (data.error) throw new Error("Couldn't refresh "+channelID+": "+data.error);
                     let feedItems = fxp.parse(xml).feed.entry;
                     data.latestVideos.forEach(v => {
                         v.author = data.author;
-                        let feedItem = feedItems.find(i => i["yt:videoId"] == v.videoId);
-                        if (feedItem) v.published = new Date(feedItem.published).getTime();
-                        else v.published = v.published * 1000;
+                        let gotDateFromFeed = false;
+                        if (feedItems instanceof Array) {
+                            let feedItem = feedItems.find(i => i["yt:videoId"] == v.videoId);
+                            if (feedItem) {
+                                v.published = new Date(feedItem.published).getTime();
+                                gotDateFromFeed = true;
+                            }
+                        }
+                        if (!gotDateFromFeed) v.published = v.published * 1000;
                     });
                     channelCache.set(channelID, {refreshed: Date.now(), data: data});
                     //cf.log("Set new cache for "+channelID, "spam");
