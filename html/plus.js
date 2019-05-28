@@ -244,8 +244,12 @@ function dataToTable(columns, rows) {
         columns.forEach(c => {
             let td = document.createElement("td");
             let value = (c.transform ? c.transform(row[c.name], row) : row[c.name]);
-            if (c.inject) td.innerHTML = value;
-            else td.innerText = value;
+            if (value instanceof HTMLElement) {
+                td.appendChild(value);
+            } else {
+                if (c.inject) td.innerHTML = value;
+                else td.innerText = value;
+            }
             let style = "text-align: "+c.align+"; ";
             if (c.css) style += c.css;
             td.setAttribute("style", style);
@@ -338,6 +342,13 @@ function makeInfoBoxesWork() {
             closeButton.onclick = function() {
                 box.parentElement.removeChild(box);
                 if (box.getAttribute("ibid") != "null") localStorage.setItem("ibdismiss", localStorage.getItem("ibdismiss")+box.getAttribute("ibid")+",");
+            }
+            if (box.hasAttribute("data-ibclosebutton")) {
+                closeButton.style.display = "none";
+                let textButton = document.createElement("button");
+                textButton.textContent = box.getAttribute("data-ibclosebutton");
+                textButton.onclick = closeButton.onclick;
+                box.children[0].children[0].appendChild(textButton);
             }
             box.children[0].appendChild(closeButton);
             box.style.display = "block";

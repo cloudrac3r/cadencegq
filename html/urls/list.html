@@ -4,14 +4,21 @@
     function bodyLoad() {
         loadURLList({}, result => {
             let columns = [
-                {name: "hash", align: "left", inject: true, transform: d => `<a href="javascript:copyURL('${d}')">${d}</a>`},
+                {name: "hash", align: "left", inject: true, transform: d => {
+                    let a = document.createElement("a");
+                    a.href = window.location.origin+"/api/urls/"+d;
+                    a.textContent = d;
+                    a.onclick = copyURL;
+                    return a;
+                }},
                 {name: "author", align: "left", css: "white-space: nowrap; overflow: hidden", transform: d => d.replace(/\s+/g, " ")},
                 {name: "creationTime", align: "left", transform: d => new Date(d).toLocaleString()},
                 {name: "target", align: "left", css: "overflow: hidden; max-width: 700px", inject: true, transform: d => {
                     let a = document.createElement("a");
                     a.href = d;
-                    a.innerText = d.slice(0,200).replace(/\s+/g, " ");
-                    return a.outerHTML;
+                    a.textContent = d.slice(0,200).replace(/\s+/g, " ");
+                    a.target = "_blank";
+                    return a;
                 }}
             ];
             let output = dataToTable(columns, result);
@@ -20,16 +27,17 @@
             });
         });
     }
-    function copyURL(url) {
+    function copyURL(event) {
+        event.preventDefault();
         let textarea = document.createElement("textarea");
-        textarea.textContent = `https://${window.location.host}/api/urls/${url}`;
+        textarea.textContent = event.target.href;
         document.body.appendChild(textarea);
         textarea.select();
         try {
             document.execCommand("copy");
-            fadeElement(q("#copyStatus"), 1000, 1000);
         } catch (e) {}
         document.body.removeChild(textarea);
+        return false;
     }
 </script>
 <!-- TEMPLATE header -->
@@ -37,7 +45,7 @@
     <table style="white-space: nowrap">
         <thead>
             <tr>
-                <td>Click to copy</td>
+                <td>Shortened</td>
                 <td>Author</td>
                 <td>Created on</td>
                 <td>Target</td>
@@ -46,7 +54,6 @@
         <tbody id="tbody">
         </tbody>
     </table>
-    <p id="copyStatus" style="opacity: 0">Copied!</p>
 </div>
 <span id="username"></span>
 <!-- TEMPLATE end -->

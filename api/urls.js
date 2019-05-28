@@ -19,7 +19,7 @@ module.exports = ({db, extra}) => {
         {
             route: "/api/urls/([0-9a-f]{6})/details", methods: ["GET"], code: async ({fill}) => {
                 let hash = fill[0];
-                let row = await db.get("SELECT URLs.*, Accounts.username FROM URLs LEFT JOIN Accounts ON URLs.author = Accounts.userID WHERE hash = ?", hash);
+                let row = await db.get("SELECT URLs.*, Accounts.username FROM URLs LEFT JOIN Accounts ON URLs.author = Accounts.userID WHERE URLs.hash = ?", hash);
                 row = extra.resolveAuthor(row);
                 if (!row) return [400, 2];
                 else return [200, row];
