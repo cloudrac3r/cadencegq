@@ -245,17 +245,17 @@ class World {
                         }
                     });
                     event.preventDefault();
+                } else if (event.ctrlKey && event.key == "z") {
+                    if (this.undo.length) {
+                        this.tiles = [...this.undo.pop()];
+                        this.C.draw();
+                    }
                 }
             }
         });
         document.addEventListener("keypress", event => {
             if (event.target.tagName != "INPUT" && event.target.tagName != "TEXTAREA") {
-                if (event.ctrlKey && event.key == "z") {
-                    if (this.undo.length) {
-                        this.tiles = [...this.undo.pop()];
-                        this.C.draw();
-                    }
-                } else if (event.key == "a") {
+                if (event.key == "a") {
                     this.drawStyle = "pencil";
                     this.C.draw();
                 } else if (event.key == "s" || event.key == "b") {
