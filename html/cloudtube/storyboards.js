@@ -152,7 +152,7 @@ class Storyboard {
     }
 
     getVendor() {
-        if (document.mozFullScreenElement === undefined) return "chrome";
+        if (this.video.mozHasAudio === undefined) return "chrome";
         else return "firefox";
     }
     
@@ -172,6 +172,7 @@ class Storyboard {
                 this.currentTimeContainer.textContent = videoDisplayTime;
                 edges[1] += this.currentTimeContainer.clientWidth;
             }
+            if (!this.video.mozHasAudio) edges[1] -= 60;
         }
         return edges;
     }
