@@ -624,3 +624,12 @@ input, button {
     top: 90px;
     opacity: 0;
 }
+
+#liveEventNotice {
+    color: white;
+    background-color: rgba(225, 220, 230, 0.08);
+    border: 1px solid #b98627;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 20px 4px;
+}

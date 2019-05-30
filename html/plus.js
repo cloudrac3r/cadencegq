@@ -455,6 +455,20 @@ function viewCountText(count) {
     return value+unit+viewsPlural;
 }
 
+function relativeTime(timestamp) {
+    const units = [
+        ["day", 24*60*60*1000],
+        ["hour", 60*60*1000],
+        ["minute", 60*1000],
+        ["second", 1000]
+    ]
+    let offset = timestamp - Date.now();
+    let unit = units.find(m => offset >= m[1]) || units.slice(-1)[0];
+    offset = Math.round(offset / unit[1]);
+    if (offset != 1) unit[0] += "s";
+    return "in " + offset + " " + unit[0];
+}
+
 if (document.readyState != "complete") {
     window.onload = postLoad;
 } else {

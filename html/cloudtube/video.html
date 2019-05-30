@@ -17,6 +17,7 @@
     function chooseFormat(index) {
         if (index < 0) index = 0;
         let format = formats[index];
+        if (!format) return;
         let video = q("video");
         let audio = q("audio");
         video.preload = "auto";
@@ -445,13 +446,17 @@
         //formats = allFormats.filter(f => usefulFormats.includes(f.itag)/* && f.audioEncoding*/);
         allFormats = data.formatStreams.concat(data.adaptiveFormats);
         formats = allFormats.filter(f => f.type.includes("video") && f.qualityLabel);
-        for (let i = 0; i < formats.length; i++) {
-            let f = formats[i];
-            f.label = (f.qualityLabel || f.resolution) + " " + f.container + (f.index ? " ꜝ" : "") ;
-            let option = document.createElement("option");
-            option.setAttribute("value", i);
-            option.innerText = f.label;
-            q("#qualitySelect").appendChild(option);
+        if (formats.length) {
+            for (let i = 0; i < formats.length; i++) {
+                let f = formats[i];
+                f.label = (f.qualityLabel || f.resolution) + " " + f.container + (f.index ? " ꜝ" : "") ;
+                let option = document.createElement("option");
+                option.setAttribute("value", i);
+                option.innerText = f.label;
+                q("#qualitySelect").appendChild(option);
+            }
+        } else {
+            q("#qualitySelect").style.display = "none";
         }
         let preferredContainer = lsm.get("preferWebm") == "1" ? "webm" : "mp4";
         if (lsm.get("settingInvidiousDash") != "Always") chooseFormat(formats.findIndex(f => f.container == preferredContainer) || 0);
@@ -461,6 +466,14 @@
         q("#videoAuthor").innerText = "Uploaded by "+data.author;
         q("#videoAuthor").href = "/cloudtube/channel/"+data.authorId;
         q("#videoAuthor").setAttribute("data-channelid", data.authorId);
+        if (data.isUpcoming) {
+            if (data.premiereTimestamp) {
+                q("#liveEventNotice").textContent = "This live event will begin in "+relativeTime(data.premiereTimestamp*1000)+".";
+            } else {
+                q("#liveEventNotice").textContent = "This live event will begin soon.";
+            }
+            q("#liveEventNotice").style.display = "";
+        }
         q(".videoDescription").innerHTML = data.descriptionHtml;
         data.viewCount = data.viewCount.toString();
         let commaViewCount = data.viewCount;
@@ -759,6 +772,7 @@
             </div>
         </div>
         <audio preload="auto"></audio>
+        <div id="liveEventNotice" style="display: none"></div>
         <div id="audioLoadingDisplay" class="infoBox" style="display: none;">
             <div>
                 <span></span>
