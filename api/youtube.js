@@ -263,7 +263,10 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                             channels.push({author: data.author, authorID: data.authorId, authorThumbnails: data.authorThumbnails});
                         }
                     })));
-                    videos = videos.sort((a, b) => (b.published - a.published)).slice(0, 60);
+                    videos = videos.sort((a, b) => (b.published - a.published))
+                    let limit = 60;
+                    if (data.limit && !isNaN(+data.limit) && (+data.limit > 0)) limit = +data.limit;
+                    videos = videos.slice(0, limit);
                     channels = channels.sort((a, b) => (a.author.toLowerCase() < b.author.toLowerCase() ? -1 : 1));
                     return [200, {videos, channels}];
                 }

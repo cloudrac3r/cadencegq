@@ -88,6 +88,15 @@ const sections = {
                 'However, these dates are still calculated from the "x months ago" text, and will therefore be somewhat inaccurate.',
             lsm: "settingApproximateDates",
             invert: false
+        },
+        {
+            label: "Subscription list size",
+            comment:
+                "Change how many videos will appear in your subscription list.<br>"+
+                "Default value is 60. Maximum per channel is 60, no matter this setting.<br>"+
+                "Changing this will not change the amount of time it takes for the subscription list to first appear.",
+            lsm: "settingSubscriptionLimit",
+            type: "text"
         }
     ]
 };
@@ -97,7 +106,11 @@ function updateFlags() {
         for (let setting of section) {
             let input = q("#"+setting.lsm);
             if (input.tagName == "INPUT") {
-                var value = +(setting.invert ^ input.checked);
+                if (input.type == "text") {
+                    var value = input.value;
+                } else {
+                    var value = +(setting.invert ^ input.checked);
+                }
             } else if (input.tagName == "SELECT") {
                 var value = input.selectedOptions[0].innerText;
             }
@@ -483,6 +496,12 @@ function bodyLoad() {
                     if (option == lsm.get(setting.lsm)) input.selectedIndex = i;
                 });
                 if (lsm.get(setting.lsm) === null) input.selectedIndex = setting.defaultIndex;
+            } else if (setting.type == "text") {
+                var input = document.createElement("input");
+                input.type = "text";
+                input.id = setting.lsm;
+                input.onchange = updateFlags;
+                input.value = lsm.get(setting.lsm) || 60
             } else {
                 var input = document.createElement("input");
                 input.type = "checkbox";

@@ -20,6 +20,7 @@
         } else {
             subsObject.subscriptions = lsm.array("subscriptions").array;
         }
+        if (lsm.get("settingSubscriptionLimit")) subsObject.limit = lsm.get("settingSubscriptionLimit")
         request(`/api/youtube/subscriptions`, result => {
             q("#loadingProgress").innerText = "Subscriptions list";
             for (let button of document.querySelectorAll("#subManageButtonContainer button")) {
