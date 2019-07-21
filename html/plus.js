@@ -469,6 +469,23 @@ function relativeTime(timestamp) {
     return "in " + offset + " " + unit[0];
 }
 
+function copyText(text) {
+    let textarea = document.createElement("textarea");
+    textarea.textContent = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+        document.execCommand("copy");
+    } catch (e) {}
+    document.body.removeChild(textarea);
+}
+
+function copyLink(event) {
+    event.preventDefault();
+    let text = event.currentTarget.href;
+    copyText(text);
+}
+
 if (document.readyState != "complete") {
     window.onload = postLoad;
 } else {

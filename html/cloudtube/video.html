@@ -383,6 +383,12 @@
         }
     }
 
+    function share() {
+        let shareBox = q("#video-share-links");
+        if (shareBox.style.display == "none") shareBox.style.display = "";
+        else shareBox.style.display = "none";
+    }
+
     function bodyLoad() {
         let video = q("video");
         let audio = q("audio");
@@ -427,6 +433,22 @@
         audio.waitingTimeout = new BetterTimeout();
         let data = "<!-- videoInfo -->";
         videoID = data.videoId;
+        {
+            let shareWords = "<!-- shareWords -->";
+            let shareBox = q("#video-share-links").children[0];
+            [
+                window.location.origin+"/cloudtube/video/"+videoID,
+                window.location.origin+"/v/"+videoID,
+                window.location.origin+"/v/"+shareWords.join(" "),
+                window.location.origin+"/v/"+shareWords.map(w => w[0].toUpperCase()+w.slice(1).toLowerCase()).join("")
+            ].forEach(url => {
+                let element = document.createElement("a");
+                element.textContent = url;
+                element.href = url;
+                element.addEventListener("click", copyLink);
+                shareBox.appendChild(element);
+            })
+        }
         // Set buttons below video
         let openInOutput = q("#openInOutput");
         let openin = lsm.get("videoOpenIn");
@@ -474,7 +496,7 @@
             }
             q("#liveEventNotice").style.display = "";
         }
-        q(".videoDescription").innerHTML = data.descriptionHtml;
+        q("#videoDescription").innerHTML = data.descriptionHtml;
         data.viewCount = data.viewCount.toString();
         let commaViewCount = data.viewCount;
         for (let i = 1; i < data.viewCount.length/3; i++) {
@@ -530,7 +552,7 @@
             }
         });
         // Description timestamps
-        let timestamps = [...document.querySelectorAll(".videoDescription a[data-timestamp]")].sort((a, b) => parseInt(a.getAttribute("data-timestamp")) - parseInt(b.getAttribute("data-timestamp")));
+        let timestamps = [...document.querySelectorAll("#videoDescription a[data-timestamp]")].sort((a, b) => parseInt(a.getAttribute("data-timestamp")) - parseInt(b.getAttribute("data-timestamp")));
         let timestampsLastIndex = -1;
         setInterval(() => {
             for (let i = 0; i < timestamps.length; i++) {
@@ -800,10 +822,17 @@
         </div>
         <div class="belowButtonContainer" id="openInOutput">
             <a class="linkbutton" href="/cloudtube/subscriptions"><img src="/fonts/search.svg" style="position: relative; top: 2px; margin: 0px 8px 0px 4px; width: 16px; height: 16px;" alt="">Search</a>
+            <a class="linkbutton" href="javascript:share()">Share</a>
             <a class="linkbutton" data-openin-url="https://youtube.com/watch?v=%%&feature=cloudtube" data-default-openin>Watch on YouTube</a>
             <a class="linkbutton" data-openin-url="https://invidio.us/watch?v=%%" data-default-openin>Watch on Invidious</a>
         </div>
-        <div class="videoDescription">
+        <div class="belowButtonContainer" id="video-share-links" style="display: none">
+            <div>
+                <div>All of these links will lead to the same place. Pick your favourite!</div>
+                <div>Left click to copy.</div>
+            </div>
+        </div>
+        <div class="videoDescription" id="videoDescription">
             Placeholder description
         </div>
     </div>
