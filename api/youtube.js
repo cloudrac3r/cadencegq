@@ -156,14 +156,19 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
     return [
         {
             route: "/v/(.*)", methods: ["GET"], code: async ({fill}) => {
+                let id;
                 let wordsString = fill[0];
-                let words = findShareWords(wordsString);
-                try {
-                    validateShareWords(words);
-                } catch (e) {
-                    return [400, e.message];
+                if (wordsString.length == 11) {
+                    id = wordsString
+                } else {
+                    let words = findShareWords(wordsString);
+                    try {
+                        validateShareWords(words);
+                    } catch (e) {
+                        return [400, e.message];
+                    }
+                    id = getIDFromWords(words);
                 }
-                let id = getIDFromWords(words);
                 return {
                     statusCode: 301,
                     contentType: "text/html",
