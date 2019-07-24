@@ -514,12 +514,13 @@
         let relatedVideos = data.recommendedVideos.filter(rv => rv.title && rv.author && rv.videoId && rv.lengthSeconds);
         let filterReturn = filterVideos(relatedVideos, "related");
         relatedVideos = filterReturn[0];
+        let rice = Math.random() < 1e-6;
         for (let i = 0; i < relatedVideos.length; i++) {
             let rv = relatedVideos[i];
             let ne = q("#relatedVideosStorage").children[0].cloneNode(true);
             ne.children[1].children[0].innerText = rv.title;
             ne.children[1].children[1].innerText = rv.author+" • "+rv.viewCountText;
-            ne.children[0].children[0].src = thumbnailURL(rv.videoId);
+            ne.children[0].children[0].src = thumbnailURL(rice ? "T0rRHwZ1bf0" : rv.videoId);
             ne.children[0].setAttribute("data-prettyseconds", prettySeconds(rv.lengthSeconds));
             ne.href = rv.videoId;
             q("#relatedVideosContainer").appendChild(ne);
