@@ -586,8 +586,12 @@ class World {
         // Level name
         let levelName = q("#iLevelName").value || "Level";
         pushString(levelName);
-        // No custom content
-        for (let i = 0; i < 8; i++) pushInt(0);
+        // Custom content
+        for (let type of ["Houses", "Models", "Textures", "Background"]) {
+            let value = q("#i"+type).value;
+            pushInt(!!+value); // Exists
+            pushString(value); // String
+        }
         // Timer
         pushInt(parseInt(q("#iTimer").value) || 300);
         // Style
