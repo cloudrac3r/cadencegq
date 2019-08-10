@@ -376,7 +376,7 @@ let config = {
         ["Steel box", "editor/steelbox.png", 0],
         ["Reflector 1", "editor/reflector1.png", 1],
         ["Reflector 2", "editor/reflector2.png", 1],
-        ["Boulder", "editor/boulder.png", 1],
+        ["Boulder", "editor/boulder.png", 0],
         ["Plasma cube", "editor/plasmacube.png", 1],
         ["Explosive barrel", "editor/explosivebarrel.png", 1],
         ["Prism", "editor/prism.png", 1],
