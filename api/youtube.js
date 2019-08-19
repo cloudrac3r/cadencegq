@@ -5,7 +5,7 @@ const rp = require("request-promise");
 const fs = require("fs");
 const fxp = require("fast-xml-parser");
 
-const invidiousHost = "http://localhost:3000";
+const invidiousHost = "https://invidio.us";
 const invidiojsHost = "http://localhost:4000";
 const invidiojsEnabledModes = process.env.INVIDIOJS ? process.env.INVIDIOJS.split(":") : [];
 function getInvidiousHost(mode) {
@@ -450,11 +450,11 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
             route: "/api/youtube/dash/([\\w-]+)", methods: ["GET"], code: ({fill}) => new Promise(resolve => {
                 let id = fill[0];
                 let sentReq = rp({
-                    url: `https://dev.invidio.us/api/manifest/dash/id/${id}?local=true`,
-                    timeout: 6000
+                    url: `https://invidio.us/api/manifest/dash/id/${id}?local=true`,
+                    timeout: 8000
                 });
                 sentReq.catch(err => {
-                    if (err.code == "ETIMEDOUT" || err.code == "ESOCKETTIMEDOUT") resolve([500, "Request to Invidious timed out"]);
+                    if (err.code == "ETIMEDOUT" || err.code == "ESOCKETTIMEDOUT" || err.code == "ECONNRESET") resolve([502, "Request to Invidious timed out"]);
                     else {
                         console.log(err);
                         resolve([500, "Unknown request error, check console"]);
@@ -464,7 +464,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                     let data = fxp.parse(body, {ignoreAttributes: false});
                     resolve([200, data]);
                 }).catch(err => {
-                    if (err.code == "ETIMEDOUT" || err.code == "ESOCKETTIMEDOUT") resolve([500, "Request to Invidious timed out"]);
+                    if (err.code == "ETIMEDOUT" || err.code == "ESOCKETTIMEDOUT" || err.code == "ECONNRESET") resolve([502, "Request to Invidious timed out"]);
                     else {
                         console.log(err);
                         resolve([500, "Unknown parse error, check console"]);

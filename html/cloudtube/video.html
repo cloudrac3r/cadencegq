@@ -271,67 +271,80 @@
 
     function requestDash() {
         let playbackErrorContainer = q("#playbackErrorContainer");
-        if (lsm.get("settingInvidiousDash") == "Always") playbackErrorContainer.innerText = "Refusing to play streams from YouTube, switching to proxy...";
-        else playbackErrorContainer.innerText = "Streams are unplayable, switching to proxy...";
-        playbackErrorContainer.style.display = "";
-        request("/api/youtube/dash/"+videoID, response => {
-            if (response.status != 200) {
-                playbackErrorContainer.innerHTML = "An error occurred. Try reloading the page. If you still see this error, <a href='/about/contact' target='_blank' style='margin: 0'>please report it</a> as soon as possible, along with the exact time of day at which it occurred.<br><br><code>"+response.status+": "+response.responseText+"</code>";
-                playbackErrorContainer.style["word-break"] = "break-all";
-                return;
-            }
-            let data = JSON.parse(response.responseText);
-            console.log(data);
-            allFormats.length = 0;
-            formats.length = 0;
-            checkingAudioURLs = false;
-            bestAudioURL = undefined;
-            let qualitySelect = q("#qualitySelect");
-            let child;
-            while (child = qualitySelect.children[0]) {
-                child.parentElement.removeChild(child);
-            }
-            for (let set of data.MPD.Period.AdaptationSet) {
-                if (set["@_mimeType"].includes("audio")) {
-                    let rep = set.Representation;
-                    if (rep.constructor.name != "Array") rep = [rep];
-                    rep.forEach((repSingle, i) => {
-                        allFormats.push({
-                            url: "https://dev.invidio.us/"+repSingle.BaseURL,
-                            type: set["@_mimeType"],
-                            container: set["@_mimeType"].split("/")[1],
-                            bitrate: repSingle["@_bitrate"],
-                            itag: repSingle["@_id"]
-                        });
-                    });
-                } else {
-                    let rep = set.Representation;
-                    if (rep.constructor.name != "Array") rep = [rep];
-                    rep.forEach((repSingle, i) => {
-                        let newFormat = {
-                            url: "https://dev.invidio.us/"+repSingle.BaseURL,
-                            resolution: repSingle["@_height"]+"p",
-                            qualityLabel: repSingle["@_height"]+"p",
-                            label: repSingle["@_height"]+"p "+set["@_mimeType"].split("/")[1]+" ꜝ",
-                            container: set["@_mimeType"].split("/")[1],
-                            type: set["@_mimeType"],
-                            bitrate: repSingle["@_bitrate"],
-                            itag: repSingle["@_id"],
-                            index: -1
-                        };
-                        allFormats.push(newFormat);
-                        formats.push(newFormat);
-                        let option = document.createElement("option");
-                        option.setAttribute("value", i);
-                        option.innerText = newFormat.label;
-                        qualitySelect.appendChild(option);
-                    });
+        if (sourceSwitchAttempts == 0) {
+            sourceSwitchAttempts = 1
+            if (lsm.get("settingInvidiousDash") == "Always") playbackErrorContainer.innerText = "Refusing to play streams from YouTube, switching to proxy...";
+            else playbackErrorContainer.innerText = "Streams are unplayable, switching to proxy...";
+            playbackErrorContainer.style.display = "";
+            request("/api/youtube/dash/"+videoID, response => {
+                if (response.status != 200) {
+                    playbackErrorContainer.innerHTML = "An error occurred. Try reloading the page. If you still see this error, <a href='/about/contact' target='_blank' style='margin: 0'>please report it</a> as soon as possible, along with the exact time of day at which it occurred.<br><br><code>"+response.status+": "+response.responseText+"</code>";
+                    playbackErrorContainer.style["word-break"] = "break-all";
+                    return;
                 }
-            }
-            let preferredContainer = lsm.get("preferWebm") == "1" ? "webm" : "mp4";
-            chooseFormat(formats.findIndex(f => f.container == preferredContainer) || 0);
-            playbackErrorContainer.style.display = "none";
-        });
+                let data = JSON.parse(response.responseText);
+                console.log(data);
+                allFormats.length = 0;
+                formats.length = 0;
+                checkingAudioURLs = false;
+                bestAudioURL = undefined;
+                let qualitySelect = q("#qualitySelect");
+                let child;
+                while (child = qualitySelect.children[0]) {
+                    child.parentElement.removeChild(child);
+                }
+                for (let set of data.MPD.Period.AdaptationSet) {
+                    if (set["@_mimeType"].includes("audio")) {
+                        let rep = set.Representation;
+                        if (rep.constructor.name != "Array") rep = [rep];
+                        rep.forEach((repSingle, i) => {
+                            allFormats.push({
+                                url: "https://invidio.us"+repSingle.BaseURL,
+                                type: set["@_mimeType"],
+                                container: set["@_mimeType"].split("/")[1],
+                                bitrate: repSingle["@_bitrate"],
+                                itag: repSingle["@_id"]
+                            });
+                        });
+                    } else {
+                        let rep = set.Representation;
+                        if (rep.constructor.name != "Array") rep = [rep];
+                        rep.forEach((repSingle, i) => {
+                            let newFormat = {
+                                url: "https://invidio.us"+repSingle.BaseURL,
+                                resolution: repSingle["@_height"]+"p",
+                                qualityLabel: repSingle["@_height"]+"p",
+                                label: `${repSingle["@_height"]}p ${set["@_mimeType"].split("/")[1]}/${(repSingle["@_codecs"] || "").slice(0, 3)} ꜝ`,
+                                container: set["@_mimeType"].split("/")[1],
+                                type: set["@_mimeType"],
+                                bitrate: repSingle["@_bitrate"],
+                                itag: repSingle["@_id"],
+                                index: -1
+                            };
+                            newFormat.sort = repSingle["@_height"].padStart("0", 6) + newFormat.container[1];
+                            allFormats.push(newFormat);
+                            formats.push(newFormat);
+                        });
+                    }
+                }
+                allFormats.sort((a, b) =>
+                    a.sort == b.sort
+                    ? 0
+                    : a.sort < b.sort
+                    ? 1
+                    : -1
+                );
+                allFormats.filter(newFormat => newFormat.resolution).forEach((newFormat, i) => {
+                    let option = document.createElement("option");
+                    option.setAttribute("value", i);
+                    option.innerText = newFormat.label;
+                    qualitySelect.appendChild(option);
+                });
+                let preferredContainer = lsm.get("preferWebm") == "1" ? "webm" : "mp4";
+                chooseFormat(formats.findIndex(f => f.container == preferredContainer) || 0);
+                playbackErrorContainer.style.display = "none";
+            });
+        }
     }
 
     function switchServers(remember) {
