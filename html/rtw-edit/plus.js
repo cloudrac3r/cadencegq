@@ -521,7 +521,7 @@ class World {
         for (let type of ["Houses", "Models", "Textures", "Background"]) {
             let exists = readInt();
             let string = readString();
-            if (exists) q("#i"+type).value = string;
+            q("#i"+type).value = string;
         }
         // Timer
         q("#iTimer").value = readInt();
@@ -589,7 +589,7 @@ class World {
         // Custom content
         for (let type of ["Houses", "Models", "Textures", "Background"]) {
             let value = q("#i"+type).value;
-            pushInt(!!+value); // Exists
+            pushInt(0); // Unknown purpose?
             pushString(value); // String
         }
         // Timer
