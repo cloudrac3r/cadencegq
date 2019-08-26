@@ -269,12 +269,12 @@
         }
     }
 
-    function requestDash() {
+    function requestDash(message) {
         let playbackErrorContainer = q("#playbackErrorContainer");
         if (sourceSwitchAttempts == 0) {
             sourceSwitchAttempts = 1
             if (lsm.get("settingInvidiousDash") == "Always") playbackErrorContainer.innerText = "Refusing to play streams from YouTube, switching to proxy...";
-            else playbackErrorContainer.innerText = "Streams are unplayable, switching to proxy...";
+            else playbackErrorContainer.innerText = message || "Streams are unplayable, switching to proxy...";
             playbackErrorContainer.style.display = "";
             request("/api/youtube/dash/"+videoID, response => {
                 if (response.status != 200) {
@@ -348,6 +348,7 @@
     }
 
     function switchServers(remember) {
+        return // you suck
         if (remember) lsm.set("automaticSourceSwitch", "1");
         if (sourceSwitchAttempts == 0) {
             sourceSwitchAttempts = 1;
@@ -419,9 +420,6 @@
             if (ignorePlaybackError) return;
             console.log(event, video);
             if (lsm.get("settingInvidiousDash") == "When required" || lsm.get("settingInvidiousDash") === null) requestDash();
-            else if (lsm.get("automaticSourceSwitch") == "1") {
-                switchServers();
-            }
             q("#playbackErrorContainer").style.display = "";
         });
         video.addEventListener("timeupdate", event => {
@@ -819,11 +817,11 @@
                 <span>
                     <div>
                         Looks like the video stream can't be played.<br>
-                        This issue can probably be fixed by rerouting you to a different Invidious server,
-                        but this involves sending your IP address to an <a href="https://about.ip2c.org/">external API</a>.
+                        Normally this would fall back to using Invidious to proxy the video, but you've turned that off in settings.<br>
+                        Change the setting "use Invidious to proxy video streams" if you want to enable this feature.
                     </div>
                     <div>
-                        <button onclick="switchServers(false)">Use another server</button><button onclick="switchServers(true)">Do this automatically from now on</button>
+                        <button onclick="javascript:window.location='/cloudtube/settings'">Visit settings</button><button onclick="requestDash('Switching to proxy...')">Just use Invidious this time</button>
                     </div>
                 </span>
             </div>
