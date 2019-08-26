@@ -110,7 +110,6 @@ class ExportTypeModal extends Modal {
                     }
                     let messageModal = new MessageModal("Exporting...", "Downloading current subscription data...");
                     request("/api/youtube/subscriptions", result => {
-                        messageModal.dismiss();
                         let data = JSON.parse(result.responseText);
                         let entries = data.channels.map(channel => ({
                             channelId: channel.authorID,
@@ -135,7 +134,15 @@ class ExportTypeModal extends Modal {
                                 ids.add(attempt);
                             }
                         }
-                        resolve(entries.map(e => JSON.stringify(e)).join("\n"));
+                        messageModal.setState({
+                            titleText: "Export complete",
+                            bodyText:
+                                'Paste the results into a new file and save it as "export.db".'
+                                +"\nMake sure this file keeps the empty line at the end!"
+                                +"\nYou can click inside the text box and press Ctrl-A, Ctrl-C to copy all the content.",
+                            displayButtons: true
+                        });
+                        resolve(entries.map(e => JSON.stringify(e)+"\n").join(""));
                     }, subsObject);
                 })
             }
