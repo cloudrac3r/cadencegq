@@ -1,4 +1,4 @@
-a.searchItem, a.relatedVideo, #subManageList a, #videoEndCardContainer a
+a.searchItem, .relatedVideo a, #subManageList a, #videoEndCardContainer a
 {
     color: inherit;
 }
@@ -69,10 +69,10 @@ input, button, pre, select {
     margin-right: 10px;
     height: 94px;
 }
-.relatedVideo > div:first-child {
+.relatedVideo > :first-child {
     position: relative;
 }
-.relatedVideo > div:first-child::before {
+.relatedVideo > :first-child::before {
     content: attr(data-prettyseconds);
     position: absolute;
     display: inline-block;
@@ -85,15 +85,23 @@ input, button, pre, select {
     bottom: 6px;
     font-size: 13px;
 }
-.relatedVideo span:first-child {
+.relatedVideo .rvTitle {
     margin-top: 4px;
     display: block;
     margin-bottom: 8px;
+    text-decoration: none;
 }
-.relatedVideo span:last-child {
+.relatedVideo .rvDetails {
     display: block;
     color: #bbb;
     font-size: 14px;
+}
+.relatedVideo .rvAuthor {
+    text-decoration: none;
+}
+.relatedVideo .rvAuthor:hover {
+    text-decoration: underline;
+    color: #eee;
 }
 
 .videoInfoBox {

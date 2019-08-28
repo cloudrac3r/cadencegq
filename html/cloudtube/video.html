@@ -529,11 +529,14 @@
         for (let i = 0; i < relatedVideos.length; i++) {
             let rv = relatedVideos[i];
             let ne = q("#relatedVideosStorage").children[0].cloneNode(true);
+            ne.children[0].href = "/cloudtube/video/"+rv.videoId
+            ne.children[1].children[0].href = "/cloudtube/video/"+rv.videoId
             ne.children[1].children[0].innerText = rv.title;
-            ne.children[1].children[1].innerText = rv.author+" • "+rv.viewCountText;
+            ne.children[1].children[1].children[0].innerText = rv.author;
+            if (rv.authorId) ne.children[1].children[1].children[0].href = "/cloudtube/channel/"+rv.authorId;
+            ne.children[1].children[1].children[1].innerText = rv.viewCountText;
             ne.children[0].children[0].src = thumbnailURL(rice ? "T0rRHwZ1bf0" : rv.videoId);
             ne.children[0].setAttribute("data-prettyseconds", prettySeconds(rv.lengthSeconds));
-            ne.href = rv.videoId;
             q("#relatedVideosContainer").appendChild(ne);
         }
         q("#blockedWarning").parentElement.appendChild(q("#blockedWarning"));
@@ -854,14 +857,14 @@
     </div>
 </div>
 <div id="relatedVideosStorage" style="display:none;">
-    <a href="#" class="relatedVideo">
-        <div>
+    <div class="relatedVideo">
+        <a>
             <img alt="">
-        </div>
+        </a>
         <div>
-            <span>Placeholder name</span>
-            <span>Placeholder author</span>
+            <a class="rvTitle">Placeholder name</a>
+            <span class="rvDetails"><a class="rvAuthor">Placeholder author</a> • <span></span></span>
         </div>
-    </a>
+    </div>
 </div>
 <!-- TEMPLATE end -->
