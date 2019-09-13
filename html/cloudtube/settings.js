@@ -554,7 +554,7 @@ function bodyLoad() {
         },
         "FreeTube": {
             name: "Open FreeTube",
-            url: "freetube://youtube.com/watch?v=dQw4w9WgXcQ"
+            url: "freetube://youtube.com/watch?v=%%"
         },
         "Android app": {
             name: "Open Android app",
@@ -572,7 +572,7 @@ function bodyLoad() {
     exports.addPresetOpenIn = function(event) {
         let value = event.target.value;
         let data = presets[value];
-        openInManager.addOpenIn(data, true); 
+        openInManager.addOpenIn(data, true);
         event.target.selectedIndex = 0;
     }
 }

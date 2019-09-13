@@ -465,14 +465,14 @@
         let openin = lsm.get("videoOpenIn");
         [...openInOutput.children].forEach(child => {
             if (child.hasAttribute("data-default-openin")) {
-                if (openin === null) child.href = child.getAttribute("data-openin-url").replace("%%", videoID);
+                if (openin === null) child.href = child.getAttribute("data-openin-url").replace(/%%/g, videoID);
                 else child.remove();
             }
         });
         if (openin !== null) {
             openin = JSON.parse(openin);
             openin.forEach(data => {
-                openInOutput.appendChild(new ElemJS("a").class("linkbutton").text(data.name).direct("href", data.url.replace("%%", videoID)).element);
+                openInOutput.appendChild(new ElemJS("a").class("linkbutton").text(data.name).direct("href", data.url.replace(/%%/g, videoID)).element);
             });
         }
         // Load video
