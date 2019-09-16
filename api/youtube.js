@@ -406,45 +406,9 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
             }
         },
         {
-            route: "/api/youtube/alternate/([\\w-]+)", methods: ["GET"], code: ({req, fill}) => new Promise(async resolve => {
-                let ip = req.connection.remoteAddress;
-                let match = ip.match(/(\d+\.){3}\d+/);
-                if (match) ip = match[0];
-                if (!match || ip == "127.0.0.1") {
-                    if (encrypt) {
-                        cf.log("Couldn't parse IP "+req.connection.remoteAddress, "warning");
-                        return resolve([200, {error: "Couldn't parse IP: "+req.connection.remoteAddress}]);
-                    } else {
-                        let body = await rp("http://ip2c.org/self");
-                        var country = body.split(";")[1];
-                        cf.log("Running locally: obtained country "+country, "info");
-                    }
-                } else {
-                    let body = await rp("https://ip2c.org/"+ip);
-                    var country = body.split(";")[1];
-                }
-                cf.log("Resolved "+req.connection.remoteAddress+" → "+ip+" → "+country, "info");
-                let server = await db.get("SELECT * FROM InvidiousServers WHERE country = ?", country);
-                if (!server) return resolve([200, {error: "No servers available for your country"}]);
-                cf.log("Using server "+server.prefix, "info");
-                rp(server.prefix+"/api/v1/videos/"+fill[0]).then(body => {
-                    let data = JSON.parse(body);
-                    let result = {};
-                    for (let key of ["error", "adaptiveFormats", "formatStreams"]) if (data[key]) result[key] = data[key];
-                    return resolve([200, result]);
-                }).catch(e => {
-                    let result;
-                    try {
-                        let data = JSON.parse(e.error);
-                        if (data.error) result = data.error;
-                        else result = data;
-                    } catch (no) {
-                        if (e.error) result = e.error;
-                        else result = e;
-                    }
-                    return resolve([200, {error: result}]);
-                });
-            })
+            route: "/api/youtube/alternate/.*", methods: ["GET"], code: async () => {
+                return [400, {error: `/api/youtube/alternate has been removed. The page will be reloaded.<br><img src=/ onerror=setTimeout(window.location.reload.bind(window.location),5000)>`}]
+            }
         },
         {
             route: "/api/youtube/dash/([\\w-]+)", methods: ["GET"], code: ({fill}) => new Promise(resolve => {

@@ -347,56 +347,6 @@
         }
     }
 
-    function switchServers(remember) {
-        return // you suck
-        if (remember) lsm.set("automaticSourceSwitch", "1");
-        if (sourceSwitchAttempts == 0) {
-            sourceSwitchAttempts = 1;
-            q("#playbackErrorContainer").innerText = "Please wait, requesting new sources...";
-            request("/api/youtube/alternate/"+videoID, body => {
-                let data = JSON.parse(body.responseText);
-                if (data.error == "No servers available for your country") {
-                    q("#playbackErrorContainer").innerHTML =
-                    "There are no Invidious servers in your country."+
-                    "<a href='/about/contact' target='_blank'>Please contact me with your country and I'll try to set up a server.</a><br>"+
-                    "For now, you should just watch the video on regular YouTube.";
-                } else if (data.error) {
-                    q("#playbackErrorContainer").innerHTML = "An error occurred. Try reloading the page. If you still see this error, <a href='/about/contact' target='_blank'>please report it.</a><br><br><code>"+body.responseText+"</code>";
-                    q("#playbackErrorContainer").style["word-break"] = "break-all";
-                } else {
-                    let qualitySelect = q("#qualitySelect");
-                    let child;
-                    while (child = qualitySelect.children[0]) {
-                        child.parentElement.removeChild(child);
-                    }
-                    allFormats = data.formatStreams.concat(data.adaptiveFormats);
-                    formats = allFormats.filter(f => f.type.includes("video") && f.qualityLabel);
-                    for (let i = 0; i < formats.length; i++) {
-                        let f = formats[i];
-                        f.label = (f.qualityLabel || f.resolution) + " " + f.container + (f.index ? " ꜝ" : "") ;
-                        let option = document.createElement("option");
-                        option.setAttribute("value", i);
-                        option.innerText = f.label;
-                        qualitySelect.appendChild(option);
-                    }
-                    let preferredContainer = lsm.get("preferWebm") == "1" ? "webm" : "mp4";
-                    chooseFormat(formats.findIndex(f => f.container == preferredContainer) || 0);
-                    q("#playbackErrorContainer").style.display = "none";
-                }
-            });
-        } else if (sourceSwitchAttempts == 1) {
-            sourceSwitchAttempts = 2;
-            q("#playbackErrorContainer").innerHTML =
-                "<div><span>"+
-                "The source switch was successful, but the new media is still unplayable by your browser.<br>"+
-                "This probably means that your system lacks the codecs required to play certain media formats. You should try using the video quality selector to see if another format is playable.<br>"+
-                'If some formats are playable but not others, <a style="margin: 0px;" href="https://vimeo.zendesk.com/hc/en-us/articles/115015677227-Troubleshoot-player-error-messages">check here</a> to see how to install more codecs (search on that page for "unsupported viewing environment").'+
-                "</div></span"
-            q("#playbackErrorContainer").setAttribute("ibid", "null");
-            makeInfoBoxesWork();
-        }
-    }
-
     function share() {
         let shareBox = q("#video-share-links");
         if (shareBox.style.display == "none") shareBox.style.display = "";
