@@ -28,7 +28,11 @@
             }
             q("#subManageContainer").style.display = "block";
             let data = JSON.parse(result.responseText);
-            let {channels, videos} = data;
+            let {channels, videos, failedCount} = data;
+            if (failedCount > 0) {
+                q("#failedWarning").innerText = failedCount+" channels failed to load. Reload the page to try again."
+                q("#failedWarning").style.display = ""
+            }
             let filterReturn = filterVideos(videos, "feed");
             videos = filterReturn[0];
             if (filterReturn[1]) {
@@ -175,6 +179,7 @@
 </div>
 <div id="blockedWarning" style="display: none;"><span></span> videos have been blocked based on your preferences. <a href="/cloudtube/settings">Edit preferences</a></div>
 <div id="totalTimeDisplay"></div>
+<div id="failedWarning" style="display: none"></div>
 <div id="subManageContainer">
     <div id="subManageList">
         <span>You are subscribed to <span id="subCount">placeholder channels</span>.</span>

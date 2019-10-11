@@ -653,3 +653,13 @@ input, button {
     line-height: 1.6;
     display: block;
 }
+
+#failedWarning {
+    margin-top: 20px;
+    margin-bottom: 25px;
+    padding: 10px;
+    border-radius: 4px;
+    border: 3px solid #b98627;
+    background-color: rgba(225, 220, 230, 0.08);
+    color: white;
+}

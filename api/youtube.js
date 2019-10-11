@@ -358,10 +358,13 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                 } else {
                     let videos = [];
                     let channels = [];
+                    let failedCount = 0
                     await Promise.all(subscriptions.map(s => fetchChannel(s).then(data => {
                         if (data) {
                             videos = videos.concat(data.latestVideos);
                             channels.push({author: data.author, authorID: data.authorId, authorThumbnails: data.authorThumbnails});
+                        } else {
+                            failedCount++
                         }
                     })));
                     videos = videos.sort((a, b) => (b.published - a.published))
@@ -369,7 +372,7 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
                     if (data.limit && !isNaN(+data.limit) && (+data.limit > 0)) limit = +data.limit;
                     videos = videos.slice(0, limit);
                     channels = channels.sort((a, b) => (a.author.toLowerCase() < b.author.toLowerCase() ? -1 : 1));
-                    return [200, {videos, channels}];
+                    return [200, {videos, channels, failedCount}];
                 }
             }
         },
@@ -406,7 +409,9 @@ module.exports = ({encrypt, cf, db, resolveTemplates, extra}) => {
             }
         },
         {
-            route: "/api/youtube/alternate/.*", methods: ["GET"], code: async () => {
+            route: "/api/youtube/alternate/.*", methods: ["GET"], code: async ({req}) => {
+                return [404, "Please leave me alone. This endpoint has been removed and it's never coming back. Why not try youtube-dl instead? https://github.com/ytdl-org/youtube-dl/\nIf you own a bot that accesses this endpoint, please send me an email: https://cadence.moe/about/contact\nHave a nice day.\n"];
+                return null
                 return [400, {error: `/api/youtube/alternate has been removed. The page will be reloaded.<br><img src=/ onerror=setTimeout(window.location.reload.bind(window.location),5000)>`}]
             }
         },
