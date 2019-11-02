@@ -7,22 +7,28 @@ const util = require("util");
 
 module.exports = ({db, extra}) => {
     let qe = extra.qe;
+
+    async function replyImage({fill}) {
+        let imageID = fill[0];
+        let image = await db.get("SELECT extension FROM Images WHERE imageID = ?", imageID);
+        if (!image) return [400, 1];
+        let content = await extra.rfp(pj("content/images", imageID), null);
+        return {
+            statusCode: 200,
+            contentType: mime.getType(image.extension),
+            headers: {
+                "Cache-Control": "max-age=2592000, public"
+            },
+            content: content
+        }
+    }
+
     return [
         {
-            route: "/api/images/([a-f0-9]{6})(\\.[a-z]*)?", methods: ["GET"], code: async ({fill}) => {
-                let imageID = fill[0];
-                let image = await db.get("SELECT extension FROM Images WHERE imageID = ?", imageID);
-                if (!image) return [400, 1];
-                let content = await extra.rfp(pj("content/images", imageID), null);
-                return {
-                    statusCode: 200,
-                    contentType: mime.getType(image.extension),
-                    headers: {
-                        "Cache-Control": "max-age=2592000, public"
-                    },
-                    content: content
-                }
-            }
+            route: "/api/images/([a-f0-9]{6})(\\.[a-z]*)?", methods: ["GET"], code: replyImage
+        },
+        {
+            route: "/i/([a-f0-9]{6})(\\.[a-z]*)?", methods: ["GET"], code: replyImage
         },
         {
             route: "/api/images/([a-f0-9]{6})/details", methods: ["GET"], code: async ({fill}) => {
