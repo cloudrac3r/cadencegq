@@ -22,7 +22,7 @@
         let audio = q("audio");
         video.preload = "auto";
         let qs = q("#qualitySelect");
-       // console.log("saving last time: "+video.currentTime);
+        // console.log("saving last time: "+video.currentTime);
         lastCurrentTime = video.currentTime;
         if (format.index) {
             if (bestAudioURL) {
@@ -551,7 +551,7 @@
                 if (element.endscreenElementRenderer.style == "VIDEO") {
                     // Video link
                     e.classList.add("endcard-video");
-                    let id = element.endscreenElementRenderer.endpoint.urlEndpoint.url.split("=")[1];
+                    let id = element.endscreenElementRenderer.endpoint.watchEndpoint.videoId;
                     let match = id.match(/[\w-]+/);
                     if (match) id = match[0];
                     e.href = id;
