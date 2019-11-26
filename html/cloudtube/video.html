@@ -567,7 +567,7 @@
                 } else if (element.endscreenElementRenderer.style == "PLAYLIST") {
                     // Playlist link
                     e.classList.add("endcard-playlist");
-                    e.href = "/cloudtube/playlist/"+element.endscreenElementRenderer.endpoint.urlEndpoint.url.split("list=")[1];
+                    e.href = "/cloudtube/playlist/"+element.endscreenElementRenderer.endpoint.watchEndpoint.playlistId;
                     // Playlist thumbnail
                     let img = document.createElement("img");
                     img.src = element.endscreenElementRenderer.image.thumbnails.sort((a, b) => (b.width - a.width))[0].url;
