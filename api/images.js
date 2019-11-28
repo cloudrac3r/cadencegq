@@ -40,8 +40,12 @@ module.exports = ({db, extra}) => {
             }
         },
         {
-            route: "/api/images", methods: ["POST"], code: async ({body}) => {
+            route: "/api/images", methods: ["POST"], code: async ({body, params}) => {
                 if (!body.length) return [400, 4];
+                if (typeof params.token !== "string") return [401, 8];
+                const account = await db.get("SELECT Accounts.userID, Accounts.canUpload FROM Accounts INNER JOIN AccountTokens USING (userID) WHERE AccountTokens.token = ?", [params.token]);
+                if (!account) return [401, 8];
+                if (!account.canUpload) return [403, 12];
                 const allowed = new Map([
                     ["image/png", "png"],
                     ["image/jpeg", "jpg"]
@@ -59,7 +63,7 @@ module.exports = ({db, extra}) => {
                     } else target = hash;
                 }
                 await util.promisify(fs.writeFile)(pj("content/images", hash), body, {encoding: null});
-                await db.run("INSERT INTO Images VALUES (?, ?, NULL, ?, NULL)", [hash, allowed.get(type.mimeType), Date.now()]);
+                await db.run("INSERT INTO Images VALUES (?, ?, ?, ?, NULL)", [hash, allowed.get(type.mimeType), account.userID, Date.now()]);
                 return [201, {imageID: hash}];
             }
         },

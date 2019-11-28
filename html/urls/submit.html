@@ -4,7 +4,6 @@
     function submit() {
         q("#submit").disabled = true;
         let content = q("#content").value;
-        let username = q("#username").value || undefined;
         let token = localStorage.getItem("token") || undefined;
         let progress = q("#progress");
         progress.innerHTML = "Posting...";
@@ -32,45 +31,25 @@
                 progress.classList.add("errorDisplay");
                 q("#submit").disabled = false;
             }
-        }, Object.assign({username, token, target: content}));
+        }, Object.assign({token, target: content}));
     }
     function bodyLoad() {
         clear();
     }
     getLoginDetails(login => {
         if (login) {
-            q("#username").style.display = "none";
             q("#usernamePostNote").innerText = "Posting as "+login.username+".";
             q("#usernamePostNote").style.display = "block";
         }
     });
 </script>
-<style>
-    #usernamePostNote {
-        display: none;
-        font-size: 80%;
-        margin: 4px;
-        color: #bbb;
-    }
-</style>
 <!-- TEMPLATE header -->
-<div class="infoBox warning" ibid="url-tos" data-ibclosebutton="I understand. Hide this forever.">
-    <div>
-        <span>
-            <p>Before submitting your link, please review the <a href="/about/terms">terms of service,</a> as well as these notes:</p>
-            <ul>
-                <li>This is not a platform for "free speech". It is also not a platform for violent, disturbing, or explicit content. Play nice.</li>
-                <li>There is currently no limit on number of uploads or frequency of uploads, but if this is abused, limits will be put in place.</li>
-            </ul>
-        </span>
-    </div>
-</div>
 <div>
     <input id="content" placeholder="Paste a link here" style="width: 700px">
 </div>
+<div id="usernamePostNote">You must log in to upload content.</div>
 <div>
-    <input id="username" placeholder="Display name (optional)" style="width: 280px"><button id="submit" onclick="submit()">Submit</button>
-    <span id="usernamePostNote"></span>
+    <button id="submit" onclick="submit()">Submit</button>
 </div>
 <div id="progress"></div>
 <!-- TEMPLATE end -->

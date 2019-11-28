@@ -29,6 +29,10 @@ module.exports = ({db, extra}) => {
             route: "/api/urls", methods: ["POST"], code: async ({data}) => {
                 if (!data) return [400, 3];
                 if (!data.target) return [400, 4];
+                if (typeof data.token !== "string") return [401, 8];
+                const account = await db.get("SELECT Accounts.userID, Accounts.canUpload FROM Accounts INNER JOIN AccountTokens USING (userID) WHERE AccountTokens.token = ?", [data.token]);
+                if (!account) return [401, 8];
+                if (!account.canUpload) return [403, 12];
                 if (!data.target.match(new RegExp(`^https?://\\w`))) return [400, 5];
                 try {
                     var urlObject = new URL(data.target);

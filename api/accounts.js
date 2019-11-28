@@ -15,7 +15,7 @@ module.exports = ({db, extra}) => {
                 if (used) return [403, 9];
                 let salt = extra.salt();
                 let hash = extra.hash(password+salt);
-                await db.run("INSERT INTO Accounts VALUES (NULL, ?, ?, ?)", [username, hash, salt]);
+                await db.run("INSERT INTO Accounts VALUES (NULL, ?, ?, ?, 0)", [username, hash, salt]);
                 return [204, ""];
             }
         },

@@ -24,15 +24,11 @@ module.exports = ({db, extra}) => {
             route: "/api/pastes", methods: ["POST"], code: async ({data}) => {
                 if (!data) return [400, 3];
                 if (!data.content) return [400, 4];
-                let result = await extra.resolveAuthorInput(data);
-                if (!result[0]) return result[1];
-                data = result[1];
-                if (data.authorAccount == 0) {
-                    let usernames = await db.all("SELECT username FROM Accounts");
-                    usernames = usernames.map(u => u.username);
-                    if (usernames.includes(data.username)) return [403, 9];
-                }
-                await db.run("INSERT INTO Pastes VALUES (NULL, ?, ?, ?, ?, NULL)", [data.authorAccount, data.username, data.content, Date.now()]);
+                if (typeof data.token !== "string") return [401, 8];
+                const account = await db.get("SELECT Accounts.userID, Accounts.canUpload FROM Accounts INNER JOIN AccountTokens USING (userID) WHERE AccountTokens.token = ?", [data.token]);
+                if (!account) return [401, 8];
+                if (!account.canUpload) return [403, 12];
+                await db.run("INSERT INTO Pastes VALUES (NULL, 1, ?, ?, ?, NULL)", [account.userID, data.content, Date.now()]);
                 let {seq: pasteID} = await db.get("SELECT seq FROM sqlite_sequence WHERE name = 'Pastes'");
                 return [201, {pasteID}];
             }

@@ -63,17 +63,15 @@
 
 - POST /api/pastes
     B JSON
-        B username : string?
-        B token : string?
+        B token : string
         B content : string
 
     R JSON
         R pasteID : integer
 
     Upload a new paste.
-    Specify a token to associate this paste with an account and make it editable by that account.
-    If no token is provided, you can use any username, provided it is not already registered to an account.
-    If neither token nor username is provided, the username will be set to "(anonymous)".
+    The token is an account token. It will associate the paste with that account and make it editable by that account.
+    You must supply an account token.
 
 - PATCH /api/pastes/{pasteID}
     B JSON
@@ -119,13 +117,15 @@
     Get information about an image.
 
 - POST /api/images
-    ? author : string?
+    ? token : string
+
     B content : binary
 
     R JSON
         R imageID : string
 
     Upload an image.
+    The token is an account token. It is required, but is not displayed publicly.
 
 - GET /api/images
     R Array/JSON
@@ -158,17 +158,15 @@
 
 - POST /api/urls
     B JSON
-        B username : string?
-        B token : string?
+        B token : string
         B target : string
 
     R JSON
         R hash : string
 
     Shorten a URL.
-    Specify a token to associate this link with an account.
-    If no token is provided, you can use any username, provided it is not already registered to an account.
-    If neither token nor username is provided, the username will be set to "(anonymous)".
+    The token is an account token. It will associate the URL with that account.
+    You must supply an account token.
 
 - GET /api/urls
     R Array/JSON
@@ -190,6 +188,7 @@
     R 204
 
     Create a new account with that username and password.
+    Accounts created after 2019-11-28 are not allowed to upload any content. Contact me to request access.
 
 - PATCH /api/accounts
     B JSON
@@ -245,13 +244,15 @@
 - 7
     Duplicate action cannot be performed (HTTP 409)
 - 8
-    Invalid authentication details (HTTP 401)
+    Invalid or missing authentication details (HTTP 401)
 - 9
     Username in use
 - 10
     Content blocked by site filter for being illegal, obscene, or otherwise unpublishable (HTTP 403)
 - 11
     Valid authentication but insufficient privilege (HTTP 403)
+- 12
+    Account not authorised to upload any content (HTTP 403)
 </pre>
 <script>
 document.querySelectorAll("pre").forEach(pre => {

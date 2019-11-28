@@ -175,10 +175,10 @@ function editPaste(pasteID, content, token, callback) {
     }, {content, token}, "PATCH");
 }
 
-function submitImage(file, username, callback) {
+function submitImage(file, token, callback) {
     if (!callback) callback = new Function();
     let url = "/api/images";
-    if (username) url += "?author="+username;
+    if (token) url += "?token="+token;
     request(url, result => {
         try {
             let {imageID} = JSON.parse(result.responseText);
@@ -282,13 +282,15 @@ function getLoginDetails(callback) {
                         lsm.array("subscriptions").array = loginDetails.subscriptions;
                         lsm.array("subscriptions").write();
                         con();
-                    } else {
+                    } else if (result.status == 401) {
                         localStorage.removeItem("token");
+                        loginDetails = null;
+                        con();
+                    } else {
                         loginDetails = null;
                         con();
                     }
                 } catch (e) {
-                    localStorage.removeItem("token");
                     loginDetails = null;
                     con();
                 }
