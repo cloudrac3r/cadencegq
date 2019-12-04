@@ -274,7 +274,7 @@ function getLoginDetails(callback) {
         loginCallbacks.push(callback);
         loginAttempted = true;
         let token = localStorage.getItem("token");
-        if (token) {
+        if (token && token !== "undefined" && token !== "null") {
             request("/api/accounts/tokens/"+token, result => {
                 try {
                     if (result.status == 200) {
@@ -308,13 +308,17 @@ function getLoginDetails(callback) {
 function login(username, password, callback) {
     if (!callback) callback = new Function();
     request("/api/accounts/tokens", result => {
-        try {
-            let token = JSON.parse(result.responseText).token;
-            localStorage.setItem("token", token, Infinity);
-            callback(token);
-        } catch (e) {
+        if (result.status === 201) {
+            try {
+                let token = JSON.parse(result.responseText).token;
+                localStorage.setItem("token", token, Infinity);
+                callback(token);
+            } catch (e) {
+                callback();
+            };
+        } else {
             callback();
-        };
+        }
     }, {username, password});
 }
 
