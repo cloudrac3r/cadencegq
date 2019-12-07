@@ -492,8 +492,8 @@ function copyLink(event) {
     copyText(text);
 }
 
-if (document.readyState != "complete") {
-    window.onload = postLoad;
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => postLoad())
 } else {
     postLoad();
 }
