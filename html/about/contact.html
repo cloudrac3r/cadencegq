@@ -7,7 +7,7 @@
     While I'd prefer if you used email for important enquiries,
     any of these will work and I will reply no matter what.
 </p>
-<p>Email: <span id="email">dmpvesbd4s@wjwbmej.ofu</span></p>
+<p>Email: <span class="email">dmpvesbd4s@wjwbmej.ofu</span></p>
 <p id="noscript" style="color: #fff">
     Turn on JavaScript to decrypt this email address.<br>
     All JavaScript code on this website is free software. <a href="/about/javascript">More details.</a><br>
@@ -16,6 +16,7 @@
 </p>
 <p><a href="https://discordapp.com/">Discord</a>: Cadence#3263</p>
 <p><a href="https://matrix.org/">Matrix</a>: <a href="https://matrix.to/#/@cloudrac3r:cadence.moe:8111">@cloudrac3r:cadence.moe:8111</a></p>
+<p>XMPP: <span class="email">d@b4.qn</span></p>
 <h2>Other accounts</h2>
 <p>GitHub: <a href="https://github.com/cloudrac3r">cloudrac3r</a></p>
 <p>Reddit: <a href="https://www.reddit.com/user/cloudrac3r">u/cloudrac3r</a> (but reddit chat is dumb, send a private message instead)</p>
@@ -29,8 +30,9 @@
 <script>
     function bodyLoad() {
         q("#noscript").style.display = "none";
-        let email = q("#email");
-        email.innerHTML = String.fromCharCode(...[...email.innerHTML].map(l => l.charCodeAt(0)-(l.match(/\w/) && 1)));
+        for (const email of document.querySelectorAll(".email")) {
+            email.innerHTML = String.fromCharCode(...[...email.innerHTML].map(l => l.charCodeAt(0)-(l.match(/\w/) && 1)));
+        }
     }
 </script>
 <!-- TEMPLATE end -->
