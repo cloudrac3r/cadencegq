@@ -101,6 +101,9 @@
             if (caught) event.preventDefault();
             recalculateTiles();
         });
+        getLoginDetails(data => {
+            if (data == null) q("#mustLogIn").style.display = ""
+        })
     }
     function setImage(event) {
         q("img").src = event.target.value;
@@ -135,12 +138,17 @@
             tags: [...document.querySelectorAll('input[type="checkbox"]')].filter(c => c.checked).map(c => parseInt(c.name)),
             coords: {
                 dimX, dimY, startX, startY, width, height, spaceX, spaceY
-            }
+            },
+            token: localStorage.getItem("token")
         });
     }
 </script>
 <!-- TEMPLATE header -->
 <h1>New card</h1>
+<p id="mustLogIn" style="display: none">
+    Sadly, due to abuse, you must <a href="/account">create an account</a> and then <a href="/about/contact">request access</a> to upload cards here.<br>
+    Once you have done that, come back to this page while logged in.
+</p>
 <h2>Basic</h2>
 <div class="newCard">
     <input id="title" placeholder="Title (example: Feminine Trans Guy Bingo)">
@@ -191,6 +199,7 @@
         <li>The blue and red tiles should be positioned to perfectly cover each bingo square.</li>
         <li>The correct tags should be applied. If you're unsure of what a tag means, hover over it to see an explanation.</li>
         <li>The username you entered should be consistent with your past uploads.</li>
+        <li>Make sure you are logged in and have permission to upload content, or the submit button will do nothing.</li>
     </ul>
     <p>
         All submissions are public instantly, but will be manually reviewed within a few hours. If I don't think your submission is very good, I will edit or delete it.

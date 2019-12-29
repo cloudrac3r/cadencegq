@@ -32,11 +32,17 @@ module.exports = ({db, extra}) => {
         {
             route: "/api/bingo/submit", methods: ["POST"], code: async ({data}) => {
                 // Error checking
+                if (!data) return [400, 3];
+                if (typeof data !== "object" || !(data instanceof Object)) return [400, "Root JSON must be an object"];
+                if (typeof data.token !== "string") return [400, "Missing token. You must log in."];
+                const account = await db.get("SELECT userID, expires, canUpload FROM Accounts INNER JOIN AccountTokens USING (userID) WHERE token = ?", data.token)
+                if (!account || account.expires <= Date.now()) return [400, "Invalid token. You must log in."];
+                if (!account.canUpload) return [400, "You are logged in, but you are not allowed to upload content."];
                 if (!data.title) return [400, "Missing title"];
                 if (!data.url) return [400, "Missing image URL"];
                 if (!data.tags) return [400, "Missing tags"];
                 if (data.tags.constructor.name != "Array") return [400, "Tags is not an array"];
-                if (data.tags.length == 0) return [400, "No tags in array"];
+                if (data.tags.length == 0) return [400, "No tags selected. You must choose at least one tag."];
                 let validTags = (await db.all("SELECT id FROM BingoTags")).map(r => r.id);
                 if (data.tags.some(t => typeof(t) != "number" || !validTags.includes(t))) return [400, "Tags is not an array of numbers"];
                 if (!data.coords) return [400, "No coordinate data"];
@@ -46,7 +52,7 @@ module.exports = ({db, extra}) => {
                 if (missing) return [400, "Missing coordinate data key "+missing];
                 if (!data.username) data.username = null;
                 // Actually do stuff
-                await db.run("INSERT INTO BingoCards VALUES (NULL, ?, ?, NULL, ?)", [data.title, data.url, data.username]);
+                await db.run("INSERT INTO BingoCards VALUES (NULL, ?, ?, NULL, ?, ?)", [data.title, data.url, data.username, account.userID]);
                 let {seq: newID} = await db.get("SELECT seq FROM sqlite_sequence WHERE name = 'BingoCards'");
                 await db.run("BEGIN TRANSACTION");
                 let promises = data.tags.map(t => db.run("INSERT INTO BingoTagsMap VALUES (?, ?)", [newID, t]));
