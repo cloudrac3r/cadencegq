@@ -492,6 +492,18 @@ function copyLink(event) {
     copyText(text);
 }
 
+function insertAtCursor(input, textToInsert) {
+    // Everything except Firefox
+    const isSuccess = document.execCommand("insertText", false, textToInsert);
+    // Firefox (non-standard method)
+    if (!isSuccess && typeof input.setRangeText === "function") {
+        const start = input.selectionStart;
+        input.setRangeText(textToInsert);
+        // update cursor to be at the end of insertion
+        input.selectionStart = input.selectionEnd = start + textToInsert.length;
+    }
+}
+
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => postLoad())
 } else {

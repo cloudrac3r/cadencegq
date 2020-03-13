@@ -5,6 +5,7 @@ const sqlite = require("sqlite");
 const cf = require("./util/common.js");
 const accu = require("./util/accumulator.js");
 const {Pinski} = require("pinski")
+const plugins = require("pinski/plugins")
 
 const server = new Pinski({
 	port: 8080,
@@ -17,10 +18,15 @@ const server = new Pinski({
 			"PNG", "JPG", "JPEG"
 		],
 		seconds: 604800
-    },
-    globalHeaders: {"Access-Control-Allow-Origin": "*"}
+	},
+	globalHeaders: {"Access-Control-Allow-Origin": "*"}
 })
+plugins.setInstance(server)
 
+server.addSassDir("sass")
+server.addRoute("/blog.css", "sass/blog.sass", "sass")
+
+server.addPugDir("pug", ["pug/old/includes"])
 server.addPugDir("pug/old", ["pug/old/includes"])
 server.addRoute("/", "pug/old/home.pug", "pug")
 
@@ -63,6 +69,8 @@ server.addRoute("/crumpet", "html/rtw-edit/index.html")
 server.addRoute("/crumpet/configure", "html/rtw-edit/configure.html")
 server.addRoute("/crumpet/autoconfigure", "html/rtw-edit/autoconfigure.html")
 server.addRoute("/crumpet/manual", "pug/old/crumpet-manual.pug", "pug")
+
+server.addRoute("/blog", "pug/blog-list.pug", "pug")
 
 server.addRoute("/friends", "pug/old/friends.pug", "pug")
 

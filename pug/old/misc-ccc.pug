@@ -10,17 +10,6 @@ style.
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/5.4.0/math.min.js"></script>
 <script src="ccc.js"></script>
 script.
-    function insertAtCursor(input, textToInsert) {
-        // Everything except Firefox
-        const isSuccess = document.execCommand("insertText", false, textToInsert);
-        // Firefox (non-standard method)
-        if (!isSuccess && typeof input.setRangeText === "function") {
-            const start = input.selectionStart;
-            input.setRangeText(textToInsert);
-            // update cursor to be at the end of insertion
-            input.selectionStart = input.selectionEnd = start + textToInsert.length;
-        }
-    }
     function tab(event) {
         if (event.key == "Tab") {
             insertAtCursor(event.target, "    ");

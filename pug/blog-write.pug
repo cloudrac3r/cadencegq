@@ -1,0 +1,43 @@
+include old/includes/pre.pug
+title Write blog post
+link(rel="stylesheet" type="text/css" href="/blog.css")
+include old/includes/header.pug
+
+h1 Write post
+
+form(method="post" action="/blog/submit" onkeydown=`return event.key !== "Enter" || event.target.tagName === "TEXTAREA" || event.target.type === "submit";`)
+	div
+		input(type="text" placeholder="Title" name="title")#title
+
+	div
+		input(type="text" placeholder="Year" name="year")#year
+		input(type="text" placeholder="Month" name="month")#month
+		input(type="text" placeholder="Day" name="day")#day
+		input(type="text" placeholder="slug" name="slug")#slug
+
+	div
+		textarea(name="content").write#write
+
+	div
+		input(type="text" placeholder="Token?" name="token")#token
+
+	div
+		input(type="submit" value="Submit")
+
+script.
+	q("#year").value = new Date().getFullYear()
+	q("#month").value = new Date().getMonth()+1
+	q("#day").value = new Date().getDate()
+	q("#title").addEventListener("input", event => {
+		q("#slug").value = event.target.value.toLowerCase().replace(/[\W_-]+/g, "-").replace(/(^-+|-+$)/g, "")
+	})
+	q("#write").addEventListener("keydown", event => {
+		if (event.key === "Tab") {
+			event.preventDefault()
+			insertAtCursor(event.target, "    ")
+		}
+	})
+	q("#token").value = localStorage.getItem("token")
+
+
+include old/includes/end.pug

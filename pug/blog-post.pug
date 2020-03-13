@@ -1,0 +1,14 @@
+//- Needs post, rendered
+
+include old/includes/pre.pug
+title= `${post.title} | Cadence's Blog`
+link(rel="stylesheet" type="text/css" href="/blog.css")
+include old/includes/header.pug
+
+h1= post.title
+
+article!= rendered
+
+div.back: a(href="/blog") ← Back to blog index
+
+include old/includes/end.pug
