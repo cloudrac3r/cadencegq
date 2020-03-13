@@ -1,0 +1,51 @@
+include includes/pre
+<link rel="stylesheet" type="text/css" href="/cloudtube/youtube.css">
+<title>Settings — CloudTube</title>
+<script src="/modals.js"></script>
+<script src="/cloudtube/cloudtube.js"></script>
+<script src="/cloudtube/settings.js"></script>
+include includes/header
+<h1>CloudTube settings</h1>
+<div>Changes will be saved instantly, but pages that use them must be reloaded for the changes to take effect.</div>
+
+<h2>Subscriptions</h2>
+<a href="/cloudtube/subscriptions">Go here to manage subscriptions.</a>
+
+<h2>Blocked content</h2>
+<div><button onclick="exports.addFilter()">Add filter</button></div>
+<div id="filter-container"></div>
+
+<h2>Open in</h2>
+<div class="belowButtonContainer">
+    <button onclick="exports.addOpenIn()">Add new site</button>
+    <select id="openInPresetSelector" onchange="exports.addPresetOpenIn(event)">
+        <option disabled selected>Add from preset</option>
+    </select>
+</div>
+<div class="openin-container" id="openin-container"></div>
+<div>Put <code>%%</code> in the URL and it will be replaced with the current video ID.</div>
+<div><button onclick="exports.resetDefaultOpenIn()">Reset to defaults</button></div>
+
+<h2>Privacy & history</h2>
+<div data-sectionid="privacy" class="settingsDividers"></div>
+
+<h2>Storyboards</h2>
+<div data-sectionid="storyboards" class="settingsDividers"></div>
+
+<h2>End cards</h2>
+<div data-sectionid="endcards" class="settingsDividers"></div>
+
+<h2>Other</h2>
+<div data-sectionid="other" class="settingsDividers"></div>
+
+<h2>Manage data</h2>
+<p>Supported formats: CloudTube, <a href="https://invidio.us/">Invidious,</a> <a href="https://newpipe.schabi.org/">NewPipe,</a> <a href="https://freetubeapp.io/">FreeTube</a></p>
+<p>
+    | If you have an account on this website, be sure to log in before importing so the imported data can be synchonised to your account!
+    | If you don't do this, and you log in later, the data you imported here will be overwritten with the old data from your account.
+</p>
+<div>
+    <button onclick="importData()">Import data</button><button onclick="exportData()">Export data</button>
+</div>
+<textarea id="export-box" placeholder="Exported data will appear here. Imported data will be read from here."></textarea>
+include includes/end

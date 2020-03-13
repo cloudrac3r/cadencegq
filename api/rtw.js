@@ -75,7 +75,7 @@ function checkLocalAccess(handler) {
 
 let localMethods = [
     {
-        route: "/api/rtw/download", methods: ["POST"], code: checkLocalAccess(({data}) => new Promise(async resolve => {
+        route: "/api/rtw/download", methods: ["POST"], upload: "json", code: checkLocalAccess(({data}) => new Promise(async resolve => {
             let array = data.data;
             let buffer = Buffer.from(array);
             let values = await getValues();
@@ -108,7 +108,7 @@ let localMethods = [
         })
     },
     {
-        route: "/api/rtw/config", methods: ["POST"], code: checkLocalAccess(({data}) => {
+        route: "/api/rtw/config", methods: ["POST"], upload: "json", code: checkLocalAccess(({data}) => {
             if (!data) return Promise.resolve([400, "Give me some JSON, please."]);
             return replaceValues(data).then(() => [204, ""]);
         })
@@ -211,4 +211,4 @@ let remoteMethods = [
     }
 ]
 
-module.exports = () => localMethods.concat(remoteMethods);
+module.exports = localMethods.concat(remoteMethods);

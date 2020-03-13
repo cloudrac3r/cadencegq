@@ -1,0 +1,57 @@
+</head><body>
+<nav id="header">
+    <a href="/" class="headerButton sitename">Cadence</a>
+    <span class="vr">|</span>
+    <span class="headerButton headerUnderline" id="headerExpandMenu">≡</span>
+    <div>
+        <a class="headerButton" href="/pastes/submit">New paste</a>
+        <a class="headerButton" href="/pastes/list">Latest pastes</a>
+    </div>
+    <span class="headerButton headerArrow">Pastes</span>
+    <div>
+        <a class="headerButton" href="/images/submit">New image</a>
+        <a class="headerButton" href="/images/list">Latest images</a>
+    </div>
+    <span class="headerButton headerArrow">Images</span>
+    <div>
+        <a class="headerButton" href="/urls/submit">New link</a>
+        <a class="headerButton" href="/urls/list">Latest links</a>
+    </div>
+    <span class="headerButton headerArrow">Links</span>
+    <div>
+        <a class="headerButton" href="/cloudtube/subscriptions">CloudTube</a>
+        <a class="headerButton" href="/egg">Egg Central</a>
+        <a class="headerButton" href="/crumpet">Crumpet</a>
+        <a class="headerButton" href="/misc/godmaster">Godmaster</a>
+        <a class="headerButton" href="/misc/ccc">CCC</a>
+        <a class="headerButton" href="/examples">Example files</a>
+    </div>
+    <span class="headerButton headerArrow">More</span>
+    <div>
+        <a class="headerButton" href="/about/site">Website info</a>
+        <a class="headerButton" href="/about/api">API</a>
+        <a class="headerButton" href="/about/contact">Contact</a>
+        <a class="headerButton" href="/about/privacy">Privacy</a>
+        <a class="headerButton" href="/about/terms">Terms</a>
+        <a class="headerButton" href="https://github.com/cloudrac3r/cadencegq">Source code</a>
+        <a class="headerButton" href="/about/javascript" data-jslicense="1">JavaScript licenses</a>
+    </div>
+    <span class="headerButton headerArrow">About</span>
+    <a class="headerButton headerUnderline" href="/account" id="accountState"></a>
+</nav>
+script.
+    let nav = document.getElementById("header");
+    let marker = document.getElementById("accountState");
+    const expectedMaxTop = 20; // should be 7 for one line, 47 for two
+    function checkMobileHeader() {
+        if (marker.offsetTop <= expectedMaxTop && nav.classList.contains("mobile")) {
+            nav.classList.remove("mobile");
+        }
+        if (marker.offsetTop > expectedMaxTop && !nav.classList.contains("mobile")) {
+            nav.classList.add("mobile");
+        }
+    }
+    checkMobileHeader();
+    window.addEventListener("resize", checkMobileHeader);
+    nav.classList.add("hidden");
+<div id="page">

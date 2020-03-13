@@ -1,0 +1,40 @@
+include includes/pre
+<title>Example files</title>
+style.
+    .dim {
+        color: #909090;
+    }
+script.
+    function bodyLoad() {
+        getExamples(result => {
+            if (!result) return;
+            let columns = [
+                {name: "filename", align: "right", transform: d => d.slice(d.indexOf("."))},
+                {name: "mime", align: "left"},
+                {name: "size", align: "left"},
+                {name: "description", align: "left", inject: true, transform: d => d || '<span class="dim">(none)</span>'},
+                {name: "filename", align: "left", inject: true, transform: d => `<a href="/examples/${d}">${d}</a>`}
+            ];
+            let output = dataToTable(columns, result);
+            output.forEach(tr => {
+                q("#tbody").appendChild(tr);
+            });
+        });
+    }
+include includes/header
+<h1>Example files</h1>
+<p>Figure out if your code problems are due to your code being bad or your test data being bad.</p>
+<table>
+    <thead>
+        <tr>
+            <td>Extension</td>
+            <td>MIME type</td>
+            <td>Size</td>
+            <td>Description</td>
+            <td>Download</td>
+        </tr>
+    </thead>
+    <tbody id="tbody">
+    </tbody>
+</table>
+include includes/end

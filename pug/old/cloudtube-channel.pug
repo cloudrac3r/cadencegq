@@ -1,0 +1,37 @@
+include includes/pre
+<link rel="stylesheet" type="text/css" href="/cloudtube/youtube.css">
+<title></title>
+<script src="/cloudtube/cloudtube.js"></script>
+<!-- metaOGTags -->
+script.
+    function bodyLoad() {
+        let data = "<!-- channelInfo -->";
+        let channelVideos = data.latestVideos;
+        let filterReturn = filterVideos(channelVideos, "feed");
+        channelVideos = filterReturn[0];
+        if (filterReturn[1]) {
+            q("#blockedWarning").style.display = "";
+            q("#blockedWarning span").innerText = filterReturn[1];
+        }
+        for (let i = 0; i < channelVideos.length; i++) {
+            let video = channelVideos[i];
+            q("#searchResultsContainer").appendChild(generateVideoListItem(video).element);
+        }
+    }
+
+    function forceRefresh(event) {
+        event.target.style.width = event.target.offsetWidth;
+        event.target.innerText = "...";
+        event.target.disabled = true;
+        let channelID = window.location.pathname.split("/").slice(-1)[0];
+        request("/api/youtube/subscriptions", () => window.location.reload(), {force: true, subscriptions: [channelID]});
+    }
+include includes/header
+<div style="margin-bottom: 12px;">
+    <button onclick="forceRefresh(event)">Force refresh</button>
+</div>
+<div id="blockedWarning" style="margin-bottom: 12px; display: none;"><span></span> videos have been blocked based on your preferences. <a href="/cloudtube/settings">Edit preferences</a></div>
+<div id="mainSearchContainer">
+    <div id="searchResultsContainer"></div>
+</div>
+include includes/end

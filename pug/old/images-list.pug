@@ -1,0 +1,32 @@
+include includes/pre
+<title>Latest images</title>
+script.
+    function bodyLoad() {
+        loadImageList({}, result => {
+            let columns = [
+                {name: "imageID", align: "left", inject: true, transform: d => `<a href="/api/images/${d}">${d}</a>`},
+                {name: "extension", align: "left", transform: d => "."+d},
+                {name: "creationTime", align: "left", transform: d => new Date(d).toLocaleString()}
+            ];
+            let output = dataToTable(columns, result);
+            output.forEach(tr => {
+                q("#tbody").appendChild(tr);
+            });
+        });
+    }
+include includes/header
+<div>
+    <table style="white-space: nowrap">
+        <thead>
+            <tr>
+                <td>URL</td>
+                <td>Format</td>
+                <td>Created on</td>
+            </tr>
+        </thead>
+        <tbody id="tbody">
+        </tbody>
+    </table>
+</div>
+<span id="username"></span>
+include includes/end

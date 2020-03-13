@@ -1,0 +1,54 @@
+include includes/pre
+<title>New link</title>
+script.
+    function submit() {
+        q("#submit").disabled = true;
+        let content = q("#content").value;
+        let token = localStorage.getItem("token") || undefined;
+        let progress = q("#progress");
+        progress.innerHTML = "Posting...";
+        request("/api/urls", result => {
+            try {
+                let data = JSON.parse(result.responseText);
+                if (result.status.toString()[0] == "2") {
+                    progress.innerHTML = `Success! <a href="/api/urls/${data.hash}">Here's your new link</a>`;
+                    progress.classList.add("successDisplay");
+                } else if (data.message) {
+                    progress.innerText = `Failed to submit link. The server says:\n`+data.message;
+                    progress.classList.add("errorDisplay");
+                    if (!data.retryForbidden) q("#submit").disabled = false;
+                } else if (data.code) {
+                    progress.innerHTML = `Failed to submit link. The server returned error code ${data.code}.`;
+                    progress.classList.add("errorDisplay");
+                    q("#submit").disabled = false;
+                } else {
+                    progress.innerHTML = `Failed to submit link. The server returned HTTP status code ${result.status}.`;
+                    progress.classList.add("errorDisplay");
+                    q("#submit").disabled = false;
+                }
+            } catch (e) {
+                progress.innerHTML = "Failed to submit link: the server returned a non-JSON response.";
+                progress.classList.add("errorDisplay");
+                q("#submit").disabled = false;
+            }
+        }, Object.assign({token, target: content}));
+    }
+    function bodyLoad() {
+        clear();
+    }
+    getLoginDetails(login => {
+        if (login) {
+            q("#usernamePostNote").innerText = "Posting as "+login.username+".";
+            q("#usernamePostNote").style.display = "block";
+        }
+    });
+include includes/header
+<div>
+    <input id="content" placeholder="Paste a link here" style="width: 700px">
+</div>
+<div id="usernamePostNote">You must log in to upload content.</div>
+<div>
+    <button id="submit" onclick="submit()">Submit</button>
+</div>
+<div id="progress"></div>
+include includes/end

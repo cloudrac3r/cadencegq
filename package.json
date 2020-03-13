@@ -13,10 +13,11 @@
     "fast-xml-parser": "^3.12.16",
     "mime": "^2.4.2",
     "nedb-promise": "^2.0.1",
+    "pinski": "github:cloudrac3r/pinski#d64e2b734530e003545182f647d4a1d6a2534960",
     "prettier-bytes": "^1.0.4",
     "request-promise": "^4.2.4",
     "simple-git": "^1.110.0",
-    "sqlite": "^2.9.3",
+    "sqlite": "^3.0.3",
     "youtube-search": "^1.1.4",
     "ytdl-core": "^0.25.2"
   }

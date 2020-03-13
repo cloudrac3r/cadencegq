@@ -1,0 +1,819 @@
+include includes/pre
+<link rel="stylesheet" type="text/css" href="/cloudtube/youtube.css">
+<title></title>
+<script src="/cloudtube/cloudtube.js"></script>
+<script defer src="/cloudtube/storyboards.js"></script>
+<script src="/color-thief.min.js"></script> <!-- https://github.com/lokesh/color-thief/ -->
+<!-- metaOGTags -->
+script.
+    let videoID;
+    let formats;
+    let allFormats;
+    let bestAudioURL;
+    let checkingAudioURLs;
+    let lastCurrentTime = 0;
+    let sourceSwitchAttempts = 0;
+
+    function chooseFormat(index) {
+        if (index < 0) index = 0;
+        let format = formats[index];
+        if (!format) return;
+        let video = q("video");
+        let audio = q("audio");
+        video.preload = "auto";
+        let qs = q("#qualitySelect");
+        // console.log("saving last time: "+video.currentTime);
+        lastCurrentTime = video.currentTime;
+        if (format.index) {
+            if (bestAudioURL) {
+                audio.src = bestAudioURL;
+            } else if (!checkingAudioURLs) { // So apprently sometimes Vivaldi on Linux doesn't load the audio length properly so I pick one that works
+                checkingAudioURLs = true;
+                let audioFormats = allFormats.filter(f => f.type.includes("audio"));
+                let completed = 0;
+                let audioLoadingDisplay = q("#audioLoadingDisplay");
+                audioLoadingDisplay.style.display = "block";
+                let setText = text => {
+                    audioLoadingDisplay.children[0].children[0].innerText = text;
+                }
+                let updateAudioDisplay = () => {
+                    setText("Loading audio... ("+completed+"/"+audioFormats.length+")");
+                }
+                updateAudioDisplay();
+                Promise.all(audioFormats.map(f => {
+                    return new Promise(resolve => {
+                        let audio = document.createElement("audio");
+                        audio.src = f.url;
+                        audio.setAttribute("preload", "metadata");
+                        audio.onloadeddata = () => {
+                            console.log(f.bitrate, f.type, audio.duration);
+                            completed++;
+                            updateAudioDisplay();
+                            resolve({f, audio});
+                        }
+                        audio.onerror = () => {
+                            completed++;
+                            updateAudioDisplay();
+                            resolve(); // if audio is unplayable, resolve with nothing
+                        }
+                        q("body").appendChild(audio);
+                    });
+                })).then(results => {
+                    results = results.filter(r => r); // filter out unplayable audio
+                    if (results.length) {
+                        let lengths = [];
+                        for (let r of results) {
+                            if (!lengths.find(l => Math.abs(l-r.audio.duration) < 1)) lengths.push(r.audio.duration);
+                        }
+                        let bestLength = lengths.sort((a, b) => (b - a))[0];
+                        let best = results
+                            .filter(r => Math.abs(bestLength-r.audio.duration) < 1)
+                            .sort((a, b) => (b.f.bitrate - a.f.bitrate))[0];
+                        setText("Setting source...");
+                        bestAudioURL = best.f.url;
+                        checkingAudioURLs = false;
+                        audio.src = bestAudioURL;
+                        audio.setAttribute("preload", "auto");
+                        setText("Buffering...");
+                        audio.addEventListener("canplay", function() {
+                            audio.removeEventListener("canplay", this);
+                            setText("Audio is ready!");
+                            setTimeout(() => {
+                                audioLoadingDisplay.style.display = "none";
+                            }, 4000);
+                        });
+                    } else {
+                        checkingAudioURLs = false;
+                        setText("No playable sources.");
+                    }
+                });
+            }
+        } else {
+            audio.removeAttribute("src");
+            audio.pause();
+        }
+        video.src = format.url;
+        for (let option of qs.children) {
+            option.removeAttribute("selected");
+        }
+        qs.children[index].setAttribute("selected", "");
+    }
+
+    function loadLastTime() {
+        //console.log("loading last time: "+lastCurrentTime);
+        q("video").currentTime = lastCurrentTime;
+    }
+
+    class BetterTimeout {
+        constructor(callback, delay) {
+            this.callback = callback;
+            this.delay = delay;
+            if (this.callback) {
+                this.isActive = true;
+                this.timeout = setTimeout(this.callback, this.delay);
+            } else {
+                this.isActive = false;
+                this.timeout = null;
+            }
+        }
+        triggerNow() {
+            this.clear();
+            this.callback();
+        }
+        clear() {
+            this.isActive = false;
+            clearTimeout(this.timeout);
+        }
+    }
+
+    function playbackIntervention(event) {
+        console.log(event.target.tagName.toLowerCase(), event.type);
+        let video = q("video");
+        let audio = q("audio");
+        if (audio.src) {
+            let target = event.target;
+            let other = (event.target.tagName == "VIDEO" ? audio : video);
+            switch (event.type) {
+            case "canplaythrough":
+                target.waitingTimeout.clear();
+                if (video.ready && audio.ready) return; // console.log("ignoring canplaythrough; already ready");
+                target.ready = true;
+                if (video.ready && audio.ready) {
+                    if (!video.manualPaused) video.play();
+                    console.log("both ready");
+                }
+                break;
+            case "durationchange":
+                target.ready = false;
+                break;
+            case "seeked":
+                target.ready = false;
+                target.pause();
+                other.currentTime = target.currentTime;
+                break;
+            case "pause":
+            case "playing":
+            case "play":
+                inProgress = true;
+                other.currentTime = target.currentTime;
+                if (event.type.startsWith("play")) {
+                    target.manualPaused = false;
+                    other.play();
+                } else {
+                    target.manualPaused = true;
+                    other.pause();
+                }
+                break;
+            case "ratechange":
+                other.rate = target.rate;
+                break;
+            case "stalled":
+            case "waiting":
+                if (target.waitingTimeout.isActive) {
+                    target.waitingTimeout.triggerNow();
+                } else if (other.waitingTimeout.isActive) {
+                    other.waitingTimeout.triggerNow();
+                } else {
+                    target.waitingTimeout.clear();
+                    target.waitingTimeout = new BetterTimeout(() => {
+                        target.ready = false;
+                        target.pause();
+                    }, 1000);
+                }
+                break;
+            }
+        } else {
+            if (event.type == "canplaythrough" && !video.manualPaused) video.play();
+        }
+    }
+
+    function adjustSpeedSlider() {
+        let speedSlider = q("#speedSlider");
+        q("video").playbackRate = speedSlider.value/100;
+        q("audio").playbackRate = speedSlider.value/100;
+        q("#speedLabel").innerText = speedSlider.value+"%";
+    }
+
+    function resetSpeed() {
+        let speedSlider = q("#speedSlider");
+        speedSlider.value = 100;
+        adjustSpeedSlider();
+    }
+
+    function seekTo(seconds) {
+        q("video").currentTime = seconds;
+    }
+
+    function checkSubscribedStatus() {
+        return lsm.array("subscriptions").array.includes(q("#videoAuthor").getAttribute("data-channelid"));
+    }
+
+    function updateSubscribeButton() {
+        q("#subscribe").innerText = checkSubscribedStatus() ? "Unsubscribe" : "Subscribe";
+    }
+
+    function toggleSubscription() {
+        let channelID = q("#videoAuthor").getAttribute("data-channelid");
+        let token = lsm.get("token");
+        if (token) {
+            let s = q("#subscribe");
+            s.style.width = s.offsetWidth;
+            s.innerText = "...";
+            s.disabled = true;
+            request(`/api/youtube/subscribe`, result => {
+                if (result.status == 200) {
+                    let data = JSON.parse(result.responseText);
+                    if (data.nowSubscribed) lsm.array("subscriptions").add(channelID, true);
+                    else lsm.array("subscriptions").remove(channelID);
+                    s.style.width = "";
+                    updateSubscribeButton();
+                } else {
+                    console.log(result);
+                    s.innerText = "error.";
+                }
+                s.disabled = false;
+            }, {token, channelID});
+        } else {
+            if (checkSubscribedStatus()) lsm.array("subscriptions").remove(channelID);
+            else lsm.array("subscriptions").add(channelID, true);
+            updateSubscribeButton();
+        }
+    }
+
+    function resizeTheatrePlayer() {
+        let video = q("video");
+        let availableHeight = window.innerHeight-100;
+        let availableWidth = video.parentElement.offsetWidth;
+        let aspectRatio = video.videoWidth/video.videoHeight;
+        let resultWidth = Math.min(availableHeight*aspectRatio, availableWidth);
+        video.style.width = resultWidth+"px";
+        video.style.height = resultWidth/aspectRatio+"px";
+        console.log("Resized player");
+    }
+
+    function toggleTheatre() {
+        let page = q("#page");
+        let video = q("video");
+        if (page.firstChild != video.parentElement) {
+            page.insertBefore(video.parentElement, page.firstChild);
+            window.addEventListener("resize", resizeTheatrePlayer);
+            resizeTheatrePlayer();
+            q("#relatedVideosContainer").style.marginTop = "16px";
+        } else {
+            let defaultLocation = q("#mainContainer").children[0];
+            defaultLocation.insertBefore(video.parentElement, defaultLocation.firstChild);
+            window.removeEventListener("resize", resizeTheatrePlayer);
+            video.style.width = "";
+            video.style.height = "";
+            q("#relatedVideosContainer").style.marginTop = "";
+        }
+    }
+
+    function requestDash(message) {
+        let playbackErrorContainer = q("#playbackErrorContainer");
+        if (sourceSwitchAttempts == 0) {
+            sourceSwitchAttempts = 1
+            if (lsm.get("settingInvidiousDash") == "Always") playbackErrorContainer.innerText = "Refusing to play streams from YouTube, switching to proxy...";
+            else playbackErrorContainer.innerText = message || "Streams are unplayable, switching to proxy...";
+            playbackErrorContainer.style.display = "";
+            request("/api/youtube/dash/"+videoID, response => {
+                if (response.status != 200) {
+                    playbackErrorContainer.innerHTML = "An error occurred. Try reloading the page. If you still see this error, <a href='/about/contact' target='_blank' style='margin: 0'>please report it</a> as soon as possible, along with the exact time of day at which it occurred.<br><br><code>"+response.status+": "+response.responseText+"</code>";
+                    playbackErrorContainer.style["word-break"] = "break-all";
+                    return;
+                }
+                let data = JSON.parse(response.responseText);
+                console.log(data);
+                allFormats.length = 0;
+                formats.length = 0;
+                checkingAudioURLs = false;
+                bestAudioURL = undefined;
+                let qualitySelect = q("#qualitySelect");
+                let child;
+                while (child = qualitySelect.children[0]) {
+                    child.parentElement.removeChild(child);
+                }
+                for (let set of data.MPD.Period.AdaptationSet) {
+                    if (set["@_mimeType"].includes("audio")) {
+                        let rep = set.Representation;
+                        if (rep.constructor.name != "Array") rep = [rep];
+                        rep.forEach((repSingle, i) => {
+                            allFormats.push({
+                                url: "https://invidio.us"+repSingle.BaseURL,
+                                type: set["@_mimeType"],
+                                container: set["@_mimeType"].split("/")[1],
+                                bitrate: repSingle["@_bitrate"],
+                                itag: repSingle["@_id"]
+                            });
+                        });
+                    } else {
+                        let rep = set.Representation;
+                        if (rep.constructor.name != "Array") rep = [rep];
+                        rep.forEach((repSingle, i) => {
+                            let newFormat = {
+                                url: "https://invidio.us"+repSingle.BaseURL,
+                                resolution: repSingle["@_height"]+"p",
+                                qualityLabel: repSingle["@_height"]+"p",
+                                label: `${repSingle["@_height"]}p ${set["@_mimeType"].split("/")[1]}/${(repSingle["@_codecs"] || "").slice(0, 3)} ꜝ`,
+                                container: set["@_mimeType"].split("/")[1],
+                                type: set["@_mimeType"],
+                                bitrate: repSingle["@_bitrate"],
+                                itag: repSingle["@_id"],
+                                index: -1
+                            };
+                            newFormat.sort = repSingle["@_height"].padStart("0", 6) + newFormat.container[1];
+                            allFormats.push(newFormat);
+                            formats.push(newFormat);
+                        });
+                    }
+                }
+                allFormats.sort((a, b) =>
+                    a.sort == b.sort
+                    ? 0
+                    : a.sort < b.sort
+                    ? 1
+                    : -1
+                );
+                allFormats.filter(newFormat => newFormat.resolution).forEach((newFormat, i) => {
+                    let option = document.createElement("option");
+                    option.setAttribute("value", i);
+                    option.innerText = newFormat.label;
+                    qualitySelect.appendChild(option);
+                });
+                let preferredContainer = lsm.get("preferWebm") == "1" ? "webm" : "mp4";
+                chooseFormat(formats.findIndex(f => f.container == preferredContainer) || 0);
+                playbackErrorContainer.style.display = "none";
+            });
+        }
+    }
+
+    function share() {
+        let shareBox = q("#video-share-links");
+        if (shareBox.style.display == "none") shareBox.style.display = "";
+        else shareBox.style.display = "none";
+    }
+
+    function bodyLoad() {
+        let video = q("video");
+        let audio = q("audio");
+        for (let eventName of ["pause", "play", "seeked"]) {
+            video.addEventListener(eventName, playbackIntervention);
+        }
+        for (let eventName of ["canplaythrough", "waiting", "stalled"]) {
+            video.addEventListener(eventName, playbackIntervention);
+            audio.addEventListener(eventName, playbackIntervention);
+        }
+        video.addEventListener("focus", event => event.target.blur()); // disable built-in video keyboard controls
+        video.manualPaused = true;
+        let ignorePlaybackError = false;
+        video.addEventListener("error", event => {
+            if (ignorePlaybackError) return;
+            console.log(event, video);
+            if (lsm.get("settingInvidiousDash") == "When required" || lsm.get("settingInvidiousDash") === null) requestDash();
+            q("#playbackErrorContainer").style.display = "";
+        });
+        video.addEventListener("timeupdate", event => {
+        });
+        window.addEventListener("beforeunload", () => {
+            ignorePlaybackError = true;
+        });
+        q("#speedSliderContainer").children[0].addEventListener("wheel", event => {
+            let speedSlider = q("#speedSlider");
+            let adjustAmount = 5;
+            let offset = adjustAmount * Math.sign(event.deltaY) * Math.sign(-event.shiftKey + 0.5);
+            if (speedSlider.value % adjustAmount == 0) {
+                speedSlider.value -= offset;
+            } else {
+                speedSlider.value = speedSlider.value - speedSlider.value % 5;
+                if (offset < 0) speedSlider.value -= offset;
+            }
+            adjustSpeedSlider();
+            event.preventDefault();
+        });
+        video.waitingTimeout = new BetterTimeout();
+        audio.waitingTimeout = new BetterTimeout();
+        let data = "<!-- videoInfo -->";
+        videoID = data.videoId;
+        {
+            let shareWords = "<!-- shareWords -->";
+            let shareBox = q("#video-share-links").children[0];
+            [
+                window.location.origin+"/cloudtube/video/"+videoID,
+                window.location.origin+"/v/"+videoID,
+                window.location.origin+"/v/"+shareWords.join(" "),
+                window.location.origin+"/v/"+shareWords.map(w => w[0].toUpperCase()+w.slice(1).toLowerCase()).join("")
+            ].forEach(url => {
+                let element = document.createElement("a");
+                element.textContent = url;
+                element.href = url;
+                element.addEventListener("click", copyLink);
+                shareBox.appendChild(element);
+            })
+        }
+        // Set buttons below video
+        let openInOutput = q("#openInOutput");
+        let openin = lsm.get("videoOpenIn");
+        [...openInOutput.children].forEach(child => {
+            if (child.hasAttribute("data-default-openin")) {
+                if (openin === null) child.href = child.getAttribute("data-openin-url").replace(/%%/g, videoID);
+                else child.remove();
+            }
+        });
+        if (openin !== null) {
+            openin = JSON.parse(openin);
+            openin.forEach(data => {
+                openInOutput.appendChild(new ElemJS("a").class("linkbutton").text(data.name).direct("href", data.url.replace(/%%/g, videoID)).element);
+            });
+        }
+        // Load video
+        //formats = allFormats.filter(f => usefulFormats.includes(f.itag)/* && f.audioEncoding*/);
+        allFormats = data.formatStreams.concat(data.adaptiveFormats);
+        formats = allFormats.filter(f => f.type.includes("video") && f.qualityLabel);
+        if (formats.length) {
+            for (let i = 0; i < formats.length; i++) {
+                let f = formats[i];
+                f.label = (f.qualityLabel || f.resolution) + " " + f.container + (f.index ? " ꜝ" : "") ;
+                let option = document.createElement("option");
+                option.setAttribute("value", i);
+                option.innerText = f.label;
+                q("#qualitySelect").appendChild(option);
+            }
+        } else {
+            q("#qualitySelect").style.display = "none";
+        }
+        let preferredContainer = lsm.get("preferWebm") == "1" ? "webm" : "mp4";
+        if (lsm.get("settingInvidiousDash") != "Always") chooseFormat(formats.findIndex(f => f.container == preferredContainer) || 0);
+        else setTimeout(requestDash, 0);
+        // Set video elements
+        q("#videoTitle").innerText = data.title;
+        q("#videoAuthor").innerText = "Uploaded by "+data.author;
+        q("#videoAuthor").href = "/cloudtube/channel/"+data.authorId;
+        q("#videoAuthor").setAttribute("data-channelid", data.authorId);
+        if (data.isUpcoming) {
+            if (data.premiereTimestamp) {
+                q("#liveEventNotice").textContent = "This live event will begin in "+relativeTime(data.premiereTimestamp*1000)+".";
+            } else {
+                q("#liveEventNotice").textContent = "This live event will begin soon.";
+            }
+            q("#liveEventNotice").style.display = "";
+        }
+        q("#videoDescription").innerHTML = data.descriptionHtml;
+        data.viewCount = data.viewCount.toString();
+        let commaViewCount = data.viewCount;
+        for (let i = 1; i < data.viewCount.length/3; i++) {
+            let invi = commaViewCount.length - i*3 - i + 1;
+            commaViewCount = commaViewCount.slice(0, invi) + "," + commaViewCount.slice(invi);
+        }
+        q("#videoViews").innerText = commaViewCount+" views";
+        q("#videoUploaded").innerText = "Uploaded "+humaniseDate(data.published*1000);
+        let percentRating = data.rating/5*100;
+        q("#videoRatingBar").style.background = `linear-gradient(to right, #208819 ${percentRating}%, #ccc ${percentRating}%)`;
+        getLoginDetails(details => {
+            updateSubscribeButton();
+        });
+        // Set related videos
+        let relatedVideos = data.recommendedVideos.filter(rv => rv.title && rv.author && rv.videoId && rv.lengthSeconds);
+        let filterReturn = filterVideos(relatedVideos, "related");
+        relatedVideos = filterReturn[0];
+        let rice = Math.random() < 1e-6;
+        for (let i = 0; i < relatedVideos.length; i++) {
+            let rv = relatedVideos[i];
+            let ne = q("#relatedVideosStorage").children[0].cloneNode(true);
+            ne.children[0].href = "/cloudtube/video/"+rv.videoId
+            ne.children[1].children[0].href = "/cloudtube/video/"+rv.videoId
+            ne.children[1].children[0].innerText = rv.title;
+            ne.children[1].children[1].children[0].innerText = rv.author;
+            if (rv.authorId) ne.children[1].children[1].children[0].href = "/cloudtube/channel/"+rv.authorId;
+            ne.children[1].children[1].children[1].innerText = rv.viewCountText;
+            ne.children[0].children[0].src = thumbnailURL(rice ? "T0rRHwZ1bf0" : rv.videoId);
+            ne.children[0].setAttribute("data-prettyseconds", prettySeconds(rv.lengthSeconds));
+            q("#relatedVideosContainer").appendChild(ne);
+        }
+        q("#blockedWarning").parentElement.appendChild(q("#blockedWarning"));
+        if (filterReturn[1]) {
+            q("#blockedWarning").style.display = "";
+            q("#blockedWarning span").innerText = filterReturn[1];
+        }
+        // Fix description
+        [...q("#eow-description").children].filter(c => c.tagName == "A").forEach(c => {
+            if (c.innerText.startsWith("#")) { // hashtags
+                c.removeAttribute("href");
+            } else {
+                let href = c.getAttribute("href");
+                if (c.onclick && c.onclick.toString().includes("seekTo")) { // timestamps
+                    c.classList.add("timestamp");
+                    c.setAttribute("data-timestamp", c.innerText.split(":").reduce((p, c, i, a) => (p + parseInt(c)*60**(a.length-i-1)), 0));
+                } else if (href.startsWith("/redirect")) { // external links
+                    href = href.replace(/^.*\?/, "");
+                    c.setAttribute("href", new URLSearchParams(href).get("q"));
+                } else if (href.match(/^https?:\/\/(www\.)?youtube\.com\/channel\/([^\/]{12,})/)) { // channel links
+                    c.setAttribute("href", href.replace(/.*channel/, "/cloudtube/channel"));
+                } else if (href.match(/^https?:\/\/(www\.)?youtube\.com\/playlist/)) { // playlists
+                    let listParam = new URL(href).searchParams.get("list");
+                    if (listParam) c.setAttribute("href", "/cloudtube/playlist/"+listParam);
+                } else { // videos
+                    c.setAttribute("href", href.replace(/^.*=/, ""));
+                }
+            }
+        });
+        // Description timestamps
+        let timestamps = [...document.querySelectorAll("#videoDescription a[data-timestamp]")].sort((a, b) => parseInt(a.getAttribute("data-timestamp")) - parseInt(b.getAttribute("data-timestamp")));
+        let timestampsLastIndex = -1;
+        setInterval(() => {
+            for (let i = 0; i < timestamps.length; i++) {
+                if (parseInt(timestamps[i].getAttribute("data-timestamp")) <= video.currentTime && (!timestamps[i+1] || video.currentTime < parseInt(timestamps[i+1].getAttribute("data-timestamp")))) {
+                    if (timestampsLastIndex != i) {
+                        document.querySelectorAll("a.timestamp-active").forEach(a => a.classList.remove("timestamp-active"));
+                        timestamps[i].classList.add("timestamp-active");
+                        timestampsLastIndex = i;
+                    }
+                }
+            }
+        }, 1000);
+        // Record video as watched in localStorage
+        if (lsm.get("trackWatchedVideos")) {
+            lsm.array("watchedVideos").add(videoID, true);
+        }
+        // Manage end cards
+        if (lsm.get("disableEndCards") != "1") request("/api/youtube/get_endscreen?v="+videoID, result => {
+            if (result.status != 200) return;
+            // already defined: video
+            let cardData = JSON.parse(result.responseText);
+            const knownStyles = ["VIDEO", "CHANNEL", "WEBSITE", "PLAYLIST"];
+            cardData.elements = cardData.elements.filter(element => knownStyles.includes(element.endscreenElementRenderer.style));
+            for (let i = 0; i < cardData.elements.length; i++) {
+                let element = cardData.elements[i];
+                // Base container
+                let e = document.createElement("a");
+                element.e = e; // add to cardData
+                e.style.display = "none"; // invisible to begin with, will become visible when time is in range
+                q("#videoEndCardContainer").appendChild(e);
+                if (element.endscreenElementRenderer.style == "VIDEO") {
+                    // Video link
+                    e.classList.add("endcard-video");
+                    let id = element.endscreenElementRenderer.endpoint.watchEndpoint.videoId;
+                    let match = id.match(/[\w-]+/);
+                    if (match) id = match[0];
+                    e.href = id;
+                    e.setAttribute("data-prettyseconds", element.endscreenElementRenderer.videoDuration.runs[0].text);
+                    // Video thumbnail
+                    let img = document.createElement("img");
+                    img.src = thumbnailURL(id);
+                    e.appendChild(img);
+                    // Video title
+                    let span = document.createElement("span");
+                    span.innerText = element.endscreenElementRenderer.title.simpleText;
+                    e.appendChild(span);
+                } else if (element.endscreenElementRenderer.style == "PLAYLIST") {
+                    // Playlist link
+                    e.classList.add("endcard-playlist");
+                    e.href = "/cloudtube/playlist/"+element.endscreenElementRenderer.endpoint.watchEndpoint.playlistId;
+                    // Playlist thumbnail
+                    let img = document.createElement("img");
+                    img.src = element.endscreenElementRenderer.image.thumbnails.sort((a, b) => (b.width - a.width))[0].url;
+                    e.appendChild(img);
+                    // Playlist title
+                    let span = document.createElement("span");
+                    span.innerText = element.endscreenElementRenderer.title.simpleText+"\nPlaylist: "+element.endscreenElementRenderer.playlistLength.runs[0].text;
+                    e.appendChild(span);
+                } else if (element.endscreenElementRenderer.style == "CHANNEL") {
+                    e.classList.add("endcard-channel");
+                    // Channel link
+                    e.href = "/cloudtube/channel/"+element.endscreenElementRenderer.endpoint.browseEndpoint.browseId;
+                    e.title = element.endscreenElementRenderer.title.simpleText;
+                    // Channel image
+                    let img = document.createElement("img");
+                    img.src = element.endscreenElementRenderer.image.thumbnails.sort((a, b) => (b.width - a.width))[0].url;
+                    e.appendChild(img);
+                } else if (element.endscreenElementRenderer.style == "WEBSITE") {
+                    // Website link
+                    e.classList.add("endcard-website");
+                    let url = element.endscreenElementRenderer.endpoint.urlEndpoint.url;
+                    if (url.startsWith("/redirect")) url = new URLSearchParams(url).get("q");
+                    e.href = url;
+                    e.target = "_blank";
+                    // Website icon
+                    let img = document.createElement("img");
+                    e.appendChild(img);
+                    // Website words container
+                    let span = document.createElement("span");
+                    e.appendChild(span);
+                    // Website title
+                    let title = document.createElement("div");
+                    title.classList.add("endcard-website-title");
+                    title.innerText = element.endscreenElementRenderer.title.simpleText;
+                    span.appendChild(title);
+                    // Website address
+                    let sitename = document.createElement("div");
+                    sitename.classList.add("endcard-website-sitename");
+                    sitename.innerText = element.endscreenElementRenderer.metadata.simpleText;
+                    span.appendChild(sitename);
+                    // Website address colour. Uses colorthief and canvas to pick the most common colour, and applies that to the text
+                    sitename.style.color = "#666769";
+                    if (lsm.get("disableEndCardsCanvas") != "1") img.onload = () => {
+                        try { // any potential canvas fingerprint protection might break the whole script, so ignore exceptions
+                            // Get average colour
+                            let colorThief = new ColorThief();
+                            let color = colorThief.getColor(img);
+                            // Increase contrast if necessary
+                            let sum = color.reduce((p, c) => (p + c));
+                            const limit = 380;
+                            if (sum > limit) {
+                                let ratioOver = sum/limit;
+                                color = color.map(v => Math.floor(v/ratioOver));
+                            }
+                            // Set element
+                            sitename.style.color = "#"+color.map(v => v.toString(16).padStart(2, "0")).join("");
+                        } catch (e) { // exceptions caused by the previously mentioned canvas fingerprint protection
+                            console.log(e);
+                        }
+                    }
+                    img.src = element.endscreenElementRenderer.image.thumbnails.sort((a, b) => (b.width - a.width))[0].url;
+                }
+            }
+            let endCardUpdateFunction = () => {
+                //if (video.paused) return;
+                let vd = {
+                    offset: {
+                        x: Math.max((video.clientWidth-((video.clientHeight/video.videoHeight)*video.videoWidth))/2, 0),
+                        y: Math.max((video.clientHeight-((video.clientWidth/video.videoWidth)*video.videoHeight))/2, 0)
+                    }
+                }
+                vd.base = {
+                    x: video.offsetLeft,
+                    y: video.offsetTop,
+                    width: video.clientWidth-vd.offset.x*2,
+                    height: video.clientHeight-vd.offset.y*2
+                }
+                for (let element of cardData.elements) {
+                    let e = element.e;
+                    if (video.currentTime*1000 >= element.endscreenElementRenderer.startMs && video.currentTime*1000 <= element.endscreenElementRenderer.endMs) {
+                        e.style.display = "";
+                        e.style.left = Math.round(vd.base.width*element.endscreenElementRenderer.left+vd.base.x+vd.offset.x)+"px";
+                        e.style.top = Math.round(vd.base.height*element.endscreenElementRenderer.top+vd.base.y+vd.offset.y)+"px";
+                        let img = e.children[0];
+                        let width = Math.ceil(vd.base.width*element.endscreenElementRenderer.width);
+                        img.style.width = width+"px";
+                        if (element.endscreenElementRenderer.style == "WEBSITE") {
+                            e.style.width = width+"px";
+                        }
+                        if (element.endscreenElementRenderer.style == "PLAYLIST") {
+                            img.style.height = Math.round(width/element.endscreenElementRenderer.aspectRatio)+"px";
+                        }
+                    } else {
+                        e.style.display = "none";
+                    }
+                }
+            }
+            setInterval(endCardUpdateFunction, 250); // I know this interval is disgusting but this is literally how youtube does it so go yell at them instead
+            window.addEventListener("resize", endCardUpdateFunction);
+        });
+    }
+
+    document.addEventListener("keydown", event => {
+        if (event.repeat) return;
+        if (event.ctrlKey) return;
+        let video = q("video");
+        let audio = q("audio");
+        let audioSource = audio.src ? audio : video;
+        let speedSlider = q("#speedSlider");
+        let caught = true;
+        if (event.key == " " || event.key == "p" || event.key == "k") {
+            if (video.paused) video.play();
+            else video.pause();
+        } else if (event.key == "ArrowLeft") {
+            video.currentTime -= 5;
+            if (audio.src) audio.currentTime -= 5;
+        } else if (event.key == "ArrowRight") {
+            video.currentTime += 5;
+            if (audio.src) audio.currentTime += 5;
+        } else if (event.key == ",") {
+            video.currentTime -= 1;
+            if (audio.src) audio.currentTime -= 5;
+        } else if (event.key == ".") {
+            video.currentTime += 1;
+            if (audio.src) audio.currentTime += 5;
+        } else if (event.key == "ArrowUp") {
+            audioSource.volume += 0.1;
+        } else if (event.key == "ArrowDown") {
+            audioSource.volume -= 0.1;
+        } else if (event.key == "j") {
+            video.currentTime -= 10;
+            if (audio.src) audio.currentTime -= 10;
+        } else if (event.key == "l") {
+            video.currentTime += 10;
+            if (audio.src) audio.currentTime += 10;
+        } else if (event.key == "\\") {
+            resetSpeed();
+        } else if (event.key == "[") {
+            speedSlider.value -= 10;
+            adjustSpeedSlider();
+        } else if (event.key == "]") {
+            speedSlider.value -= -10;
+            adjustSpeedSlider();
+        } else if (!isNaN(+event.key)) {
+            video.currentTime = (+event.key)/10*video.duration;
+        } else if (event.key == "f") {
+            let browserMap;
+            if (document.webkitFullscreenElement !== undefined) {
+                methodMap = {
+                    element: () => document.webkitFullscreenElement,
+                    enter: () => video.webkitRequestFullScreen(),
+                    exit: () => document.webkitCancelFullScreen()
+                }
+            } else if (document.mozFullScreenElement !== undefined) {
+                methodMap = {
+                    element: () => document.mozFullScreenElement,
+                    enter: () => video.mozRequestFullScreen(),
+                    exit: () => document.mozCancelFullScreen()
+                }
+            }
+            if (methodMap.element()) {
+                methodMap.exit();
+            } else {
+                methodMap.enter();
+            }
+        } else {
+            caught = false;
+        }
+        if (caught) event.preventDefault();
+    });
+include includes/header
+<div id="mainContainer">
+    <div>
+        <div class="videoContainer">
+            <video controls preload="auto" ondurationchange="loadLastTime()"></video>
+        </div>
+        <div id="currentTimeContainer"></div>
+        <div id="videoEndCardContainer"></div>
+        <div class="videoInfoBox">
+            <div>
+                <span id="videoTitle">Placeholder title</span>
+                <a id="videoAuthor">Placeholder author</a>
+            </div>
+            <div id="videoRightContainer">
+                <div id="videoUploaded">Placeholder upload date</div>
+                <div id="videoViews">Placeholder views</div>
+                <span id="videoRatingBar"></span>
+            </div>
+        </div>
+        <audio preload="auto"></audio>
+        <div id="liveEventNotice" style="display: none"></div>
+        <div id="audioLoadingDisplay" class="infoBox" style="display: none;">
+            <div>
+                <span></span>
+            </div>
+        </div>
+        <div class="belowButtonContainer infoBox" id="playbackErrorContainer" style="display: none;">
+            <div>
+                <span>
+                    <div>
+                        | Looks like the video stream can't be played.<br>
+                        | Normally this would fall back to using Invidious to proxy the video, but you've turned that off in settings.<br>
+                        | Change the setting "use Invidious to proxy video streams" if you want to enable this feature.
+                    </div>
+                    <div>
+                        <button onclick="javascript:window.location='/cloudtube/settings'">Visit settings</button><button onclick="requestDash('Switching to proxy...')">Just use Invidious this time</button>
+                    </div>
+                </span>
+            </div>
+        </div>
+        <div class="belowButtonContainer">
+            <button id="subscribe" onclick="toggleSubscription()">Subscribe</button>
+            <button id="theatre" onclick="toggleTheatre()">Theatre</button>
+            <select id="qualitySelect" onchange="chooseFormat(event.target.selectedIndex)"></select>
+            <span id="speedSliderContainer"><span><span class="speedText">Speed:</span><span id="speedLabel" onclick='resetSpeed()' title="Click to reset">100%</span><input type="range" id="speedSlider" min="10" max="500" value="100" step="1" oninput="adjustSpeedSlider()" autocomplete="off"></span></span>
+        </div>
+        <div class="belowButtonContainer" id="openInOutput">
+            <a class="linkbutton" href="/cloudtube/subscriptions"><img src="/fonts/search.svg" style="position: relative; top: 2px; margin: 0px 8px 0px 4px; width: 16px; height: 16px;" alt="">Search</a>
+            <a class="linkbutton" href="javascript:share()">Share</a>
+            <a class="linkbutton" data-openin-url="https://youtube.com/watch?v=%%&feature=cloudtube" data-default-openin>Watch on YouTube</a>
+            <a class="linkbutton" data-openin-url="https://invidio.us/watch?v=%%" data-default-openin>Watch on Invidious</a>
+        </div>
+        <div class="belowButtonContainer" id="video-share-links" style="display: none">
+            <div>
+                <div>All of these links will lead to the same place. Pick your favourite!</div>
+                <div>Left click to copy.</div>
+            </div>
+        </div>
+        <div class="videoDescription" id="videoDescription">
+            Placeholder description
+        </div>
+    </div>
+    <div id="relatedVideosContainer">
+        <div>Related videos</div>
+        <div id="blockedWarning" style="display: none;"><span></span> videos blocked. <a href="/cloudtube/settings">Edit preferences</a></div>
+    </div>
+</div>
+<div id="relatedVideosStorage" style="display:none;">
+    <div class="relatedVideo">
+        <a>
+            <img alt="">
+        </a>
+        <div>
+            <a class="rvTitle">Placeholder name</a>
+            <span class="rvDetails"><a class="rvAuthor">Placeholder author</a> • <span></span></span>
+        </div>
+    </div>
+</div>
+include includes/end

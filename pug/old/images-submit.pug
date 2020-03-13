@@ -1,0 +1,40 @@
+include includes/pre
+<title>New image</title>
+script.
+    function bodyLoad() {
+        let file = q("#file");
+        let progress = q("#progress");
+        let token = localStorage.getItem("token") || undefined;
+        file.value = "";
+        file.disabled = false;
+        file.onchange = function() {
+            if (!file.files.length) return;
+            file.disabled = true;
+            submitImage(file.files[0], token, imageID => {
+                if (imageID) {
+                    progress.innerHTML = `Success! <a href="/api/images/${imageID}">View your new image</a>`;
+                    progress.classList.add("successDisplay");
+                } else {
+                    progress.innerHTML = "Failed to submit image.";
+                    progress.classList.add("errorDisplay");
+                    file.disabled = false;
+                }
+            });
+            progress.innerHTML = "Uploading...";
+        }
+    }
+    getLoginDetails(login => {
+        if (login) {
+            q("#usernamePostNote").innerText = "Posting as "+login.username+".";
+            q("#usernamePostNote").style.display = "block";
+        }
+    });
+include includes/header
+<div>
+    <input type="file" id="file" accept=".png,.jpg,.jpeg,image/*">
+</div>
+<div>
+    <span id="usernamePostNote">You must log in to upload content.</span>
+</div>
+<div id="progress"></div>
+include includes/end

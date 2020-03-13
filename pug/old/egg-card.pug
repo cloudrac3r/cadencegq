@@ -1,0 +1,30 @@
+include includes/pre
+<link rel="stylesheet" type="text/css" href="/egg/egg.css">
+<title>Egg Central</title>
+script.
+    function bodyLoad() {
+        let cardID = window.location.href.match(/\/card\/([0-9]+)/)[1];
+        q("#fillLink").href = `/egg/card/${cardID}/fill`;
+        request("/api/bingo/"+cardID, response => {
+            let card = JSON.parse(response.responseText);
+            q("h2").innerText = card.name;
+            q(".egSingle img").src = card.url;
+            if (card.author) {
+                q("#author").innerText = "Uploaded by "+card.author;
+                q("#author").style.display = "";
+            }
+            if (card.external) {
+                q("#externalWarning a").href = card.external;
+                q("#externalWarning").style.display = "block";
+            }
+        });
+    }
+include includes/header
+<h2>Loading...</h2>
+<div class="linkButtonContainer"><a class="linkbutton" href="/egg">Back to gallery</a><a class="linkbutton" id="fillLink">Fill in this card</a></div>
+<p id="author" style="display: none;"></p>
+<p id="externalWarning">Note that this is not a bingo, but is instead a test taken on an external site. <a>Click here to visit that site.</a></p>
+<div class="egSingle">
+    <img>
+</div>
+include includes/end

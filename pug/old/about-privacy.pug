@@ -1,0 +1,203 @@
+include includes/pre
+<title>Privacy</title>
+style.
+    main {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    pre {
+        white-space: pre-line;
+        width: auto;
+    }
+include includes/header
+<main>
+    <header>
+        <h1>Privacy</h1>
+        p.
+            This document provides details on how this website collects, stores, and uses your data.
+            This applies to both data stored on the website's servers, and data stored inside your browser.
+        p.
+            Please also read the <a href="/about/terms">terms of use.</a>
+    </header>
+
+    <section>
+        <h2>Summary of enclosed information</h2>
+        p.
+            DISCLAIMER: This summary is intended to provide humans with an overview of the information contained within this document.
+            It is not a substitute for this document and should not be considered as one.
+            This summary is not to be used in a court of law.
+
+        <h3>Server storage</h3>
+        p.
+            Data you deliberately publish to the public will be served to anyone that requests it.
+        p.
+            Data you provide for the purposes of this site's operation may be stored forever,
+            but will not be shared with anyone.
+        p.
+            Every time you request a page on this site, the URL is added to
+            a database table that counts the total number of hits on that URL.
+        p.
+            Data sent by your browser that assists with personal identification (for example, IP address, user-agent,
+            cookies, fingerprint) is not stored.
+
+        <h3>Browser storage</h3>
+        p.
+            A list of personal preferences and the account you're logged into is stored in your browser. You can remove this data
+            using your browser's cookie-related controls.
+
+        <h3>Need more info?</h3>
+        p.
+            Please see the complete details below.
+    </section>
+
+    <section>
+        <h2>Data stored on the server</h2>
+
+        <h3>About server storage</h3>
+        p.
+            Data is stored in an SQLite3 database.
+            <a href="https://github.com/cloudrac3r/cadencegq/blob/master/db/main-schema.sql">The database schema is available on GitHub.</a>
+        p.
+            The data is stored on the same server that serves web requests. The server is located in Sydney, Australia.
+
+        <h3>Data you publish for public viewing</h3>
+        p.
+            Data that you directly provide to the website for the purposes of publishing
+            may be stored permanently and copies may be sent to anyone or anything that requests it.
+            This data will only be stored when you click the button to submit it,
+            it will never be collected or stored automatically.
+        p.
+            Here is a list of all data that falls into this category:
+        <ul>
+            <li>a paste, viewable on the pastes section</li>
+            <li>an image, viewable on the images section</li>
+            <li>a link to an external site, viewable on the links section</li>
+            <li>a list of defeated bosses in Hollow Knight Godmaster, viewable on the Godmaster section</li>
+            <li>a bingo card, viewable on the Egg Central section, made up of:
+                <ul>
+                    <li>the title you provide</li>
+                    <li>the link to its image</li>
+                    <li>its tags</li>
+                    <li>the locations of its clickable tiles</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Other data you personally provide</h3>
+        p.
+            Data that you provide to the website for the purpose of the website's operation
+            may be stored permanently. This data will not be intentionally shared with anyone or anything.
+        p.
+            Here is a list of all data that falls into this category:
+        <ul>
+            <li>details about your account:
+                <ul>
+                    <li>its username</li>
+                    <li>a hash of its password</li>
+                    <li>a randomly-generated salt for the password</li>
+                    <li>a list of tokens used by your browser to stay logged in between visits</li>
+                </ul>
+            </li>
+            <li>a list of account tokens, used to stay logged in to this website between visits</li>
+            <li>a list of channel subscriptions on CloudTube</li>
+        </ul>
+
+        <h3>Data silently collected</h3>
+        p.
+            When you request any resource from this website (for example, a page, a font, an image, or an API endpoint)
+            the requested URL (without <a href="https://en.wikipedia.org/wiki/Query_string#Structure">query string parameters</a>),
+            current time, and the internal method used to handle the request is logged to the console.
+            The console is limited to 1000 lines, and data sent there is never written to disk.
+            The console is erased whenever the server machine restarts.
+        p.
+            Sample console output:
+        pre.
+            [ ] [095800] Using file directly for /fonts/bariol.ttf (read)
+            [ ] [095802] Using routeHandler /api/bingo/([0-9]+) to respond to /api/bingo/17
+            [ ] [100031] Using pageHandler /cloudtube/subscriptions (cloudtube/subscriptions.html) to respond to /cloudtube/subscriptions
+            [ ] [100031] HitAcc: 8 items updated in Hits
+            [ ] [100031] HitAcc: 1 items updated in DomainHits
+            [!] [100032] Couldn't handle request for /apple-touch-icon-120x120-precomposed.png
+        p.
+            As well as being logged to console, the requested URL (without query string)
+            is stored in the site's database and its hit count is incremented by one.
+            The database table only stores the number of hits each resource has received.
+            No information about individual requests is stored here, not even the time at which a request was made.
+            This accumulated hit count is stored forever.
+            You can see the first few rows of this database table here: <a href="/api/hits">/api/hits</a>
+        p.
+            A similar database table holds the number of hits each domain has received.
+            Here is a static selection of rows from the table:
+        <table>
+            <tr><td>cadence.gq</td><td>428509</td></tr>
+            <tr><td>cadence.moe</td><td>206582</td></tr>
+            <tr><td>45.77.232.172</td><td>787</td></tr>
+            <tr><td>www.cadence.gq</td><td>341</td></tr>
+            <tr><td>www.cadence.moe</td><td>136</td></tr>
+        </table>
+        p.
+            This website does not store visitor user-agent strings or IP addresses and does not use
+            fingerprinting, advertisements, or tracking of any form.
+
+        <h3>Removing data from the server</h3>
+        p.
+            To remove a paste that you've submitted while logged in, you can load the paste,
+            click its "Edit" button, delete everything from the input box, then click "Submit".
+            All details about the paste (its contents, author, and submission date) will be erased from the database.
+        p.
+            To remove any other data that you've created, please contact me using
+            <a href="/about/contact">any of the methods listed here</a> and tell me
+            what data you want removed. If possible, please provide evidence that you own the data.
+        p.
+            To file a copyright claim to remove data that you own the rights to, please send an email to the address listed on
+            <a href="/about/contact">the contact page.</a>
+    </section>
+
+    <section>
+        <h2>Data stored in your browser</h2>
+
+        <h3>About browser storage</h3>
+        p.
+            This website uses the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API">Web Storage API</a>
+            to store data in your browser.
+
+        <h3>Details of stored data</h3>
+        <ul>
+            li.
+                an account token to keep you logged in to the website between visits,
+                which is sent when any page is loaded while you are logged in
+            li.
+                the list of channels you have subscribed to on CloudTube,
+                which is sent when you load your subscriptions list when you are not logged in
+            li.
+                the list of videos you have watched on CloudTube,
+                which is only stored if you opt-in and is never sent back to the server
+            li.
+                CloudTube settings, which are:
+                <ul>
+                    <li>the list of content filters you've created</li>
+                    <li>whether a list of videos you've watched should be stored locally</li>
+                    <li>whether end cards are enabled</li>
+                    <li>whether canvas should be used to enhance end cards</li>
+                    <li>your preferred video format</li>
+                    <li>whether images should be proxied</li>
+                    <li>whether video/audio streams should be proxied</li>
+                    <li>your preferred date display format</li>
+                    <li>whether links to the legacy player are displayed</li>
+                </ul>
+            li.
+                which info boxes you've closed, which is used so they're not displayed again
+        </ul>
+
+        <h3>Removing this data</h3>
+        p.
+            You can use your browser's cookie-related controls to permanently remove all stored data.
+        p.
+            If you don't want to use those controls, you can remove a limited amount of data using the website's controls:
+        <ul>
+            <li>log out to remove the account token</li>
+            <li>unsubscribe from channels on CloudTube to remove them</li>
+        </ul>
+    </section>
+</main>
+include includes/end
