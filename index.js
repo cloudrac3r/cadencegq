@@ -46,8 +46,8 @@ server.addRoute("/about/javascript", "pug/old/about-javascript.pug", "pug")
 
 server.addRoute("/examples", "pug/old/examples.pug", "pug")
 
-server.addRoute("/cloudtube/subscriptions", "html/cloudtube/subscriptions.html", "pug")
-server.addRoute("/cloudtube/settings", "html/cloudtube/settings.html", "pug")
+server.addRoute("/cloudtube/subscriptions", "pug/old/cloudtube-subscriptions.pug", "pug")
+server.addRoute("/cloudtube/settings", "pug/old/cloudtube-settings.pug", "pug")
 
 server.addRoute("/misc/discord.io", "pug/old/misc-discordio.pug", "pug")
 server.addRoute("/misc/godmaster", "pug/old/misc-godmaster.pug", "pug")
