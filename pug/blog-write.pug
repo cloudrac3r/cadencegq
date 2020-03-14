@@ -1,33 +1,42 @@
 include old/includes/pre.pug
 title Write blog post
 link(rel="stylesheet" type="text/css" href="/blog.css")
+script(src="https://pugjs.org/js/pug.js")
 include old/includes/header.pug
 
 h1 Write post
 
-form(method="post" action="/blog/submit" onkeydown=`return event.key !== "Enter" || event.target.tagName === "TEXTAREA" || event.target.type === "submit";`)
+form(method="post" action="/blog/draft" onkeydown=`return event.key !== "Enter" || event.target.tagName === "TEXTAREA" || event.target.type === "submit";`)
 	div
-		input(type="text" placeholder="Title" name="title")#title
+		input(type="text" placeholder="Title" name="title" value=title)#title
 
 	div
-		input(type="text" placeholder="Year" name="year")#year
-		input(type="text" placeholder="Month" name="month")#month
-		input(type="text" placeholder="Day" name="day")#day
-		input(type="text" placeholder="slug" name="slug")#slug
+		input(type="text" placeholder="Year" name="year" value=year)#year
+		input(type="text" placeholder="Month" name="month" value=month)#month
+		input(type="text" placeholder="Day" name="day" value=day)#day
+		input(type="text" placeholder="slug" name="slug" value=slug)#slug
 
 	div
-		textarea(name="content").write#write
+		textarea(name="content").write#write= content
 
 	div
 		input(type="text" placeholder="Token?" name="token")#token
 
 	div
-		input(type="submit" value="Submit")
+		input(type="submit" value="Save draft")
+		input(type="submit" value="Publish" formaction="/blog/submit")
+
+article.renderarea#renderarea
+
+.back
 
 script.
-	q("#year").value = new Date().getFullYear()
-	q("#month").value = new Date().getMonth()+1
-	q("#day").value = new Date().getDate()
+	const pug = require("pug")
+	if (!q("#year").value) {
+		q("#year").value = new Date().getFullYear()
+		q("#month").value = new Date().getMonth()+1
+		q("#day").value = new Date().getDate()
+	}
 	q("#title").addEventListener("input", event => {
 		q("#slug").value = event.target.value.toLowerCase().replace(/[\W_-]+/g, "-").replace(/(^-+|-+$)/g, "")
 	})
@@ -36,6 +45,9 @@ script.
 			event.preventDefault()
 			insertAtCursor(event.target, "    ")
 		}
+	})
+	q("#write").addEventListener("input", event => {
+		q("#renderarea").innerHTML = pug.render(event.target.value)
 	})
 	q("#token").value = localStorage.getItem("token")
 

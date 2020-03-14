@@ -107,7 +107,12 @@ module.exports = [
 	}},
 
 	{route: "/blog/write", methods: ["GET"], code: async () => {
-		return render(200, "pug/blog-write.pug")
+		const draft = await db.get("SELECT * FROM BlogDrafts")
+		let locals = {}
+		if (draft) {
+			locals = draft
+		}
+		return render(200, "pug/blog-write.pug", locals)
 	}},
 
 	{route: "/blog/submit", methods: ["POST"], upload: "true", code: async ({body}) => {
@@ -118,6 +123,7 @@ module.exports = [
 		if (row.userID !== 1) return [403, 11];
 		console.log(params)
 		const slug = params.get("year") + "-" + params.get("month").padStart(2, "0") + "-" + params.get("day").padStart(2, "0") + "-" + params.get("slug")
+		await db.run("DELETE FROM BlogDrafts")
 		await db.run("INSERT INTO BlogPosts (year, month, day, title, slug, content) VALUES (?, ?, ?, ?, ?, ?)", [
 			params.get("year"), params.get("month"), params.get("day"), params.get("title"), slug, params.get("content")
 		])
@@ -127,6 +133,27 @@ module.exports = [
 			content: "Redirecting...",
 			headers: {
 				"Location": "/blog/"+slug
+			}
+		}
+	}},
+
+	{route: "/blog/draft", methods: ["POST"], upload: "true", code: async ({body}) => {
+		const params = new URLSearchParams(body.toString())
+		if (!params.has("token")) return [401, 8];
+		let row = await db.get("SELECT Accounts.userID, expires FROM Accounts INNER JOIN AccountTokens ON Accounts.userID = AccountTokens.userID WHERE token = ?", params.get("token"));
+		if (!row || row.expires <= Date.now()) return [401, 8];
+		if (row.userID !== 1) return [403, 11];
+		console.log(params)
+		await db.run("DELETE FROM BlogDrafts")
+		await db.run("INSERT INTO BlogDrafts (year, month, day, title, slug, content) VALUES (?, ?, ?, ?, ?, ?)", [
+			params.get("year"), params.get("month"), params.get("day"), params.get("title"), params.get("slug"), params.get("content")
+		])
+		return {
+			statusCode: 303,
+			contentType: "text/html",
+			content: "Redirecting...",
+			headers: {
+				"Location": "/blog/write"
 			}
 		}
 	}},
