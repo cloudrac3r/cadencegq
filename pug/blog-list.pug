@@ -5,7 +5,9 @@ title Cadence's Blog
 link(rel="stylesheet" type="text/css" href="/blog.css")
 include old/includes/header.pug
 
-h1 Blog
+header.page-header
+	h1 Blog
+	p.feed-links #[a(href="/blog/rss.xml?limit=30") RSS] / #[a(href="/blog/atom.xml?limit=30") Atom]
 
 each year in years
 	each month in year.months

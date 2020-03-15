@@ -2,6 +2,7 @@
 
 const {render} = require("pinski/plugins")
 const pug = require("pug")
+const {Feed} = require("feed")
 const {db, extra, pugCache} = require("../passthrough")
 
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
@@ -96,7 +97,7 @@ class Month {
 module.exports = [
 	{route: "/blog", methods: ["GET"], code: async () => {
 		/** @type {Post[]} */
-		const posts = await db.all("SELECT * FROM BlogPosts ORDER BY year DESC, month DESC, day DESC")
+		const posts = await db.all("SELECT * FROM BlogPosts ORDER BY published DESC")
 		const timeline = new Timeline()
 		for (const post of posts) {
 			timeline.addPost(post)
@@ -104,6 +105,60 @@ module.exports = [
 		return render(200, "pug/blog-list.pug", {
 			years: timeline.export()
 		})
+	}},
+
+	{route: "/blog/(rss|atom)\\.xml", methods: ["GET"], code: async ({fill, url}) => {
+		const query = url.searchParams
+		let limit = parseInt(query.get("limit")) || 30
+		if (limit < 0) limit = 30
+
+		const feed = new Feed({
+			title: "Cadence's Blog",
+			id: "https://cadence.moe/blog",
+			description: "https://cadence.moe/blog",
+			link: "https://cadence.moe/blog",
+			feedLinks: {
+				rss: "https://cadence.moe/blog/rss.xml",
+				atom: "https://cadence.moe/blog/atom.xml"
+			},
+			author: {
+				name: "Cadence Ember",
+				link: "https://cadence.moe/blog"
+			}
+		})
+		const rows = await db.all("SELECT * FROM BlogPosts ORDER BY published DESC LIMIT ?", limit)
+		for (const row of rows) {
+			feed.addItem({
+				title: row.title,
+				description: pug.render(row.content),
+				link: `https://cadence.moe/blog/${row.slug}`,
+				id: `https://cadence.moe/blog/${row.slug}`,
+				published: new Date(row.published), // first published date
+				date: new Date(row.published) // last modified date
+			})
+		}
+
+		const kind = fill[0]
+		if (kind === "rss") {
+			var data = {
+				contentType: "application/rss+xml", // see https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed,
+				content: feed.rss2()
+			}
+		} else if (kind === "atom") {
+			var data = {
+				contentType: "application/atom+xml", // see https://en.wikipedia.org/wiki/Atom_(standard)#Including_in_HTML
+				content: feed.atom1()
+			}
+		}
+
+		return {
+			statusCode: 200,
+			contentType: data.contentType,
+			headers: {
+				"Cache-Control": "public, max-age=600"
+			},
+			content: data.content
+		}
 	}},
 
 	{route: "/blog/write", methods: ["GET"], code: async () => {
@@ -124,8 +179,8 @@ module.exports = [
 		console.log(params)
 		const slug = params.get("year") + "-" + params.get("month").padStart(2, "0") + "-" + params.get("day").padStart(2, "0") + "-" + params.get("slug")
 		await db.run("DELETE FROM BlogDrafts")
-		await db.run("INSERT INTO BlogPosts (year, month, day, title, slug, content) VALUES (?, ?, ?, ?, ?, ?)", [
-			params.get("year"), params.get("month"), params.get("day"), params.get("title"), slug, params.get("content")
+		await db.run("INSERT INTO BlogPosts (year, month, day, title, slug, content, published) VALUES (?, ?, ?, ?, ?, ?, ?)", [
+			params.get("year"), params.get("month"), params.get("day"), params.get("title"), slug, params.get("content"), Date.now()
 		])
 		return {
 			statusCode: 303,

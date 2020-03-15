@@ -11,6 +11,7 @@
   "dependencies": {
     "buffer-signature": "^1.0.0",
     "fast-xml-parser": "^3.12.16",
+    "feed": "github:cloudrac3r/feed#f42b4d7183fc2b6e566cb400ad083c4dd714c858",
     "mime": "^2.4.2",
     "nedb-promise": "^2.0.1",
     "pinski": "github:cloudrac3r/pinski#d64e2b734530e003545182f647d4a1d6a2534960",
