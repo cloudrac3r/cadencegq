@@ -23,7 +23,7 @@ module.exports = [
         }
     },
     {
-        route: "/api/pastes", methods: ["POST"], code: async ({data}) => {
+        route: "/api/pastes", methods: ["POST"], upload: "json", code: async ({data}) => {
             if (!data) return [400, 3];
             if (!data.content) return [400, 4];
             if (typeof data.token !== "string") return [401, 8];
