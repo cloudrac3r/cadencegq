@@ -9,6 +9,13 @@ h1= post.title
 
 article!= rendered
 
-div.back: a(href="/blog") ← Back to blog index
+div.back
+	div.post-navigation
+		if previous
+			a(href=`/blog/${previous.slug}`) ← Previous: #{previous.title}
+		if next
+			a(href=`/blog/${next.slug}`) Next: #{next.title} →
+	div.to-index
+		a(href="/blog") ↵ Back to blog index
 
 include old/includes/end.pug

@@ -16,6 +16,7 @@ const monthNames = ["January", "February", "March", "April", "May", "June", "Jul
  * @property {string} title
  * @property {string} slug
  * @property {string} content
+ * @property {number} previous
  */
 
 undefined
@@ -179,8 +180,9 @@ module.exports = [
 		console.log(params)
 		const slug = params.get("year") + "-" + params.get("month").padStart(2, "0") + "-" + params.get("day").padStart(2, "0") + "-" + params.get("slug")
 		await db.run("DELETE FROM BlogDrafts")
-		await db.run("INSERT INTO BlogPosts (year, month, day, title, slug, content, published) VALUES (?, ?, ?, ?, ?, ?, ?)", [
-			params.get("year"), params.get("month"), params.get("day"), params.get("title"), slug, params.get("content"), Date.now()
+		const latest = await db.get("SELECT * FROM BlogPosts ORDER BY published DESC limit 1")
+		await db.run("INSERT INTO BlogPosts (year, month, day, title, slug, content, published, previous) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [
+			params.get("year"), params.get("month"), params.get("day"), params.get("title"), slug, params.get("content"), Date.now(), latest.id
 		])
 		return {
 			statusCode: 303,
@@ -217,10 +219,14 @@ module.exports = [
 		/** @type {Post} */
 		const post = await db.get("SELECT * FROM BlogPosts WHERE slug = ?", fill[0])
 		if (post) {
+			const previous = await db.get("SELECT * FROM BlogPosts WHERE id = ?", post.previous)
+			const next = await db.get("SELECT * FROM BlogPosts WHERE previous = ?", post.id)
 			const rendered = pug.render(post.content)
 			return render(200, "pug/blog-post.pug", {
 				post,
-				rendered
+				rendered,
+				previous,
+				next
 			})
 		} else {
 			return [404, "404: Blog post not found."]
