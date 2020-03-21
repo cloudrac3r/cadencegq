@@ -37,18 +37,26 @@ script.
 		q("#month").value = new Date().getMonth()+1
 		q("#day").value = new Date().getDate()
 	}
+	const slug = q("#slug")
 	q("#title").addEventListener("input", event => {
-		q("#slug").value = event.target.value.toLowerCase().replace(/[\W_-]+/g, "-").replace(/(^-+|-+$)/g, "")
+		slug.value = event.target.value.toLowerCase().replace(/[\W_-]+/g, "-").replace(/(^-+|-+$)/g, "")
 	})
-	q("#write").addEventListener("keydown", event => {
+	const renderarea = q("#renderarea")
+	const write = q("#write")
+	write.addEventListener("keydown", event => {
 		if (event.key === "Tab") {
 			event.preventDefault()
 			insertAtCursor(event.target, "    ")
 		}
 	})
-	q("#write").addEventListener("input", event => {
-		q("#renderarea").innerHTML = pug.render(event.target.value)
-	})
+	const render = () => {
+		write.style.height = 0
+		write.style.height = (write.scrollHeight+2)+"px"
+		renderarea.innerHTML = pug.render(write.value)
+	}
+	write.addEventListener("input", render)
+	setTimeout(render)
+	render()
 	q("#token").value = localStorage.getItem("token")
 
 
