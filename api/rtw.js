@@ -86,14 +86,15 @@ let localMethods = [
         }))
     },
     {
-        route: "/api/rtw/load", methods: ["GET"], code: checkLocalAccess(async ({params}) => {
-            if (!params.filename) return [400, "No filename provided"];
-            if (params.filename == ".LV6") return [400, "Enter a filename into the filename input box and then click the button again."];
+        route: "/api/rtw/load", methods: ["GET"], code: checkLocalAccess(async ({url}) => {
+            const params = url.searchParams
+            if (!params.has("filename")) return [400, "No filename provided"];
+            if (params.get("filename") == ".LV6") return [400, "Enter a filename into the filename input box and then click the button again."];
             let values = await getValues();
-            let path = pj(values.levelDir, params.filename);
+            let path = pj(values.levelDir, params.get("filename"));
             return new Promise(resolve => {
                 fs.exists(path, exists => {
-                    if (!exists) return resolve([400, "File does not exist ("+params.filename+")"]);
+                    if (!exists) return resolve([400, "File does not exist ("+params.get("filename")+")"]);
                     fs.readFile(path, {encoding: null}, (err, buffer) => {
                         if (err) return resolve([400, err.stack || err.message || err.toString()]);
                         else return resolve([200, [...buffer]]);
@@ -184,7 +185,10 @@ let localMethods = [
 let remoteMethods = [
     {
         route: "/api/rtw/archive.zip", methods: ["GET"], code: async () => {
-            return {stream: request("https://codeload.github.com/cloudrac3r/cadencegq/zip/master")};
+            return {
+                statusCode: 200,
+                stream: request("https://codeload.github.com/cloudrac3r/cadencegq/zip/master")
+            }
         }
     },
     {
@@ -194,12 +198,13 @@ let remoteMethods = [
         }
     },
     {
-        route: "/api/rtw/fetchimages", methods: ["GET"], code: async ({params}) => {
-            if (!params.token) return [400, "Missing token"];
-            if (!tokenStore.check(params.token)) return [403, "Bad token"];
-            if (!params.hash) return [400, "Missing hash"];
-            let hashSolution = await getPatchedHash(params.token);
-            if (params.hash != hashSolution) return [403, "Invalid hash"];
+        route: "/api/rtw/fetchimages", methods: ["GET"], code: async ({url}) => {
+            const params = url.searchParams
+            if (!params.has("token")) return [400, "Missing token"];
+            if (!tokenStore.check(params.get("token"))) return [403, "Bad token"];
+            if (!params.has("hash")) return [400, "Missing hash"];
+            let hashSolution = await getPatchedHash(params.get("token"));
+            if (params.get("hash") != hashSolution) return [403, "Invalid hash"];
 
             let file = await util.promisify(fs.readFile)(pj(__dirname, "..", "content", "rtw_data", "images.zip"), {encoding: null});
             return {
