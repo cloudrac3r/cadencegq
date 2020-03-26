@@ -222,11 +222,17 @@ module.exports = [
 			const previous = await db.get("SELECT * FROM BlogPosts WHERE id = ?", post.previous)
 			const next = await db.get("SELECT * FROM BlogPosts WHERE previous = ?", post.id)
 			const rendered = pug.render(post.content)
+			const date = new Date()
+			date.setUTCFullYear(post.year)
+			date.setUTCMonth(post.month-1)
+			date.setUTCDate(post.day)
+			const dateText = date.toISOString().split("T")[0]
 			return render(200, "pug/blog-post.pug", {
 				post,
 				rendered,
 				previous,
-				next
+				next,
+				dateText
 			})
 		} else {
 			return [404, "404: Blog post not found."]

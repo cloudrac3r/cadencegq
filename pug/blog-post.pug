@@ -1,4 +1,4 @@
-//- Needs post, rendered
+//- Needs post, rendered, dateText
 
 include old/includes/pre.pug
 title= `${post.title} | Cadence's Blog`
@@ -6,6 +6,7 @@ link(rel="stylesheet" type="text/css" href="/blog.css")
 include old/includes/header.pug
 
 h1= post.title
+time(datetime=dateText).date-on-post= dateText
 
 article!= rendered
 
