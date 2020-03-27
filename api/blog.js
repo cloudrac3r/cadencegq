@@ -4,6 +4,7 @@ const {render} = require("pinski/plugins")
 const pug = require("pug")
 const {Feed} = require("feed")
 const {db, extra, pugCache} = require("../passthrough")
+const rp = require("request-promise")
 
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
@@ -184,6 +185,19 @@ module.exports = [
 		await db.run("INSERT INTO BlogPosts (year, month, day, title, slug, content, published, previous) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [
 			params.get("year"), params.get("month"), params.get("day"), params.get("title"), slug, params.get("content"), Date.now(), latest.id
 		])
+		// https://github.com/bkardell/auto-archive
+		console.log(`Sending page to the wayback machine: https://cadence.moe/blog/${slug}`)
+		rp("https://dawn-rain-4cff.bkardell.workers.dev", {
+			method: "POST",
+			json: true,
+			body: {
+				snapshotURL: `https://cadence.moe/blog/${slug}`
+			}
+		}).then(() => {
+			console.log("Page archived!")
+		}).catch(error => {
+			console.log("Page wasn't archived:", error)
+		})
 		return {
 			statusCode: 303,
 			contentType: "text/html",
