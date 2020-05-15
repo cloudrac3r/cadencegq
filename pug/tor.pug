@@ -1,0 +1,18 @@
+include old/includes/pre.pug
+title Access denied | cadence.moe
+include old/includes/header.pug
+
+style.
+	main {
+		max-width: 700px;
+		margin: 0 auto;
+	}
+
+main
+	h1 Access denied
+	p You aren't allowed to access CloudTube through the Tor network or through a proxy service.
+	p Sadly, this is due to bad actors abusing the site through the Tor network.
+	p If you are blocked by mistake, #[a(href="https://github.com/cloudrac3r/cadencegq/issues/13") you can leave a comment here.]
+	p(style="margin-top: 60px") Disable your proxy to use CloudTube.
+
+include old/includes/end.pug
