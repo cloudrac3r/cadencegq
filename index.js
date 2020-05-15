@@ -32,6 +32,8 @@ server.addRoute("/", "pug/old/home.pug", "pug")
 
 server.addRoute("/tor", "pug/tor.pug", "pug")
 
+server.addRoute("/misc/mxid", "pug/mxid.pug", "pug")
+
 server.addRoute("/pastes/list", "pug/old/pastes-list.pug", "pug")
 server.addRoute("/pastes/submit", "pug/old/pastes-submit.pug", "pug")
 server.addRoute("/pastes/[0-9]+", "pug/old/pastes-view.pug", "pug")

@@ -1,0 +1,92 @@
+include old/includes/pre.pug
+title MXID colour picker
+include old/includes/header.pug
+
+style.
+	body {
+		background-color: #181b21;
+	}
+	main {
+		max-width: 700px;
+		margin: 0 auto;
+	}
+	.preview {
+		margin-top: 30px;
+		display: flex;
+		align-items: start;
+		justify-content: start;
+		padding: 12px;
+		background-color: #22262e;
+		border-radius: 8px;
+		min-height: 60px;
+		font-size: 16px;
+	}
+	.avatar {
+		width: 30px;
+		height: 30px;
+		background-color: #474950;
+		border-radius: 50%;
+		margin-right: 20px;
+	}
+	.username {
+		margin-top: 2px;
+	}
+	.message {
+		margin-top: 6px;
+		position: relative;
+		left: -50px;
+		display: flex;
+	}
+	.timestamp {
+		font-size: 12px;
+		text-align: center;
+		width: 30px;
+		margin-right: 20px;
+		color: #a1b2d1;
+	}
+	.content {
+		color: #edf3ff;
+	}
+
+main
+	h1 MXID colour picker
+	input(type="text" id="mxid" placeholder="@cadence:cadence.moe" style="width: 200px")
+	.preview
+		.avatar
+		.preview-right
+			.username#username
+			.message
+				.timestamp= (new Date().getHours()+1) + ":" + new Date().getMinutes()
+				.content hi, it's me! this is some really cool sample text. enjoy, I spent #[br]like 15 minutes making this just for you.
+
+script.
+	const colors = ["#368bd6", "#ac3ba8", "#03b381", "#e64f7a", "#ff812d", "#2dc2c5", "#5c56f5", "#74d12c"]
+	function hashCode(str) {
+		let hash = 0;
+		let i;
+		let chr;
+		if (str.length === 0) {
+			return hash;
+		}
+		for (i = 0; i < str.length; i++) {
+			chr = str.charCodeAt(i);
+			hash = ((hash << 5) - hash) + chr;
+			hash |= 0;
+		}
+		return Math.abs(hash);
+	}
+	function getUserNameColorClass(userId) {
+		const colorNumber = hashCode(userId) % 8;
+		return colors[colorNumber];
+	}
+	q("#mxid").addEventListener("input", calculate)
+	const username = q("#username")
+	function calculate() {
+		const mxid = q("#mxid").value || q("#mxid").placeholder
+		username.innerText = (mxid.match(/@(.*?):/) || [])[1] || mxid
+		username.style.color = getUserNameColorClass(mxid)
+	}
+	calculate()
+
+
+include old/includes/end.pug
