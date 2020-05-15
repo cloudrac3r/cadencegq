@@ -67,7 +67,7 @@ main
 		.preview-right
 			.username#username
 			.message
-				.timestamp= (new Date().getHours()+1) + ":" + new Date().getMinutes()
+				.timestamp= (new Date().getHours()+1) + ":" + (new Date().getMinutes()+"").padStart(2, "0")
 				.content hi, it's me! this is some really cool sample text. enjoy, I spent #[br]like 15 minutes making this just for you.
 
 script.
