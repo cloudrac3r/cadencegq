@@ -1,5 +1,5 @@
 include old/includes/pre.pug
-title MXID colour picker
+title MXID colour predictor
 include old/includes/header.pug
 
 style.
@@ -47,9 +47,20 @@ style.
 	.content {
 		color: #edf3ff;
 	}
+	code {
+		font-size: 0.85em;
+		background-color: #000;
+		padding: 3px 5px;
+		border-radius: 3px;
+	}
+	#mxid {
+		font-size: 16px;
+	}
 
 main
-	h1 MXID colour picker
+	h1 MXID colour predictor
+	p Uses ~funky algorithms~ to predict what colour your display name will be based on your MXID.
+	p Enter a complete MXID like #[code @cadence:cadence.moe] into the text box to see the result.
 	input(type="text" id="mxid" placeholder="@cadence:cadence.moe" style="width: 200px")
 	.preview
 		.avatar
