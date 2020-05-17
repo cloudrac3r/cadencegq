@@ -71,7 +71,7 @@ module.exports = [
             }
             let dbr
             if (filterName != null) {
-                dbr = await db.all("SELECT Pastes.*, Accounts.username FROM Pastes LEFT JOIN Accounts ON Pastes.author = Accounts.userID WHERE Accounts.username = ? ORDER BY pasteID DESC", [filterName]);
+                dbr = await db.all("SELECT Pastes.*, Accounts.username FROM Pastes LEFT JOIN Accounts ON Pastes.author = Accounts.userID WHERE Accounts.username = ? OR Pastes.author = ? ORDER BY pasteID DESC", [filterName, filterName]);
             } else {
                 dbr = await db.all("SELECT Pastes.*, Accounts.username FROM Pastes LEFT JOIN Accounts ON Pastes.author = Accounts.userID ORDER BY pasteID DESC");
             }
