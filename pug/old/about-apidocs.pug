@@ -83,6 +83,7 @@ pre.
 
     - GET /api/pastes
         ? preview : integer?
+        ? author : string?
 
         R Array/JSON
             R pasteID : integer
@@ -92,6 +93,7 @@ pre.
             R expiryTime : integer/null
 
         Get a list of existing pastes.
+        If author is provided, only include entries where the paste author's name is identical.
         If preview is provided and is less than 0, do not return the content of any pastes.
         Otherwise, if preview is less than 5000, return up to that many characters of content from every paste.
         Otherwise, if preview if more than 5000, return up to 5000 characters of content from every paste.
