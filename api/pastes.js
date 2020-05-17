@@ -65,7 +65,7 @@ module.exports = [
                     preview = Math.max(Math.min(newPreview, maxPreview), 0);
                 }
             }
-            let filterName = undefined;
+            let filterName = null
             if (url.searchParams.has("author")) {
                 filterName = url.searchParams.get("author")
             }
