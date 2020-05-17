@@ -65,7 +65,16 @@ module.exports = [
                     preview = Math.max(Math.min(newPreview, maxPreview), 0);
                 }
             }
-            let dbr = await db.all("SELECT Pastes.*, Accounts.username FROM Pastes LEFT JOIN Accounts ON Pastes.author = Accounts.userID ORDER BY pasteID DESC");
+            let filterName = undefined;
+            if (url.searchParams.has("author")) {
+                filterName = url.searchParams.get("author")
+            }
+            let dbr
+            if (filterName != null) {
+                dbr = await db.all("SELECT Pastes.*, Accounts.username FROM Pastes LEFT JOIN Accounts ON Pastes.author = Accounts.userID WHERE Accounts.username = ? ORDER BY pasteID DESC", [filterName]);
+            } else {
+                dbr = await db.all("SELECT Pastes.*, Accounts.username FROM Pastes LEFT JOIN Accounts ON Pastes.author = Accounts.userID ORDER BY pasteID DESC");
+            }
             dbr = dbr.map(row => {
                 if (preview <= 0) delete row.content;
                 else row.content = row.content.slice(0, preview);
