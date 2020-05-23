@@ -2,6 +2,24 @@
 
 const {db, extra} = require("../passthrough")
 
+async function editPaste({fill, data}) {
+    let pasteID = fill[0];
+    if (pasteID == undefined) return [400, 1];
+    if (!data) return [400, 3];
+    if (data.content == undefined) return [400, 4];
+    if (!data.token) return [401, 8];
+    let account = await db.get("SELECT userID, expires FROM AccountTokens WHERE token = ?", data.token);
+    if (!account || account.expires <= Date.now()) return [401, 8];
+    let paste = await db.get("SELECT author FROM Pastes WHERE pasteID = ?", pasteID);
+    if (account.userID != paste.author) return [401, 8];
+    if (data.content === "") {
+        await db.run("DELETE FROM Pastes WHERE pasteID = ?", pasteID);
+    } else {
+        await db.run("UPDATE Pastes SET content = ? WHERE pasteID = ?", [data.content, pasteID]);
+    }
+    return [204, ""];
+}
+
 module.exports = [
     {
         route: "/api/pastes/([0-9]+)", methods: ["GET"], code: async ({fill}) => {
@@ -19,7 +37,11 @@ module.exports = [
             if (pasteID == undefined) return [400, 1];
             let paste = await db.get("SELECT content FROM Pastes WHERE pasteID = ?", pasteID);
             if (!paste) return [400, 2];
-            return [200, paste.content];
+            return {
+                statusCode: 200,
+                contentType: "text/plain; charset=UTF-8",
+                content: paste.content
+            }
         }
     },
     {
@@ -36,23 +58,10 @@ module.exports = [
         }
     },
     {
-        route: "/api/pastes/([0-9]+)", methods: ["PATCH"], upload: "json", code: async ({fill, data}) => {
-            let pasteID = fill[0];
-            if (pasteID == undefined) return [400, 1];
-            if (!data) return [400, 3];
-            if (data.content == undefined) return [400, 4];
-            if (!data.token) return [401, 8];
-            let account = await db.get("SELECT userID, expires FROM AccountTokens WHERE token = ?", data.token);
-            if (!account || account.expires <= Date.now()) return [401, 8];
-            let paste = await db.get("SELECT author FROM Pastes WHERE pasteID = ?", pasteID);
-            if (account.userID != paste.author) return [401, 8];
-            if (data.content === "") {
-                await db.run("DELETE FROM Pastes WHERE pasteID = ?", pasteID);
-            } else {
-                await db.run("UPDATE Pastes SET content = ? WHERE pasteID = ?", [data.content, pasteID]);
-            }
-            return [204, ""];
-        }
+        route: "/api/pastes/([0-9]+)", methods: ["PATCH"], upload: "json", code: editPaste
+    },
+    {
+        route: "/api/pastes/([0-9]+)/edit", methods: ["POST"], upload: "json", code: editPaste
     },
     {
         route: "/api/pastes", methods: ["GET"], code: async ({url}) => {
@@ -82,6 +91,19 @@ module.exports = [
                 return row;
             });
             return [200, dbr];
+        }
+    },
+    {
+        route: "/api/pastes.*", methods: ["OPTIONS"], code: async () => {
+            return {
+                statusCode: 204,
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, POST, PATCH"
+                },
+                contentType: "text/html; charset=UTF-8",
+                content: ""
+            }
         }
     }
 ]
