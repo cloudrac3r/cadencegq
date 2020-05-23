@@ -71,7 +71,10 @@ pre.
         The token is an account token. It will associate the paste with that account and make it editable by that account.
         You must supply an account token.
 
+    - POST /api/pastes/{pasteID}/edit
     - PATCH /api/pastes/{pasteID}
+        (choose one endpoint)
+
         B JSON
             B content : string
             B token : string
