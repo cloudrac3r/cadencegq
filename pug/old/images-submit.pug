@@ -12,7 +12,7 @@ script.
             file.disabled = true;
             submitImage(file.files[0], token, imageID => {
                 if (imageID) {
-                    progress.innerHTML = `Success! <a href="/api/images/${imageID}">View your new image</a>`;
+                    progress.innerHTML = `Success! <a href="/i/${imageID}">View your new image</a>`;
                     progress.classList.add("successDisplay");
                 } else {
                     progress.innerHTML = "Failed to submit image.";

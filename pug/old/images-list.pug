@@ -4,7 +4,7 @@ script.
     function bodyLoad() {
         loadImageList({}, result => {
             let columns = [
-                {name: "imageID", align: "left", inject: true, transform: d => `<a href="/api/images/${d}">${d}</a>`},
+                {name: "imageID", align: "left", inject: true, transform: d => `<a href="/i/${d}">${d}</a>`},
                 {name: "extension", align: "left", transform: d => "."+d},
                 {name: "creationTime", align: "left", transform: d => new Date(d).toLocaleString()}
             ];
