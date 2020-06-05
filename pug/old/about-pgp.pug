@@ -1,0 +1,38 @@
+include includes/pre
+title PGP Email
+include includes/header
+main(style="max-width: 800px; margin: 0 auto")
+    h1 PGP Email
+    p If you are not able to send PGP encrypted/signed email, please write to the address found #[a(href="/about/contact") on the contact page.]
+    p If you are able to send PGP encrypted/signed email, thank you!
+    p Please write to: #[strong.email dbefodf@ejtsppu.psh]
+    p(id="noscript" style="color: #fff").
+        Turn on JavaScript to decrypt this email address.<br>
+        All JavaScript code on this website is free software. <a href="/about/javascript">More details.</a><br>
+        If you refuse to turn on JavaScript, you can perform a Caesar shift of -1 on this email address to decrypt it manually.<br>
+        (You're also going to have a <em>really</em> horrible time trying to use this site if you leave it off.)
+    p Remember that the subject line of PGP emails is #[strong not encrypted.]
+    p You can download my keys from the Ubuntu keyserver using:
+    pre gpg --keyserver hkps://keyserver.ubuntu.com --search-keys '#[span.email dbefodf@ejtsppu.psh]'
+    p Please check the fingerprint:
+    pre.
+        [ ] » gpg --fingerprint '#[span.email dbefodf@ejtsppu.psh]'
+        pub   rsa4096 2020-05-31 [SC] [expires: 2022-05-31]
+              AC84 7C64 1024 C07A C88A  E10E BC1C 2C61 CF52 1B17
+        uid           [ultimate] Cadence Ember &lt;#[span.email dbefodf@ejtsppu.psh]&gt;
+        sub   rsa4096 2020-05-31 [E] [expires: 2022-05-31]
+
+    p If you don't like keyservers you can instead #[a(href="/cadence.asc") download the key directly.]
+    p.
+        If you already know me from real life or from some other network, please verify the key out of band,
+        either by visiting me in person, giving me a phone call, or using the network that you already know me on.
+    p If you'd like to receive a response, be sure to somehow provide your key, or instructions on how I can get it.
+    div(style="height: 15vh")
+script.
+    function bodyLoad() {
+        q("#noscript").style.display = "none";
+        for (const email of document.querySelectorAll(".email")) {
+            email.innerHTML = String.fromCharCode(...[...email.innerHTML].map(l => l.charCodeAt(0)-(l.match(/\w/) && 1)));
+        }
+    }
+include includes/end

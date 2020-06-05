@@ -51,6 +51,7 @@ server.addRoute("/about/privacy", "pug/old/about-privacy.pug", "pug")
 server.addRoute("/about/terms", "pug/old/about-terms.pug", "pug")
 server.addRoute("/about/api", "pug/old/about-apidocs.pug", "pug")
 server.addRoute("/about/contact", "pug/old/about-contact.pug", "pug")
+server.addRoute("/about/pgp", "pug/old/about-pgp.pug", "pug")
 server.addRoute("/about/site", "pug/old/about-site.pug", "pug")
 server.addRoute("/about/javascript", "pug/old/about-javascript.pug", "pug")
 
