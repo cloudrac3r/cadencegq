@@ -181,10 +181,15 @@ module.exports = [
 		console.log(params)
 		const slug = params.get("year") + "-" + params.get("month").padStart(2, "0") + "-" + params.get("day").padStart(2, "0") + "-" + params.get("slug")
 		await db.run("DELETE FROM BlogDrafts")
-		const latest = await db.get("SELECT * FROM BlogPosts ORDER BY published DESC limit 1")
-		await db.run("INSERT INTO BlogPosts (year, month, day, title, slug, content, published, previous) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [
-			params.get("year"), params.get("month"), params.get("day"), params.get("title"), slug, params.get("content"), Date.now(), latest.id
-		])
+		const existing = await db.get("SELECT * FROM BlogPosts WHERE slug = ?", slug)
+		if (existing) {
+			await db.run("UPDATE BlogPosts SET content = ? WHERE slug = ?", [params.get("content"), slug])
+		} else {
+			const latest = await db.get("SELECT * FROM BlogPosts ORDER BY published DESC limit 1")
+			await db.run("INSERT INTO BlogPosts (year, month, day, title, slug, content, published, previous) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [
+				params.get("year"), params.get("month"), params.get("day"), params.get("title"), slug, params.get("content"), Date.now(), latest.id
+			])
+		}
 		// https://github.com/bkardell/auto-archive
 		console.log(`Sending page to the wayback machine: https://cadence.moe/blog/${slug}`)
 		rp("https://dawn-rain-4cff.bkardell.workers.dev", {
@@ -248,6 +253,17 @@ module.exports = [
 				next,
 				dateText
 			})
+		} else {
+			return [404, "404: Blog post not found."]
+		}
+	}},
+
+	{route: "/blog/(\\d[\\w-]+)/edit", methods: ["GET"], code: async ({fill}) => {
+		/** @type {Post} */
+		const post = await db.get("SELECT * FROM BlogPosts WHERE slug = ?", fill[0])
+		post.slug = post.slug.split("-").slice(3).join("-") || post.slug
+		if (post) {
+			return render(200, "pug/blog-write.pug", post)
 		} else {
 			return [404, "404: Blog post not found."]
 		}
