@@ -112,7 +112,7 @@ body, button, input {
     position: relative;
     top: 21px;
 }
-#header:not(.mobile) .headerArrow:after {
+#header .headerArrow:after {
     content: url("/fonts/arrow-down.svg");
 }
 #header .headerButton:hover {

@@ -1,29 +1,39 @@
-if (document.readyState == "loading") {
-    document.addEventListener("DOMContentLoaded", makeHeadersWork);
-} else {
-    makeHeadersWork();
+let dropdowns
+
+class Dropdown {
+    constructor(alignmentElement) {
+        this.alignmentElement = alignmentElement
+        this.title = this.alignmentElement.firstElementChild
+        this.title.addEventListener("click", this.onClick.bind(this))
+        this.contents = this.alignmentElement.lastElementChild
+        this.contents.addEventListener("click", event => event.stopPropagation())
+        this.hide()
+    }
+    show() {
+        dropdowns.forEach(d => d.hide())
+        this.title.setAttribute("aria-expanded", "true")
+        this.contents.style.display = "block"
+        this.visible = true
+    }
+    hide() {
+        this.title.setAttribute("aria-expanded", "false")
+        this.contents.style.display = "none"
+        this.visible = false
+    }
+    onClick(event) {
+        if (this.visible) this.hide()
+        else this.show()
+        event.preventDefault()
+        event.stopPropagation()
+    }
 }
 
-function makeHeadersWork() {
-    let dropdowns = [...document.querySelectorAll("#header .headerArrow")];
-    function dropdownToDiv(element) {
-        return element.parentElement.children[[...element.parentElement.children].indexOf(element)+1];
-    }
-    window.addEventListener("click", event => {
-        //console.log(event);
-        if (event.target.tagName == "A" && event.target.classList.contains("headerButton")) return;
-        dropdowns.forEach(e => dropdownToDiv(e).style.display = "none");
-    });
-    dropdowns.forEach(element => {
-        let divElement = dropdownToDiv(element);
-        element.addEventListener("click", () => {
-            if (divElement.style.display != "block") setTimeout(() => {
-                if (divElement.style.display != "block") divElement.style.display = "block";
-                else divElement.style.display = "none";
-            });
-        });
-    });
-    document.querySelector("#headerExpandMenu").addEventListener("click", () => {
-        document.querySelector("#header").classList.toggle("hidden");
-    });
-}
+dropdowns = [...document.querySelectorAll(".dropdown-alignment")].map(a => new Dropdown(a))
+
+window.addEventListener("click", () => {
+    dropdowns.forEach(d => d.hide())
+})
+
+document.querySelector("#headerExpandMenu").addEventListener("click", () => {
+    document.querySelector("#header").classList.toggle("hidden")
+})
