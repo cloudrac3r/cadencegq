@@ -34,6 +34,8 @@ body, button, input {
     float: right;
     font-size: 22px;
     line-height: 1;
+    background: transparent;
+    border: none;
 }
 #header.mobile #headerExpandMenu {
     display: unset;
