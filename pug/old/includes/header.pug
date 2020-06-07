@@ -1,46 +1,45 @@
+mixin dropdown(text)
+    div.dropdown-alignment
+        button.headerButton.headerArrow= text
+        div.dropdown-items
+            block
+
+mixin item(text, href)
+    a(href=href).headerButton= text
+
 </head><body>
 <nav id="header">
-    <a href="/" class="headerButton sitename">Cadence</a>
-    <span class="vr">|</span>
-    <span class="headerButton headerUnderline" id="headerExpandMenu">≡</span>
-    <a class="headerButton headerUnderline" href="/blog">Blog</a>
-    <span class="vr">|</span>
-    <div>
-        <a class="headerButton" href="/pastes/submit">New paste</a>
-        <a class="headerButton" href="/pastes/list">Latest pastes</a>
-    </div>
-    <span class="headerButton headerArrow">Pastes</span>
-    <div>
-        <a class="headerButton" href="/images/submit">New image</a>
-        <a class="headerButton" href="/images/list">Latest images</a>
-    </div>
-    <span class="headerButton headerArrow">Images</span>
-    <div>
-        <a class="headerButton" href="/urls/submit">New link</a>
-        <a class="headerButton" href="/urls/list">Latest links</a>
-    </div>
-    <span class="headerButton headerArrow">Links</span>
-    <div>
-        <a class="headerButton" href="/cloudtube/subscriptions">CloudTube</a>
-        <a class="headerButton" href="/egg">Egg Central</a>
-        <a class="headerButton" href="/crumpet">Crumpet</a>
-        <a class="headerButton" href="/misc/mxid">MXID predictor</a>
-        <a class="headerButton" href="/misc/godmaster">Godmaster</a>
-        <a class="headerButton" href="/misc/ccc">CCC</a>
-        <a class="headerButton" href="/examples">Example files</a>
-    </div>
-    <span class="headerButton headerArrow">More</span>
-    <div>
-        <a class="headerButton" href="/about/site">Website info</a>
-        <a class="headerButton" href="/about/api">API</a>
-        <a class="headerButton" href="/about/contact">Contact</a>
-        <a class="headerButton" href="/about/privacy">Privacy</a>
-        <a class="headerButton" href="/about/terms">Terms</a>
-        <a class="headerButton" href="https://github.com/cloudrac3r/cadencegq">Source code</a>
-        <a class="headerButton" href="/about/javascript" data-jslicense="1">JavaScript licenses</a>
-    </div>
-    <span class="headerButton headerArrow">About</span>
-    <a class="headerButton headerUnderline" href="/account" id="accountState"></a>
+    a(href="/").headerButton.sitename Cadence
+    span.vr |
+    span.headerButton.headerUnderline#headerExpandMenu ≡
+    a(href="/blog").headerButton.headerUnderline Blog
+    span.vr |
+    +dropdown("Pastes")
+        +item("New paste", "/pastes/submit")
+        +item("Latest pastes", "/pastes/list")
+    +dropdown("Images")
+        +item("New image", "/images/submit")
+        +item("Latest images", "/images/list")
+    +dropdown("Links")
+        +item("New link", "/urls/submit")
+        +item("Latest links", "/urls/list")
+    +dropdown("More")
+        +item("CloudTube", "/cloudtube/subscriptions")
+        +item("Egg Central", "/egg")
+        +item("Crumpet", "/crumpet")
+        +item("MXID predictor", "/misc/mxid")
+        +item("Godmaster", "/misc/godmaster")
+        +item("CCC", "/misc/ccc")
+        +item("Example files", "/examples")
+    +dropdown("About")
+        +item("Website info", "/about/site")
+        +item("API", "/about/api")
+        +item("Contact", "/about/contact")
+        +item("Privacy", "/about/privacy")
+        +item("Terms", "/about/terms")
+        +item("Source code", "https://github.com/cloudrac3r/cadencegq")
+        a(href="/about/javascript" data-jslicense="1").headerButton JavaScript licenses
+    a(href="/account").headerButton.headerUnderline#accountState
 </nav>
 script.
     let nav = document.getElementById("header");
