@@ -9,16 +9,15 @@ header
 	h1 Blog
 	p.feed-links #[a(href="/blog/rss.xml?limit=30") RSS] / #[a(href="/blog/atom.xml?limit=30") Atom]
 
-each year in years
-	each month in year.months
-		ul.posts
-			each post in month.posts
-				li
-					a(href=`/blog/${post.slug}`).date= post.date
-					span.smalltitle: a(href=`/blog/${post.slug}`).title= post.title
-		.marker
-			h2.inner= month.name
-	.marker
-		h2.inner.year= year.number
+main.post-list
+	each year in years
+		each month in year.months
+			.marker
+				h2.inner #{month.name} #{year.number}
+			ul.posts
+				each post in month.posts
+					li
+						a(href=`/blog/${post.slug}`).date= post.date
+						span.smalltitle: a(href=`/blog/${post.slug}`).title= post.title
 
 include old/includes/end.pug
