@@ -430,9 +430,17 @@ script.
         allFormats = data.formatStreams.concat(data.adaptiveFormats);
         formats = allFormats.filter(f => f.type.includes("video") && f.qualityLabel);
         if (formats.length) {
+            formats = formats.sort((a, b) => {
+                const sortTransform = f => (f.index === undefined ? "1" : "0") + String(parseInt(f.resolution)).padStart(10, "0")
+                const asort = sortTransform(a)
+                const bsort = sortTransform(b)
+                if (asort < bsort) return 1
+                else if (bsort > asort) return -1
+                else return 0
+            })
             for (let i = 0; i < formats.length; i++) {
                 let f = formats[i];
-                f.label = (f.qualityLabel || f.resolution) + " " + f.container + (f.index ? " ꜝ" : "") ;
+                f.label = (f.qualityLabel || f.resolution) + " " + f.container + (f.index !== undefined ? " ꜝ" : "") ;
                 let option = document.createElement("option");
                 option.setAttribute("value", i);
                 option.innerText = f.label;
