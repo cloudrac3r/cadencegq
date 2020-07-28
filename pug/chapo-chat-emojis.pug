@@ -134,7 +134,7 @@ script.
 			super("div")
 			this.class("emoji")
 			this.imageURL = webURL.replace("blob", "raw")
-			this.name = `:${name.replace(/\.\w+$/, "")}:`
+			this.name = name.replace(/\.\w+$/, "")
 		}
 
 		render(view) {
@@ -143,7 +143,7 @@ script.
 				this.child(
 					new ElemJS("img").class("image").direct("src", this.imageURL)
 				).child(
-					new ElemJS("span").class("name").text(this.name)
+					new ElemJS("span").class("name").text(`:${this.name}:`)
 				)
 			} else if (view === "grid") {
 				this.clearChildren()
@@ -152,7 +152,7 @@ script.
 						new ElemJS("img").class("image").direct("src", this.imageURL)
 					)
 				).child(
-					new ElemJS("span").class("name").text(this.name)
+					new ElemJS("span").class("name").text(`:${this.name}:`)
 				)
 			}
 		}
