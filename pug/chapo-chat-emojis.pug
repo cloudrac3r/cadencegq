@@ -1,0 +1,243 @@
+include old/includes/pre.pug
+title chapo.chat emojis
+include old/includes/header.pug
+
+main
+	h1 chapo.chat emojis
+	noscript This page won't work without JavaScript.
+	p#loading
+	.search-container#search-container
+		select#view-type
+			option(value="icon") Icon grid
+			option(value="grid") Icons &amp; names
+		input(type="text" placeholder="Search..." autocomplete="off")#search.search
+	#view
+
+style.
+
+	.search-container {
+		display: flex;
+		justify-content: center;
+		margin-bottom: 20px;
+	}
+
+	.view.icon {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: start;
+		gap: 8px;
+		margin: 0px 42px;
+	}
+
+	.view.icon .emoji {
+		position: relative;
+		width: 64px;
+		height: 64px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background: rgba(0, 0, 0, 0.3);
+	}
+
+	.view.icon .emoji .image {
+		max-height: 100%;
+	}
+
+	.view.icon .emoji .name {
+		position: absolute;
+		bottom: 54px;
+		padding: 8px;
+		line-height: 1;
+		background: #ddd;
+		color: black;
+		pointer-events: none;
+		visibility: hidden;
+		border-radius: 8px;
+		box-shadow: 0px 3px 3px 0px rgba(0, 0, 0, 0.8);
+		width: max-content;
+	}
+
+	.view.icon .emoji .name::after {
+		position: absolute;
+		content: "";
+		display: block;
+		width: 10px;
+		height: 10px;
+		transform: translate(-50%, 50%) rotate(45deg);
+		background: #ddd;
+		bottom: 0;
+		left: 50%;
+	}
+
+	.view.icon .emoji:hover {
+		z-index: 1;
+	}
+
+	.view.icon .emoji:hover .name {
+		visibility: visible;
+	}
+
+	.view.grid {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: start;
+		gap: 8px;
+		margin: 0px;
+	}
+
+	.view.grid .emoji {
+		padding: 8px;
+		width: 240px;
+		height: 48px;
+		display: flex;
+		align-items: center;
+		background: rgba(0, 0, 0, 0.3);
+	}
+
+	.view.grid .image-container {
+		height: 48px;
+		width: 48px;
+		margin-right: 8px;
+		display: grid;
+		align-items: center;
+		justify-items: center;
+	}
+
+	.view.grid .image {
+		max-height: 48px;
+		max-width: 48px;
+		width: auto;
+		height: auto;
+	}
+
+	.view.grid .name {
+		height: 100%;
+		display: flex;
+		align-items: center;
+		border-left: 1px solid #4f5359;
+		padding-left: 8px;
+	}
+
+script.
+	let requests = 0
+	function updateLoading() {
+		q("#loading").textContent = `Loading... ${requests} of ?`
+	}
+
+	class Emoji extends ElemJS {
+		constructor(name, webURL) {
+			super("div")
+			this.class("emoji")
+			this.imageURL = webURL.replace("blob", "raw")
+			this.name = name.replace(/\.\w+$/, "")
+		}
+
+		render(view) {
+			if (view === "icon") {
+				this.clearChildren()
+				this.child(
+					new ElemJS("img").class("image").direct("src", this.imageURL)
+				).child(
+					new ElemJS("span").class("name").text(this.name)
+				)
+			} else if (view === "grid") {
+				this.clearChildren()
+				this.child(
+					new ElemJS("div").class("image-container").child(
+						new ElemJS("img").class("image").direct("src", this.imageURL)
+					)
+				).child(
+					new ElemJS("span").class("name").text(this.name)
+				)
+			}
+		}
+	}
+
+	class View extends ElemJS {
+		constructor() {
+			super("div")
+			this.element = q("#view")
+			this.class("view")
+			this.emojis = []
+			this.setView(q("#view-type").value)
+			this.search = ""
+
+			q("#search").addEventListener("input", event => {
+				this.setSearch(event.target.value)
+			})
+
+			q("#view-type").addEventListener("change", event => {
+				this.setView(event.target.value)
+			})
+		}
+
+		setSearch(search) {
+			this.search = search.toLowerCase()
+			for (const emoji of this.emojis) {
+				if (emoji.name.toLowerCase().startsWith(this.search)) emoji.element.style.display = ""
+				else emoji.element.style.display = "none"
+			}
+		}
+
+		setView(view) {
+			this.element.classList.remove(this.view)
+			this.view = view
+			this.class(this.view)
+			this.render()
+		}
+
+		setEmojis(emojis) {
+			this.emojis = emojis
+			for (const emoji of this.emojis) {
+				this.child(emoji)
+			}
+			this.render()
+		}
+
+		render() {
+			for (const emoji of this.emojis) {
+				emoji.render(this.view)
+			}
+		}
+	}
+
+	const view = new View()
+
+	function makeRequest(cursor) {
+		return fetch("https://gitlab.com/api/graphql", {
+			headers: {
+				"content-type": "application/json"
+			},
+			method: "POST",
+			body: `[{"operationName":"getPermissions","variables":{"projectPath":"chapo-sandbox/production"},"query":"query getPermissions($projectPath: ID!) {\\n  project(fullPath: $projectPath) {\\n    userPermissions {\\n      pushCode\\n      forkProject\\n      createMergeRequestIn\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n"},{"operationName":"getFiles","variables":{"projectPath":"chapo-sandbox/production","ref":"main","path":"ui/assets/emojis","nextPageCursor":"${cursor}","pageSize":100},"query":"fragment TreeEntry on Entry {\\n  id\\n  sha\\n  name\\n  flatPath\\n  type\\n  __typename\\n}\\n\\nquery getFiles($projectPath: ID!, $path: String, $ref: String!, $pageSize: Int!, $nextPageCursor: String) {\\n  project(fullPath: $projectPath) {\\n    repository {\\n      tree(path: $path, ref: $ref) {\\n        trees(first: $pageSize, after: $nextPageCursor) {\\n          edges {\\n            node {\\n              ...TreeEntry\\n              webUrl\\n              __typename\\n            }\\n            __typename\\n          }\\n          pageInfo {\\n            ...PageInfo\\n            __typename\\n          }\\n          __typename\\n        }\\n        submodules(first: $pageSize, after: $nextPageCursor) {\\n          edges {\\n            node {\\n              ...TreeEntry\\n              webUrl\\n              treeUrl\\n              __typename\\n            }\\n            __typename\\n          }\\n          pageInfo {\\n            ...PageInfo\\n            __typename\\n          }\\n          __typename\\n        }\\n        blobs(first: $pageSize, after: $nextPageCursor) {\\n          edges {\\n            node {\\n              ...TreeEntry\\n              mode\\n              webUrl\\n              lfsOid\\n              __typename\\n            }\\n            __typename\\n          }\\n          pageInfo {\\n            ...PageInfo\\n            __typename\\n          }\\n          __typename\\n        }\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n\\nfragment PageInfo on PageInfo {\\n  hasNextPage\\n  hasPreviousPage\\n  startCursor\\n  endCursor\\n  __typename\\n}\\n"}]`
+		}).then(res => res.json()).catch(error => {
+			q("#loading").textContent = "Request failed. Are you blocking outgoing cross-origin requests? Check your content blocker."
+			throw error
+		}).then(root => {
+			requests++
+			updateLoading()
+			const page = root[1].data.project.repository.tree.blobs
+			console.log(page.edges.map(edge => edge.node.name).join("\n"))
+			let fetchAll = true
+			if (fetchAll && page.pageInfo.hasNextPage) {
+				return makeRequest(page.pageInfo.endCursor).then(rest => page.edges.concat(rest))
+			} else {
+				q("#loading").style.display = "none"
+				q("#search-container").style.display = ""
+				return page.edges
+			}
+		})
+	}
+
+	q("#search-container").style.display = "none"
+	updateLoading()
+	makeRequest("").then(res => {
+		console.log("Final: ", res)
+		const emojis = res.filter(edge => edge.__typename === "BlobEdge").map(edge => new Emoji(edge.node.name, edge.node.webUrl))
+		console.log(emojis)
+		view.setEmojis(emojis)
+	})
+
+include old/includes/end.pug
