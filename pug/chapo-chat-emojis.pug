@@ -134,7 +134,7 @@ script.
 			super("div")
 			this.class("emoji")
 			this.imageURL = webURL.replace("blob", "raw")
-			this.name = name.replace(/\.\w+$/, "")
+			this.name = `:${name.replace(/\.\w+$/, "")}:`
 		}
 
 		render(view) {
