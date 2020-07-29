@@ -179,7 +179,7 @@ script.
 		setSearch(search) {
 			this.search = search.toLowerCase()
 			for (const emoji of this.emojis) {
-				if (emoji.name.toLowerCase().startsWith(this.search)) emoji.element.style.display = ""
+				if (emoji.name.toLowerCase().includes(this.search)) emoji.element.style.display = ""
 				else emoji.element.style.display = "none"
 			}
 		}
