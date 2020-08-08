@@ -5,6 +5,7 @@ const pug = require("pug")
 const {Feed} = require("feed")
 const {db, extra, pugCache} = require("../passthrough")
 const rp = require("request-promise")
+const webring = require("../util/webring")
 
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
@@ -251,7 +252,8 @@ module.exports = [
 				rendered,
 				previous,
 				next,
-				dateText
+				dateText,
+				webring
 			})
 		} else {
 			return [404, "404: Blog post not found."]

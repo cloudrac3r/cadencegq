@@ -10,11 +10,11 @@
   "license": "GPL-3.0-only",
   "dependencies": {
     "buffer-signature": "^1.0.0",
-    "fast-xml-parser": "^3.12.16",
+    "fast-xml-parser": "^3.17.4",
     "feed": "github:cloudrac3r/feed#f42b4d7183fc2b6e566cb400ad083c4dd714c858",
     "mime": "^2.4.2",
     "nedb-promise": "^2.0.1",
-    "pinski": "github:cloudrac3r/pinski#237daf4cc542be91c7eca5a20c9f35d4082fc78d",
+    "pinski": "git+https://git.sr.ht/~cadence/nodejs-pinski#ce07b2e32e79def5938f6cff6ddc28e5a290a0de",
     "prettier-bytes": "^1.0.4",
     "request-promise": "^4.2.4",
     "simple-git": "^1.110.0",

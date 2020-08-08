@@ -1,9 +1,11 @@
-//- Needs post, rendered, dateText
+//- Needs post, rendered, dateText, webring
 
 include old/includes/pre.pug
 title= `${post.title} | Cadence's Blog`
 link(rel="stylesheet" type="text/css" href="/blog.css")
 include old/includes/header.pug
+
+include includes/webring.pug
 
 h1= post.title
 time(datetime=dateText).date-on-post= dateText

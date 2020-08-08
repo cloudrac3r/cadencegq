@@ -341,3 +341,17 @@ input + label {
 .table-row-remove-button {
     line-height: 0.5;
 }
+
+.webring {
+    max-width: max-content;
+    padding: 8px 20px 10px;
+    border: 1px solid #888;
+    border-radius: 14px;
+    background: repeating-linear-gradient(45deg, #191919, #191919 10px, #242528 22px, #242528 26px, #191919 28px);
+    text-align: center;
+    margin: 15px 0px 20px 20px;
+}
+
+.webring-name {
+    margin-bottom: 10px;
+}

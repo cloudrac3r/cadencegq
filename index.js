@@ -4,6 +4,7 @@
 const sqlite = require("sqlite");
 const cf = require("./util/common.js");
 const accu = require("./util/accumulator.js");
+const webring = require("./util/webring.js");
 const {Pinski} = require("pinski")
 const plugins = require("pinski/plugins")
 
@@ -26,8 +27,8 @@ plugins.setInstance(server)
 server.addSassDir("sass")
 server.addRoute("/blog.css", "sass/blog.sass", "sass")
 
-server.addPugDir("pug", ["pug/old/includes"])
-server.addPugDir("pug/old", ["pug/old/includes"])
+server.addPugDir("pug", ["pug/old/includes", "pug/includes"])
+server.addPugDir("pug/old", ["pug/old/includes", "pug/includes"])
 server.addRoute("/", "pug/old/home.pug", "pug")
 
 server.addRoute("/tor", "pug/tor.pug", "pug")
@@ -93,6 +94,7 @@ sqlite.open("db/main.db").then(db => {
 	passthrough.db = db
 	passthrough.extra = extra
 	passthrough.pugCache = server.getExports().pugCache
+	server.pugDefaultLocals.webring = webring
 	server.addAPIDir("api")
 	server.startServer()
 	cf.log("Started server", "info")

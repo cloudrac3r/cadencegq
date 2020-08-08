@@ -398,7 +398,7 @@ class ElemJS {
         return this;
     }
     child(toAdd, position) {
-        if (typeof(toAdd) == "object") {
+        if (typeof(toAdd) == "object" && toAdd !== null) {
             toAdd.parent = this;
             if (typeof(position) == "number") {
                 this.element.insertBefore(toAdd.element, this.element.children[position]);

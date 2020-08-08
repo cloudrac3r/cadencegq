@@ -1,0 +1,9 @@
+if webring && webring.home
+	aside.webring
+		.webring-name
+			a(href=webring.home.link)= webring.home.name
+			= ` 💍`
+		.webring-links
+			a(href=webring.previous.link).previous= `← ${webring.previous.name}`
+			= ` / `
+			a(href=webring.next.link).next= `${webring.next.name} →`
