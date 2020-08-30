@@ -2,7 +2,7 @@ const rp = require("request-promise")
 
 let webring = {}
 function fetchWebring() {
-	rp("https://ring.knightsofthelambdacalcul.us/5/raw").then(body => {
+	rp("https://ring.knightsofthelambdacalcul.us/cadence/raw").then(body => {
 		let links = []
 		body.replace(/href="(.+?)">(.+?)<\//g, (substring, link, name) => {
 			links.push({link, name})
