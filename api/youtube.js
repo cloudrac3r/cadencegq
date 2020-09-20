@@ -121,26 +121,17 @@ function fetchChannel(channelID, ignoreCache) {
         //cf.log("Setting new cache for "+channelID, "spam");
         let promise = new Promise(resolve => {
             let channelType = channelID.startsWith("UC") && channelID.length == 24 ? "channel_id" : "user";
-            Promise.all([
-                rp(`${getInvidiousHost("channel")}/api/v1/channels/${channelID}`),
-                rp(`https://www.youtube.com/feeds/videos.xml?${channelType}=${channelID}`)
-            ]).then(([body, xml]) => {
-                let data = JSON.parse(body);
-                if (data.error) throw new Error("Couldn't refresh "+channelID+": "+data.error);
-                let feedItems = fxp.parse(xml).feed.entry;
-                data.latestVideos.forEach(v => {
-                    v.author = data.author;
-                    let gotDateFromFeed = false;
-                    if (feedItems instanceof Array) {
-                        let feedItem = feedItems.find(i => i["yt:videoId"] == v.videoId);
-                        if (feedItem) {
-                            v.published = new Date(feedItem.published).getTime();
-                            gotDateFromFeed = true;
-                        }
-                    }
-                    if (!gotDateFromFeed) v.published = v.published * 1000;
+            rp(`https://second.cadence.moe/api/v1/channels/${channelID}/latest`).then(body => {
+                let author = null
+                let authorID = null
+                let videos = JSON.parse(body);
+                videos.forEach(v => {
+                    author = v.author;
+                    authorID = v.authorID;
+                    v.published = v.published * 1000;
                 });
-                channelCache.set(channelID, {refreshed: Date.now(), data: data});
+                const data = {author: author, authorID: authorID, latestVideos: videos}
+                channelCache.set(channelID, {refreshed: Date.now(), data});
                 //cf.log("Set new cache for "+channelID, "spam");
                 resolve(data);
             }).catch(error => {
@@ -187,7 +178,7 @@ module.exports = [
             rp(`${getInvidiousHost("video")}/api/v1/videos/${fill[0]}`).then(body => {
                 try {
                     let data = JSON.parse(body);
-                    let page = pugCache.get("pug/old/cloudtube-video.pug").web()
+                    let page = pugCache.get("pug/old/cloudtube-video.pug").web({data})
                     page = page.replace('"<!-- videoInfo -->"', () => body);
                     let shareWords = getShareWords(fill[0]);
                     page = page.replace('"<!-- shareWords -->"', () => JSON.stringify(shareWords));
@@ -223,7 +214,7 @@ module.exports = [
                     let metaOGTags =
                         `<meta property="og:title" content="${data.author.replace(/&/g, "&amp;").replace(/"/g, "&quot;")} — CloudTube channel" />\n`+
                         `<meta property="og:type" content="video.movie" />\n`+
-                        `<meta property="og:image" content="${data.authorThumbnails[0].url.split("=")[0]}" />\n`+
+                        // `<meta property="og:image" content="${data.authorThumbnails[0].url.split("=")[0]}" />\n`+
                         `<meta property="og:url" content="https://${req.headers.host}${req.url}" />\n`+
                         `<meta property="og:description" content="CloudTube is a free, open-source YouTube proxy." />\n`
                     page = page.replace("<!-- metaOGTags -->", () => metaOGTags);

@@ -24,7 +24,7 @@ script.
         let qs = q("#qualitySelect");
         // console.log("saving last time: "+video.currentTime);
         lastCurrentTime = video.currentTime;
-        if (format.index) {
+        if (format.index !== undefined) {
             if (bestAudioURL) {
                 audio.src = bestAudioURL;
             } else if (!checkingAudioURLs) { // So apprently sometimes Vivaldi on Linux doesn't load the audio length properly so I pick one that works
@@ -167,7 +167,7 @@ script.
             case "ratechange":
                 other.rate = target.rate;
                 break;
-            case "stalled":
+            // case "stalled":
             case "waiting":
                 if (target.waitingTimeout.isActive) {
                     target.waitingTimeout.triggerNow();
@@ -503,27 +503,29 @@ script.
             q("#blockedWarning span").innerText = filterReturn[1];
         }
         // Fix description
-        [...q("#eow-description").children].filter(c => c.tagName == "A").forEach(c => {
-            if (c.innerText.startsWith("#")) { // hashtags
-                c.removeAttribute("href");
-            } else {
-                let href = c.getAttribute("href");
-                if (c.onclick && c.onclick.toString().includes("seekTo")) { // timestamps
-                    c.classList.add("timestamp");
-                    c.setAttribute("data-timestamp", c.innerText.split(":").reduce((p, c, i, a) => (p + parseInt(c)*60**(a.length-i-1)), 0));
-                } else if (href.startsWith("/redirect")) { // external links
-                    href = href.replace(/^.*\?/, "");
-                    c.setAttribute("href", new URLSearchParams(href).get("q"));
-                } else if (href.match(/^https?:\/\/(www\.)?youtube\.com\/channel\/([^\/]{12,})/)) { // channel links
-                    c.setAttribute("href", href.replace(/.*channel/, "/cloudtube/channel"));
-                } else if (href.match(/^https?:\/\/(www\.)?youtube\.com\/playlist/)) { // playlists
-                    let listParam = new URL(href).searchParams.get("list");
-                    if (listParam) c.setAttribute("href", "/cloudtube/playlist/"+listParam);
-                } else { // videos
-                    c.setAttribute("href", href.replace(/^.*=/, ""));
+        if (q("#eow-description")) {
+            [...q("#eow-description").children].filter(c => c.tagName == "A").forEach(c => {
+                if (c.innerText.startsWith("#")) { // hashtags
+                    c.removeAttribute("href");
+                } else {
+                    let href = c.getAttribute("href");
+                    if (c.onclick && c.onclick.toString().includes("seekTo")) { // timestamps
+                        c.classList.add("timestamp");
+                        c.setAttribute("data-timestamp", c.innerText.split(":").reduce((p, c, i, a) => (p + parseInt(c)*60**(a.length-i-1)), 0));
+                    } else if (href.startsWith("/redirect")) { // external links
+                        href = href.replace(/^.*\?/, "");
+                        c.setAttribute("href", new URLSearchParams(href).get("q"));
+                    } else if (href.match(/^https?:\/\/(www\.)?youtube\.com\/channel\/([^\/]{12,})/)) { // channel links
+                        c.setAttribute("href", href.replace(/.*channel/, "/cloudtube/channel"));
+                    } else if (href.match(/^https?:\/\/(www\.)?youtube\.com\/playlist/)) { // playlists
+                        let listParam = new URL(href).searchParams.get("list");
+                        if (listParam) c.setAttribute("href", "/cloudtube/playlist/"+listParam);
+                    } else { // videos
+                        c.setAttribute("href", href.replace(/^.*=/, ""));
+                    }
                 }
-            }
-        });
+            });
+        }
         // Description timestamps
         let timestamps = [...document.querySelectorAll("#videoDescription a[data-timestamp]")].sort((a, b) => parseInt(a.getAttribute("data-timestamp")) - parseInt(b.getAttribute("data-timestamp")));
         let timestampsLastIndex = -1;
@@ -766,6 +768,19 @@ include includes/header
             </div>
         </div>
         <audio preload="auto"></audio>
+        .belowButtonContainer.infoBox
+            div
+                span
+                    - const url = `https://tube.cadence.moe/watch?v=${data.videoId}`
+                    div A rewrite of CloudTube is in development. Please try it!
+                    div If it doesn't work, or if you don't like it, you're free to keep using this version.
+                    div If you try it, #[em please] #[a(href="https://todo.sr.ht/~cadence/tube") report problems and missing features.]
+                    ul
+                        li Faster loading
+                        li Reliable subscriptions
+                        li Selectable Invidious instance
+                        li No JavaScript
+                    div: strong Try it! #[a(href=url)= url]
         <div id="liveEventNotice" style="display: none"></div>
         <div id="audioLoadingDisplay" class="infoBox" style="display: none;">
             <div>

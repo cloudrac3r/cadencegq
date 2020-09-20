@@ -52,7 +52,7 @@ function filterVideos(feed, source) {
 function thumbnailURL(id, quality) {
     if (!quality) quality = "mqdefault";
     let proxyEnabled = lsm.get("disableProxyThumbnails") != "1";
-    if (proxyEnabled) return `https://invidio.us/vi/${id}/${quality}.jpg`;
+    if (proxyEnabled) return `https://second.cadence.moe/vi/${id}/${quality}.jpg`;
     else return `https://i.ytimg.com/vi/${id}/${quality}.jpg`;
 }
 
