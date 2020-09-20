@@ -121,17 +121,26 @@ function fetchChannel(channelID, ignoreCache) {
         //cf.log("Setting new cache for "+channelID, "spam");
         let promise = new Promise(resolve => {
             let channelType = channelID.startsWith("UC") && channelID.length == 24 ? "channel_id" : "user";
-            rp(`https://second.cadence.moe/api/v1/channels/${channelID}/latest`).then(body => {
-                let author = null
-                let authorID = null
-                let videos = JSON.parse(body);
-                videos.forEach(v => {
-                    author = v.author;
-                    authorID = v.authorID;
-                    v.published = v.published * 1000;
+            Promise.all([
+                rp(`${getInvidiousHost("channel")}/api/v1/channels/${channelID}`),
+                rp(`https://www.youtube.com/feeds/videos.xml?${channelType}=${channelID}`)
+            ]).then(([body, xml]) => {
+                let data = JSON.parse(body);
+                if (data.error) throw new Error("Couldn't refresh "+channelID+": "+data.error);
+                let feedItems = fxp.parse(xml).feed.entry;
+                data.latestVideos.forEach(v => {
+                    v.author = data.author;
+                    let gotDateFromFeed = false;
+                    if (feedItems instanceof Array) {
+                        let feedItem = feedItems.find(i => i["yt:videoId"] == v.videoId);
+                        if (feedItem) {
+                            v.published = new Date(feedItem.published).getTime();
+                            gotDateFromFeed = true;
+                        }
+                    }
+                    if (!gotDateFromFeed) v.published = v.published * 1000;
                 });
-                const data = {author: author, authorID: authorID, latestVideos: videos}
-                channelCache.set(channelID, {refreshed: Date.now(), data});
+                channelCache.set(channelID, {refreshed: Date.now(), data: data});
                 //cf.log("Set new cache for "+channelID, "spam");
                 resolve(data);
             }).catch(error => {
