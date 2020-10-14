@@ -5,7 +5,8 @@ include old/includes/header.pug
 main
 	h1 chapo.chat emojis
 	noscript This page won't work without JavaScript.
-	p#loading
+	div#loading Loading emoji list...
+	progress(max=1 value=0)#progress
 	.search-container#search-container
 		select#view-type
 			option(value="icon") Icon grid
@@ -125,8 +126,12 @@ style.
 
 script.
 	let requests = 0
-	function updateLoading() {
-		q("#loading").textContent = `Loading... ${requests} of ?`
+	const e_progress = q("#progress")
+	const e_loading = q("#loading")
+	function updateLoading(current, max, concurrent) {
+		e_loading.textContent = `Loading images... (${concurrent} concurrent, ${current}/${max})`
+		e_progress.max = max
+		e_progress.value = current
 	}
 
 	class Emoji extends ElemJS {
@@ -206,41 +211,72 @@ script.
 		}
 	}
 
-	const view = new View()
+	class SlowLoader {
+		constructor(urls, max) {
+			this.urls = urls
+			this.max = max
+			this.now = 0
+			this.i = 0
+			this.completed = 0
+			this.listeners = []
+			this.next()
+		}
 
-	function makeRequest(cursor) {
-		return fetch("https://gitlab.com/api/graphql", {
-			headers: {
-				"content-type": "application/json"
-			},
-			method: "POST",
-			body: `[{"operationName":"getPermissions","variables":{"projectPath":"chapo-sandbox/production"},"query":"query getPermissions($projectPath: ID!) {\\n  project(fullPath: $projectPath) {\\n    userPermissions {\\n      pushCode\\n      forkProject\\n      createMergeRequestIn\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n"},{"operationName":"getFiles","variables":{"projectPath":"chapo-sandbox/production","ref":"main","path":"ui/public/emojis","nextPageCursor":"${cursor}","pageSize":100},"query":"fragment TreeEntry on Entry {\\n  id\\n  sha\\n  name\\n  flatPath\\n  type\\n  __typename\\n}\\n\\nquery getFiles($projectPath: ID!, $path: String, $ref: String!, $pageSize: Int!, $nextPageCursor: String) {\\n  project(fullPath: $projectPath) {\\n    repository {\\n      tree(path: $path, ref: $ref) {\\n        trees(first: $pageSize, after: $nextPageCursor) {\\n          edges {\\n            node {\\n              ...TreeEntry\\n              webUrl\\n              __typename\\n            }\\n            __typename\\n          }\\n          pageInfo {\\n            ...PageInfo\\n            __typename\\n          }\\n          __typename\\n        }\\n        submodules(first: $pageSize, after: $nextPageCursor) {\\n          edges {\\n            node {\\n              ...TreeEntry\\n              webUrl\\n              treeUrl\\n              __typename\\n            }\\n            __typename\\n          }\\n          pageInfo {\\n            ...PageInfo\\n            __typename\\n          }\\n          __typename\\n        }\\n        blobs(first: $pageSize, after: $nextPageCursor) {\\n          edges {\\n            node {\\n              ...TreeEntry\\n              mode\\n              webUrl\\n              lfsOid\\n              __typename\\n            }\\n            __typename\\n          }\\n          pageInfo {\\n            ...PageInfo\\n            __typename\\n          }\\n          __typename\\n        }\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n\\nfragment PageInfo on PageInfo {\\n  hasNextPage\\n  hasPreviousPage\\n  startCursor\\n  endCursor\\n  __typename\\n}\\n"}]`
-		}).then(res => res.json()).catch(error => {
-			q("#loading").textContent = "Request failed. Are you blocking outgoing cross-origin requests? Check your content blocker."
-			throw error
-		}).then(root => {
-			requests++
-			updateLoading()
-			const page = root[1].data.project.repository.tree.blobs
-			console.log(page.edges.map(edge => edge.node.name).join("\n"))
-			let fetchAll = true
-			if (fetchAll && page.pageInfo.hasNextPage) {
-				return makeRequest(page.pageInfo.endCursor).then(rest => page.edges.concat(rest))
-			} else {
-				q("#loading").style.display = "none"
-				q("#search-container").style.display = ""
-				return page.edges
+		addListener(l) {
+			this.listeners.push(l)
+			this.broadcast()
+		}
+
+		broadcast() {
+			this.listeners.forEach(l => l(this.completed, this.urls.length, this.max))
+		}
+
+		next() {
+			if (this.now < this.max && this.urls[this.i]) {
+				this.now++
+				const src = this.urls[this.i++]
+				const image = new Image()
+				image.addEventListener("load", () => {
+					this.completed++
+					this.now--
+					this.broadcast()
+					this.next()
+				})
+				image.addEventListener("error", () => {
+					if (this.max > 1 && Math.random() < (-0.625 / (this.max-1) + 1)) this.max--
+					this.urls.push(src)
+					this.now--
+					this.broadcast()
+					this.next()
+				})
+				image.src = src
+				this.next()
 			}
-		})
+		}
 	}
 
+	function getEmojiURL(emoji) {
+		return `https://www.chapo.chat/static/emojis/${emoji.name}`
+	}
+
+	const view = new View()
 	q("#search-container").style.display = "none"
-	updateLoading()
-	makeRequest("").then(res => {
-		console.log("Final: ", res)
-		const emojis = res.filter(edge => edge.__typename === "BlobEdge").map(edge => new Emoji(edge.node.name, edge.node.webUrl))
-		console.log(emojis)
-		view.setEmojis(emojis)
+	fetch(window.location.origin + "/api/chapo/emojis").then(res => res.json()).catch(error => {
+		q("#loading").textContent = "Request failed. Are you blocking outgoing cross-origin requests? Check your content blocker."
+		throw error
+	}).then(root => {
+		const loader = new SlowLoader(root.map(getEmojiURL), 10)
+		loader.addListener(updateLoading)
+		loader.addListener((completed, max) => {
+			if (completed === max) {
+				q("#loading").style.display = "none"
+				q("#progress").style.display = "none"
+				q("#search-container").style.display = ""
+				const emojis = root.map(e => new Emoji(e.name, getEmojiURL(e)))
+				console.log(emojis)
+				view.setEmojis(emojis)
+			}
+		})
 	})
 
 include old/includes/end.pug
