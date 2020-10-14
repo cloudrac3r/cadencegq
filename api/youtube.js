@@ -5,7 +5,7 @@ const rp = require("request-promise");
 const fs = require("fs");
 const fxp = require("fast-xml-parser");
 
-const invidiousHost = "https://invidio.us";
+const invidiousHost = "https://invidious.snopyta.org";
 const invidiojsHost = "http://localhost:4000";
 const invidiojsEnabledModes = process.env.INVIDIOJS ? process.env.INVIDIOJS.split(":") : [];
 function getInvidiousHost(mode) {

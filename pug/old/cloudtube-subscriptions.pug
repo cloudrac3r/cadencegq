@@ -172,10 +172,23 @@ include includes/header
     <h2 id="loadingProgress">Loading subscriptions...</h2>
     <button onclick="toggleSubManage()">Manage subscriptions</button>
     <button id="hideWatchedButton" onclick="toggleHideWatched(event)">Hide watched videos</button>
-    <button onclick="forceRefresh(event)">Force refresh all</button>
+    // <button onclick="forceRefresh(event)">Force refresh all</button>
     <a class="linkbutton" href="/cloudtube/settings">More settings</a>
 </div>
 <div id="blockedWarning" style="display: none;"><span></span> videos have been blocked based on your preferences. <a href="/cloudtube/settings">Edit preferences</a></div>
+.belowButtonContainer.infoBox
+    div
+        span
+            - const url = `https://tube.cadence.moe/`
+            div A rewrite of CloudTube is in development. Please try it!
+            div If it doesn't work, or if you don't like it, you're free to keep using this version.
+            div If you try it, #[em please] #[a(href="https://todo.sr.ht/~cadence/tube") report problems and missing features.]
+            ul
+                li Faster loading
+                li Reliable subscriptions
+                li Selectable Invidious instance
+                li No JavaScript
+            div: strong Try it! #[a(href=url)= url]
 <div id="totalTimeDisplay"></div>
 <div id="failedWarning" style="display: none"></div>
 <div id="subManageContainer">
