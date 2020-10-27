@@ -1,0 +1,75 @@
+- const f = new Intl.DateTimeFormat("en-US", {timeZone: options.timezone, timeZoneName: "short", month: "short", day: "numeric", hour: "numeric", minute: "numeric"})
+
+doctype html
+html(lang="en")
+  head
+    meta(charset="utf-8")
+    title Protect The Results - Event Viewer
+    link(rel="stylesheet" type="text/css" href="/protect-the-results.css")
+  body
+    main.main
+      unless data
+        p No data loaded yet.
+      else
+        h1 Protect The Results - Event Viewer
+        aside
+          p Grouped by state, sorted by event code
+          p Event list last updated: #{f.format(lastLoaded)}
+          p: a(href="https://protecttheresults.com/" noopener target="_blank") Original website (requires JavaScript)
+          details
+            summary Website privacy
+            p.
+              These details about your requests are stored in a log file.
+              They are deleted after 10 days.
+              They are not shared with anyone.
+            ul
+              li Last 3 octets of IP address
+              li Request timestamp
+              li Requested URL
+            p This page does not contain any JavaScript or cookies.
+          details
+            summary Website source code
+            p: a(href="https://github.com/cloudrac3r/cadencegq") https://github.com/cloudrac3r/cadencegq
+            p A non-github mirror is planned.
+          details
+            summary Set time zone
+            form(method="get")
+              label
+                | Display time zone
+                select(name="timezone")
+                  each tz in [...allowedTimeZones.entries()]
+                    option(value=tz[0] selected=(tz[0] === options.timezone))= tz[1]
+              input(type="submit" value="Set time zone")
+          details
+            summary Jump to a state
+            p If your state is not listed here then it has no events.
+            .states-list
+              each state in data.states
+                a(href=`#state-${state.code}`).states-list__link= state.code
+        each state in data.states
+          section(id=`state-${state.code}`).state
+            h1.state__marker State: #{state.code}
+            each event in state.events
+              .event
+                h2= event.title
+                .event__cols
+                  div
+                    h3 Time
+                    .lines
+                      = event.timeslots.map(t => `${f.format(t.start_date*1000)}\nto ${f.format(t.end_date*1000)}`).join("\n\n")
+                  div
+                    h3 Location
+                    if event.is_virtual
+                      .virtual-notice
+                        strong VIRTUAL EVENT
+                        |
+                        | hosted in:
+                    .lines= [event.location.venue, ...event.location.address_lines, `${event.location.locality}, ${event.location.region} ${event.location.postal_code}`, event.location.location.latitude && `${event.location.location.latitude}, ${event.location.location.longitude}`].filter(x => x).join("\n")
+                details
+                  summary Details
+                  div Accessibility status: #{event.accessibility_status ? event.accessibility_status.toLowerCase().replace(/_/g, " ") : "no data"}
+                  div Event type: #{event.event_type.toLowerCase()}
+                  div Approval status: #{event.approval_status.toLowerCase()}
+                  div
+                    a(href=event.browser_url noopener target="_blank") Full view/Sign up
+                    = ` (external URL, needs JavaScript)`

@@ -26,6 +26,7 @@ plugins.setInstance(server)
 
 server.addSassDir("sass")
 server.addRoute("/blog.css", "sass/blog.sass", "sass")
+server.addRoute("/protect-the-results.css", "sass/protect-the-results.sass", "sass")
 
 server.addPugDir("pug", ["pug/old/includes", "pug/includes"])
 server.addPugDir("pug/old", ["pug/old/includes", "pug/includes"])
