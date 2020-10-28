@@ -34,7 +34,10 @@ async function loadAllPages() {
 	}
 	const states = new Map()
 	events = events.filter(event => {
-		return event.address_visibility === "PUBLIC" // only events with location available
+		return (
+			event.address_visibility === "PUBLIC" // only events with location available
+				&& !event.is_virtual // only in person events
+		)
 	})
 	events.forEach(event => {
 		const state = event.location.region
