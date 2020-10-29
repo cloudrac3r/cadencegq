@@ -12,6 +12,15 @@ html(lang="en")
         p No data loaded yet.
       else
         h1 Protect The Results - Event Viewer
+        section.notice
+          h2 Important notice!!
+          p.lines.
+            The original website has chosen to #[strong hide street addresses] for almost all entries.
+            Only entries with street addresses are shown on this page, which is less than 20.
+          p.lines.
+            To see the #[strong original 400+ events] and their addresses, #[strong: a(noopener href="https://web.archive.org/web/20201028023627/https://cadence.moe/misc/protect-the-results") open the archive.org wayback machine capture of this page] (no JS required).
+          p.lines.muted.
+            The ordinary page continues below.
         aside
           p Grouped by state, sorted by area code. Virtual events not shown.
           p Event list last updated: #{f.format(lastLoaded)}
