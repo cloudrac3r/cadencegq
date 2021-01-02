@@ -46,6 +46,7 @@ style.
 
 	.view.icon .emoji .image {
 		max-height: 100%;
+		max-width: 100%;
 	}
 
 	.view.icon .emoji .name {
@@ -256,27 +257,28 @@ script.
 	}
 
 	function getEmojiURL(emoji) {
-		return `https://www.chapo.chat/static/emojis/${emoji.name}`
+		return emoji.download_url
+		// return `https://www.chapo.chat/static/emojis/${emoji.name}`
 	}
 
 	const view = new View()
 	q("#search-container").style.display = "none"
-	fetch(window.location.origin + "/api/chapo/emojis").then(res => res.json()).catch(error => {
+	fetch("/api/chapo/emojis").then(res => res.json()).catch(error => {
 		q("#loading").textContent = "Request failed. Are you blocking outgoing cross-origin requests? Check your content blocker."
 		throw error
 	}).then(root => {
-		const loader = new SlowLoader(root.map(getEmojiURL), 10)
+		/*const loader = new SlowLoader(root.map(getEmojiURL), 10)
 		loader.addListener(updateLoading)
 		loader.addListener((completed, max) => {
-			if (completed === max) {
+			if (completed === max) {*/
 				q("#loading").style.display = "none"
 				q("#progress").style.display = "none"
 				q("#search-container").style.display = ""
 				const emojis = root.map(e => new Emoji(e.name, getEmojiURL(e)))
 				console.log(emojis)
 				view.setEmojis(emojis)
-			}
-		})
+		/*	}
+		})*/
 	})
 
 include old/includes/end.pug
