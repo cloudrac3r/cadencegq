@@ -66,7 +66,6 @@ server.addRoute("/misc/discord.io", "pug/old/misc-discordio.pug", "pug")
 server.addRoute("/misc/godmaster", "pug/old/misc-godmaster.pug", "pug")
 server.addRoute("/misc/ccc", "pug/old/misc-ccc.pug", "pug")
 server.addRoute("/misc/archivesubmit", "pug/old/misc-archivesubmit.pug", "pug")
-server.addRoute("/misc/chapo-chat-emojis", "pug/chapo-chat-emojis.pug", "pug")
 
 server.addRoute("/egg", "pug/old/egg-browse.pug", "pug")
 server.addRoute("/egg/card/[0-9]+", "pug/old/egg-card.pug", "pug")
