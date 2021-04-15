@@ -4,7 +4,6 @@
 const sqlite = require("sqlite");
 const cf = require("./util/common.js");
 const accu = require("./util/accumulator.js");
-const webring = require("./util/webring.js");
 const {Pinski} = require("pinski")
 const plugins = require("pinski/plugins")
 
@@ -94,7 +93,6 @@ sqlite.open("db/main.db").then(db => {
 	passthrough.db = db
 	passthrough.extra = extra
 	passthrough.pugCache = server.getExports().pugCache
-	server.pugDefaultLocals.webring = webring
 	server.addAPIDir("api")
 	server.startServer()
 	cf.log("Started server", "info")

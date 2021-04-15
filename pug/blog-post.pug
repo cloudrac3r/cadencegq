@@ -1,24 +1,26 @@
-//- Needs post, rendered, dateText, webring
+//- Needs post, rendered, dateText
 
 include old/includes/pre.pug
 title= `${post.title} | Cadence's Blog`
 link(rel="stylesheet" type="text/css" href="/blog.css")
-include old/includes/header.pug
 
-include includes/webring.pug
+if source && source.text
+	<div id="page">
+	div(style="height: 50px")
+	article!= source.text
+else
+	include old/includes/header.pug
+	h1= post.title
+	time(datetime=dateText).date-on-post= dateText
+	article!= rendered
 
-h1= post.title
-time(datetime=dateText).date-on-post= dateText
-
-article!= rendered
-
-div.back
-	div.post-navigation
-		if previous
-			a(href=`/blog/${previous.slug}`) ← Previous: #{previous.title}
-		if next
-			a(href=`/blog/${next.slug}`) Next: #{next.title} →
-	div.to-index
-		a(href="/blog") ↵ Back to blog index
+	div.back
+		div.post-navigation
+			if previous
+				a(href=`/blog/${previous.slug}`) ← Previous: #{previous.title}
+			if next
+				a(href=`/blog/${next.slug}`) Next: #{next.title} →
+		div.to-index
+			a(href="/blog") ↵ Back to blog index
 
 include old/includes/end.pug

@@ -5,9 +5,23 @@ const pug = require("pug")
 const {Feed} = require("feed")
 const {db, extra, pugCache} = require("../passthrough")
 const rp = require("request-promise")
-const webring = require("../util/webring")
 
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+
+const sources = [
+	{
+		url: "news.ycombinator.com",
+		text: pug.render(`
+figure
+	p: q Hacker News in name only, for it is neither.
+	figcaption — Mobin Hideout Owl Statue, Link's Awakening
+`)
+	},
+	{
+		url: "stallman.org",
+		text: pug.render(`p Oh... I see. What a nice, normal, and definitely not deluded or #[a(href="https://www.twitter.com/starsandrobots/status/994267277460619265") creepy] person to take information from.\np: a(href="https://arstechnica.com/tech-policy/2019/09/richard-stallman-leaves-mit-after-controversial-remarks-on-rape/") Please choose someone more worthy as your idol.`)
+	}
+]
 
 /**
  * @typedef Post
@@ -235,7 +249,7 @@ module.exports = [
 		}
 	}},
 
-	{route: "/blog/(\\d[\\w-]+)", methods: ["GET"], code: async ({fill}) => {
+	{route: "/blog/(\\d[\\w-]+)", methods: ["GET"], code: async ({req, fill}) => {
 		/** @type {Post} */
 		const post = await db.get("SELECT * FROM BlogPosts WHERE slug = ?", fill[0])
 		if (post) {
@@ -247,13 +261,17 @@ module.exports = [
 			date.setUTCMonth(post.month-1)
 			date.setUTCDate(post.day)
 			const dateText = date.toISOString().split("T")[0]
+
+			let referer = req.headers["referer"] || req.headers["origin"] || ""
+			referer = referer.replace(/^https?:\/\/(?:www\.)?/, "")
+			const source = sources.find(s => referer.startsWith(s.url))
 			return render(200, "pug/blog-post.pug", {
 				post,
 				rendered,
 				previous,
 				next,
 				dateText,
-				webring
+				source
 			})
 		} else {
 			return [404, "404: Blog post not found."]
