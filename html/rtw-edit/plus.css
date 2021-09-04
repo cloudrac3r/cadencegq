@@ -45,6 +45,7 @@ body > div.overlay {
 
 body > div.editoroverlay {
     right: 286px;
+    overflow: auto;
 }
 
 body > div.overlay > div {

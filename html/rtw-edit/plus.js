@@ -5,6 +5,7 @@ const level = {
     signs: Array(20).fill("")
 };
 const imagesDir = "/rtw-edit/images";
+let TH; // variable referencing
 
 q("#loading").parentElement.removeChild(q("#loading"));
 
@@ -48,14 +49,14 @@ Array.prototype.sortV = function() {
 let theme = "wood";
 Object.entries(config.tiles).forEach(e => {
     e[1].name = e[0];
-    e[1].image = imagesDir+"/"+e[1].image.replace("$theme$", theme);;
+    e[1].image = imagesDir+"/"+e[1].image.replace("$theme$", theme);
 });
 let images = {};
 let categories = {};
 Object.values(config.tiles).forEach(t => {
     images[t.image] = {source: t.image};
 });
-for (let path of [imagesDir+"/symbols/pencil.png", imagesDir+"/symbols/block.png", imagesDir+"/symbols/path.png", imagesDir+"/symbols/move.png"]) {
+for (let path of [imagesDir+"/symbols/pencil.png", imagesDir+"/symbols/block.png", imagesDir+"/symbols/path.png", imagesDir+"/symbols/move.png", imagesDir+"/symbols/question.png"]) {
     images[path] = {source: path};
 }
 config.categories.forEach(c => {
@@ -119,6 +120,25 @@ function loadCurrentSign() {
         q("#iSignText").currentSign = currentSign;
         q("#iSignText").value = level.signs[currentSign];
     }
+}
+
+function registerHexTile(hex, layer) {
+    // Create data
+    const hexString = hex.toString(16).padStart(4, "0")
+    const name = "Hex " + hexString
+    tile = {
+        name,
+        image: imagesDir + "/symbols/question.png",
+        categories: ["Metatiles"],
+        layer,
+        hex,
+        drawHex: hexString
+    }
+    // do maintenance
+    config.tiles[name] = tile
+    categories["Metatiles"].push(tile)
+    new TileSelector(TH, tile)
+    return tile
 }
 
 let canvas = q("canvas");
@@ -281,6 +301,18 @@ class World {
                 level.signs[currentSign] = event.currentTarget.value;
             }
         });
+        q("#iMetatileCreator").addEventListener("keypress", event => {
+            const self = event.target
+            if (event.key !== "Enter") return
+            if (!self.value.match(/^[0-9a-fA-F]{4}$/)) return
+            const littleEndian = self.value.toLowerCase()
+            const bigEndian = littleEndian.slice(2) + littleEndian.slice(0, 2)
+            const hex = parseInt(bigEndian, 16)
+            registerHexTile(hex, 0)
+            self.value = ""
+            TH.W.C.draw() // redraw canvas to show new item in tile selector
+        })
+
         loadCurrentSign();
     }
     handleMouseEvent(type, event) {
@@ -533,14 +565,21 @@ class World {
         let width = readInt();
         let height = readInt();
         let hashMap = new Map();
+        // All tiles in all layers
         for (let layer = 0; layer <= 1; layer++) {
             for (let y = 0; y < height; y++) {
                 for (let x = 0; x < width; x++) {
                     let hex = readInt();
                     if (hex) {
+                        // Check cache
                         let tile = hashMap.get(hex);
                         if (!tile) {
+                            // Load tile by searching
                             tile = Object.values(config.tiles).find(t => t.hex == hex);
+                            if (!tile) {
+                                // This tile does not exist; add custom hex tile
+                                tile = registerHexTile(hex, layer)
+                            }
                             hashMap.set(hex, tile);
                         }
                         if (tile) {
@@ -660,12 +699,22 @@ class Tile {
         let size = tileSize*this.W.zoom;
         if (images[this.tile.image]) W.C.drawImage(W.posToWorld(this.posToSize()), tileSize*W.zoom, this.tile.image);
         else W.C.drawRectSize(W.posToWorld(this.posToSize()), tileSize*W.zoom, true, this.tile.image);
+        if (this.tile.drawHex) {
+            const textSize = Math.floor(10.5 * this.W.zoom)
+            const textPos = W.posToWorld(this.posToSize())
+            textPos[0] += size*20/32
+            textPos[1] += size*23/32
+            // draw second byte first due to little-endian convention
+            this.W.C.fillText(this.tile.drawHex.slice(2), textPos, "#000", textSize+"px Noto Sans")
+            textPos[1] += size*9/32
+            this.W.C.fillText(this.tile.drawHex.slice(0, 2), textPos, "#000", textSize+"px Noto Sans")
+        }
     }
 }
 
 class TileHolder {
-    constructor(W, position1, position2) {
-        Object.assign(this, {W, position1, position2});
+    constructor(W) {
+        Object.assign(this, {W});
         this.resize();
         this.spacing = 4;
         this.border = 4;
@@ -706,7 +755,8 @@ class TileHolder {
         return result;
     }
     resize() {
-        this.position2[1] = this.W.C.canvas.height-10;
+        this.position1 = [canvas.width-282, 110]
+        this.position2 = [canvas.width-10, canvas.height - 8]
     }
 }
 
@@ -718,10 +768,7 @@ class TileMenu {
         this.W.C.objects.push(this);
         this.lineHeight = this.TH.topMargin-this.TH.border;
         this.menuOpen = false;
-        this.position1 = this.TH.position1.map(v => v += this.TH.border);
-        this.closedPosition = [this.TH.position2[0]-this.TH.border, this.TH.position1[1]+this.TH.topMargin];
-        this.openPosition = [this.TH.position2[0]-this.TH.border, this.TH.position1[1]+Object.keys(categories).length*this.lineHeight];
-        this.position2 = this.closedPosition;
+        this.resize()
     }
     draw() {
         if (!this.menuOpen) {
@@ -750,6 +797,12 @@ class TileMenu {
             this.W.C.draw();
         }
     }
+    resize() {
+        this.position1 = this.TH.position1.map(v => v += this.TH.border);
+        this.closedPosition = [this.TH.position2[0]-this.TH.border, this.TH.position1[1]+this.TH.topMargin];
+        this.openPosition = [this.TH.position2[0]-this.TH.border, this.TH.position1[1]+Object.keys(categories).length*this.lineHeight];
+        this.position2 = this.closedPosition;
+    }
 }
 
 class TileSelector {
@@ -767,6 +820,16 @@ class TileSelector {
         } else if (this.W.selections.right == this.tile) {
             this.W.C.drawRectSize(position, tileSize, false, "#900");
         }
+        if (this.tile.drawHex) {
+            const textSize = Math.floor(10.5 * this.W.zoom)
+            const textPos = position
+            textPos[0] += 20
+            textPos[1] += 23
+            // draw second byte first due to little-endian convention
+            this.W.C.fillText(this.tile.drawHex.slice(2), textPos, "#000", textSize+"px Noto Sans")
+            textPos[1] += 9
+            this.W.C.fillText(this.tile.drawHex.slice(0, 2), textPos, "#000", textSize+"px Noto Sans")
+        }
     }
     indexToCoords(index, global) {
         let position = [(index%TH.width), Math.floor(index/TH.width)];
@@ -778,8 +841,9 @@ class TileSelector {
 }
 
 class Button {
-    constructor(W, title, position1, position2, c1, c2) {
-        Object.assign(this, {W, title, position1, position2, c1, c2});
+    constructor(W, title, y1, y2, c1, c2) {
+        Object.assign(this, {W, title, y1, y2, c1, c2});
+        this.resize()
         this.spacing = 4;
         this.border = 4;
         this.W.C.objects.push(this);
@@ -789,11 +853,15 @@ class Button {
         this.W.C.drawRectCoords(this.position1, this.position2, false, this.c2);
         this.W.C.fillText(this.title, [this.position1[0]+8, this.position1[1]+32], "#000", "30px Noto Sans");
     }
+    resize() {
+        this.position1 = [canvas.width-282, this.y1]
+        this.position2 = [canvas.width-10, this.y2]
+    }
 }
 
 class ElementToggle extends Button {
-    constructor(W, title, element, position1, position2, c1, c2) {
-        super(W, title, position1, position2, c1, c2);
+    constructor(W, title, element, y1, y2, c1, c2) {
+        super(W, title, y1, y2, c1, c2);
         this.element = element;
         this.element.style.display = "none";
     }
@@ -811,8 +879,8 @@ class ElementToggle extends Button {
 }
 
 class DrawMode extends Button {
-    constructor(W, position1, position2) {
-        super(W, "Mode", position1, position2, "#67c941", "#408425");
+    constructor(W, y1, y2) {
+        super(W, "Mode", y1, y2, "#67c941", "#408425");
         this.vc = height => Math.floor((this.position1[1]+this.position2[1]+height)/2-height);
         this.buttons = [
             {
@@ -851,8 +919,8 @@ class DrawMode extends Button {
 }
 
 class Settings extends ElementToggle {
-    constructor(W, position1, position2) {
-        super(W, "Settings", q("#settings"), position1, position2, "#e2adee", "#829");
+    constructor(W, y1, y2) {
+        super(W, "Settings", q("#settings"), y1, y2, "#e2adee", "#829");
     }
     show() {
         let [width, height] = this.W.getEdges().slice(1);
@@ -864,10 +932,10 @@ class Settings extends ElementToggle {
 let C = new BetterCanvas(ctx);
 ctx.fillStyle = "#f00";
 let W = new World(C, [canvas.width, canvas.height]);
-let TH = new TileHolder(W, [canvas.width-282, 110], [canvas.width-10, null]);
+TH = new TileHolder(W);
 let TM = new TileMenu(TH);
-let ST = new Settings(W, [canvas.width-282, 10], [canvas.width-10, 55]);
-let DM = new DrawMode(W, [canvas.width-282, 60], [canvas.width-10, 105]);
+let ST = new Settings(W, 10, 55);
+let DM = new DrawMode(W, 60, 105);
 W.loadLevel(level);
 loadImages((completed, total) => {
     C.drawRectCoords([20, 90], [20+(completed/total*280), 95], true, "#00b");

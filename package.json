@@ -18,6 +18,7 @@
     "node-fetch": "^2.6.1",
     "pinski": "git+https://git.sr.ht/~cadence/nodejs-pinski#2a5a025a974bd5cbb81bae32ec4d5c247cec0d42",
     "prettier-bytes": "^1.0.4",
+    "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "simple-git": "^1.132.0",
     "sqlite": "^3.0.6",

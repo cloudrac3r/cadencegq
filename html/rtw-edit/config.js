@@ -143,7 +143,8 @@ let config = {
         "Generators",
         "Scenery",
         "Effects",
-        "Signs"
+        "Signs",
+        "Metatiles"
     ],
     themes: [
         "aztec",
