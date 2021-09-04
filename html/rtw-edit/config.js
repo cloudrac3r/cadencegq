@@ -302,7 +302,12 @@ let config = {
         ["Boulder", "boulder"],
         ["Plasma cube", "plasma"],
         ["Explosive barrel", "barrel"],
-        ["Prism", "prism"]
+        ["Prism", "prism"],
+        ["Sticky cube", "stickycube"],
+        ["Red link sphere", "linksphere-red"],
+        ["Yellow link sphere", "linksphere-yellow"],
+        ["Green link sphere", "linksphere-green"],
+        ["Blue link sphere", "linksphere-blue"]
     ].forEach((type, index) => {
         let name = type[0]+" factory";
         let image = "editor/boxfactory-"+type[1]+".png";
