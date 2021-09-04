@@ -821,7 +821,7 @@ class TileSelector {
             this.W.C.drawRectSize(position, tileSize, false, "#900");
         }
         if (this.tile.drawHex) {
-            const textSize = Math.floor(10.5 * this.W.zoom)
+            const textSize = 10
             const textPos = position
             textPos[0] += 20
             textPos[1] += 23
