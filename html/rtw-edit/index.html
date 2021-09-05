@@ -185,6 +185,12 @@
                 <h3>Metatiles</h3>
                 <div>Type 4 hex digits, press Enter to add to picker.<br>Byte order is little-endian (same as most metatile documentation.)</div>
                 <input id="iMetatileCreator" maxlength="4" pattern="[0-9][a-f][A-F]{0,4}" placeholder="0000">
+                <div>
+                    <label>
+                        <input type="checkbox" id="iDrawHexOverlay" checked autocomplete="off">
+                        Draw hex overlay on metatiles
+                    </label>
+                </div>
             </div>
         </div>
         <div id="saveToast"></div>

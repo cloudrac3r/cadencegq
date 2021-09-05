@@ -7,6 +7,12 @@ const level = {
 const imagesDir = "/rtw-edit/images";
 let TH; // variable referencing
 
+let drawHexOverlay = true
+q("#iDrawHexOverlay").addEventListener("input", () => {
+    drawHexOverlay = q("#iDrawHexOverlay").checked
+    TH.W.C.draw()
+})
+
 q("#loading").parentElement.removeChild(q("#loading"));
 
 function posToSize(position) {
@@ -124,7 +130,7 @@ function loadCurrentSign() {
 
 function registerHexTile(hex, layer) {
     // Create data
-    const hexString = hex.toString(16).padStart(4, "0")
+    const hexString = hex.toString(16).padStart(4, "0").toUpperCase()
     const name = "Hex " + hexString
     tile = {
         name,
@@ -385,7 +391,7 @@ class World {
                         let pos = sizeToPos(this.worldToPos([event.clientX, event.clientY])).map(v => Math.floor(v));
                         if (!this.markedTiles.some(m => m.equal(pos))) this.markedTiles.push(pos);
                         let image;
-                        if (this.selections.left.name.startsWith("Conveyor")) {
+                        if (this.selections.left.name.toLowerCase().includes("conveyor")) {
                             image = config.tiles["Conveyor D 1"].image;
                         } else {
                             image = config.tiles["Ice centre"].image;
@@ -434,12 +440,18 @@ class World {
                 } else if (this.drawStyle == "path") {
                     if (this.markedTiles.length) {
                         for (let i = 0; i < this.markedTiles.length; i++) {
-                            if (this.selections.left.name.startsWith("Conveyor")) {
-                                let type = this.selections.left.name.match(/\d/)[0];
+                            if (this.selections.left.name.toLowerCase().includes("conveyor")) {
+                                let type
+                                let match
+                                if (match = this.selections.left.name.match(/\d/)) {
+                                    type = d => `Conveyor ${d} ${match[0]}`
+                                } else {
+                                    type = d => `Invisible conveyor ${d}`
+                                }
                                 let tile = config.tiles["Conveyor D "+type];
                                 let j = i == this.markedTiles.length-1 ? i-1 : i;
                                 let d = this.markedTiles[j].direction(this.markedTiles[j+1], false);
-                                tile = config.tiles["Conveyor "+d[1][0].toUpperCase()+" "+type];
+                                tile = config.tiles[type(d[1][0].toUpperCase())];
                                 new Tile(this, this.markedTiles[i], tile);
                             } else {
                                 let tile = config.tiles["Ice centre"];
@@ -699,14 +711,15 @@ class Tile {
         let size = tileSize*this.W.zoom;
         if (images[this.tile.image]) W.C.drawImage(W.posToWorld(this.posToSize()), tileSize*W.zoom, this.tile.image);
         else W.C.drawRectSize(W.posToWorld(this.posToSize()), tileSize*W.zoom, true, this.tile.image);
-        if (this.tile.drawHex) {
-            const textSize = Math.floor(10.5 * this.W.zoom)
-            const textPos = W.posToWorld(this.posToSize())
-            textPos[0] += size*20/32
-            textPos[1] += size*23/32
+        if (this.tile.drawHex && drawHexOverlay) {
+            const position = W.posToWorld(this.posToSize())
+            const overlayPos = [position[0] + 19*this.W.zoom, position[1] + 14*this.W.zoom]
+            this.W.C.drawRectSize(overlayPos, [13*this.W.zoom, 18*this.W.zoom], true, "#fff")
+            const textSize = Math.floor(10*this.W.zoom)
+            const textPos = [position[0] + 20*this.W.zoom, position[1] + 23*this.W.zoom]
             // draw second byte first due to little-endian convention
             this.W.C.fillText(this.tile.drawHex.slice(2), textPos, "#000", textSize+"px Noto Sans")
-            textPos[1] += size*9/32
+            textPos[1] += 9*this.W.zoom
             this.W.C.fillText(this.tile.drawHex.slice(0, 2), textPos, "#000", textSize+"px Noto Sans")
         }
     }
@@ -820,11 +833,11 @@ class TileSelector {
         } else if (this.W.selections.right == this.tile) {
             this.W.C.drawRectSize(position, tileSize, false, "#900");
         }
-        if (this.tile.drawHex) {
+        if (this.tile.drawHex && drawHexOverlay) {
+            const overlayPos = [position[0] + 19, position[1] + 14]
+            this.W.C.drawRectSize(overlayPos, [13, 18], true, "#fff")
             const textSize = 10
-            const textPos = position
-            textPos[0] += 20
-            textPos[1] += 23
+            const textPos = [position[0] + 20, position[1] + 23]
             // draw second byte first due to little-endian convention
             this.W.C.fillText(this.tile.drawHex.slice(2), textPos, "#000", textSize+"px Noto Sans")
             textPos[1] += 9

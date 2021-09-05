@@ -498,3 +498,47 @@ config.tiles["3D (global)"] = {
     layer: 0,
     hex: 0x08FC
 }
+
+// Popular metatiles
+config.tiles["Invisible floor"] = {
+    image: "custom/ghost-floor.png",
+    categories: ["Metatiles"],
+    layer: 0,
+    hex: 0x0069,
+    drawHex: "0069"
+}
+config.tiles["Invisible water"] = {
+    image: "custom/ghost-water.png",
+    categories: ["Metatiles"],
+    layer: 0,
+    hex: 0x012d,
+    drawHex: "012D"
+}
+config.tiles["Invisible lava"] = {
+    image: "custom/ghost-lava.png",
+    categories: ["Metatiles"],
+    layer: 0,
+    hex: 0x0385,
+    drawHex: "0385"
+}
+config.tiles["Invisible trampoline"] = {
+    image: "custom/ghost-trampoline.png",
+    categories: ["Metatiles"],
+    layer: 0,
+    hex: 0x0709,
+    drawHex: "0709"
+}
+{
+    ["u", "r", "d", "l", "u/d", "r/l", "d/u", "l/r"].forEach((direction, index) => {
+        let name = "Invisible conveyor "+direction.toUpperCase();
+        let image = "custom/ghost-conveyor-"+direction.replace("/", "")+"-2.png";
+        const hex = 0x0204+index
+        config.tiles[name] = {
+            image,
+            categories: ["Metatiles"],
+            layer: 0,
+            hex,
+            drawHex: hex.toString(16).padStart(4, "0").toUpperCase()
+        }
+    });
+}

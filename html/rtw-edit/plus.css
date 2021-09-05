@@ -85,7 +85,7 @@ input {
     text-indent: 4px;
 }
 
-input, select, button, .linkButton, label[data-file] {
+input[type=text], input[type=number], select, button, .linkButton, label[data-file] {
     width: 200px;
     background-color: white;
     color: black;
