@@ -59,8 +59,8 @@ async function loadAllPages() {
 	console.log(`ProtectTheResults: Loaded ${sortedStates.length} states and ${events.length} events`)
 }
 
-loadAllPages()
-setInterval(() => loadAllPages(), 60*60*1000).unref()
+// loadAllPages()
+// setInterval(() => loadAllPages(), 60*60*1000).unref()
 
 module.exports = [
 	{route: "/misc/protect-the-results", methods: ["GET"], code: ({url}) => {
