@@ -231,7 +231,7 @@ let config = {
 }
 
 {
-    ["water", "lava", "space"].forEach((type, index) => {
+    ["water", "space", "lava"].forEach((type, index) => {
         let name = type[0].toUpperCase()+type.slice(1).toLowerCase()+" transporter";
         let image = "editor/transporter-"+type+".png";
         config.tiles[name] = {

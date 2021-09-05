@@ -14,7 +14,7 @@ const sources = [
 		text: pug.render(`
 figure
 	p: q Hacker News in name only, for it is neither.
-	figcaption — Mobin Hideout Owl Statue, Link's Awakening
+	figcaption — Moblin Hideout Owl Statue, Link's Awakening
 `)
 	},
 	{

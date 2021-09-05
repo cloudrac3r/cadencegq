@@ -24,13 +24,13 @@ async function replyImage({fill}) {
 
 module.exports = [
     {
-        route: "/api/images/([a-f0-9]{6})(\\.[a-z]*)?", methods: ["GET"], code: replyImage
+        route: "/api/images/([a-zA-Z0-9_!?-]+)(\\.[a-z]*)?", methods: ["GET"], code: replyImage
     },
     {
-        route: "/i/([a-f0-9]{6})(\\.[a-z]*)?", methods: ["GET"], code: replyImage
+       route: "/i/([a-zA-Z0-9_!?-]+)(\\.[a-z]*)?", methods: ["GET"], code: replyImage
     },
     {
-        route: "/api/images/([a-f0-9]{6})/details", methods: ["GET"], code: async ({fill}) => {
+       route: "/api/images/([a-zA-Z0-9_!?-]+)/details", methods: ["GET"], code: async ({fill}) => {
             let imageID = fill[0];
             let dbr = await db.get("SELECT * FROM Images WHERE imageID = ?", imageID);
             if (!dbr) return [400, 1];
