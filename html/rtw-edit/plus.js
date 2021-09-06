@@ -562,7 +562,7 @@ class World {
         // Level name
         q("#iLevelName").value = readString();
         // Custom content
-        for (let type of ["Houses", "Models", "Textures", "Background"]) {
+        for (let type of ["Houses", "Models", "Textures", "CustomBackground"]) {
             let exists = readInt();
             let string = readString();
             q("#i"+type).value = string;
