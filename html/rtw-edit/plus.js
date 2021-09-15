@@ -638,7 +638,7 @@ class World {
         let levelName = q("#iLevelName").value || "Level";
         pushString(levelName);
         // Custom content
-        for (let type of ["Houses", "Models", "Textures", "Background"]) {
+        for (let type of ["Houses", "Models", "Textures", "CustomBackground"]) {
             let value = q("#i"+type).value;
             pushInt(0); // Unknown purpose?
             pushString(value); // String
