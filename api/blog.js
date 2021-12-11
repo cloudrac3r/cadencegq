@@ -17,10 +17,6 @@ figure
 	figcaption — Moblin Hideout Owl Statue, Link's Awakening
 `)
 	},
-	{
-		url: "stallman.org",
-		text: pug.render(`p Oh... I see. What a nice, normal, and definitely not deluded or #[a(href="https://www.twitter.com/starsandrobots/status/994267277460619265") creepy] person to take information from.\np: a(href="https://arstechnica.com/tech-policy/2019/09/richard-stallman-leaves-mit-after-controversial-remarks-on-rape/") Please choose someone more worthy as your idol.`)
-	}
 ]
 
 /**
@@ -172,6 +168,7 @@ module.exports = [
 			statusCode: 200,
 			contentType: data.contentType,
 			headers: {
+				"Access-Control-Allow-Origin": "*",
 				"Cache-Control": "public, max-age=600"
 			},
 			content: data.content
