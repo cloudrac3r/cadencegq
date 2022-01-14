@@ -9,9 +9,7 @@
   "author": "cloudrac3r",
   "license": "GPL-3.0-only",
   "dependencies": {
-    "axios": "^0.21.1",
     "buffer-signature": "^1.1.0",
-    "fast-xml-parser": "^3.19.0",
     "feed": "github:cloudrac3r/feed#f42b4d7183fc2b6e566cb400ad083c4dd714c858",
     "mime": "^2.5.2",
     "nedb-promise": "^2.0.1",
@@ -21,8 +19,6 @@
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "simple-git": "^1.132.0",
-    "sqlite": "^3.0.6",
-    "youtube-search": "^1.1.6",
-    "ytdl-core": "^0.25.2"
+    "sqlite": "^3.0.6"
   }
 }
