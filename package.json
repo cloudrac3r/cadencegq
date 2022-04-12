@@ -18,7 +18,7 @@
     "prettier-bytes": "^1.0.4",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
-    "simple-git": "^1.132.0",
+    "simple-git": "^3.5.0",
     "sqlite": "^3.0.6"
   }
 }
